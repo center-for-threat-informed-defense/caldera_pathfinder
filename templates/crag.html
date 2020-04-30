@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="/crag/css/crag.css">
+<script src="/crag/js/crag.js"></script>
+
+<div id="crag-section" class="section-profile">
+    <div class="row">
+        <div class="topleft duk-icon"><img onclick="removeSection('crag-section')" src="/gui/img/x.png"></div>
+        <div class="column section-border" style="flex:25%;text-align:left;padding:15px;">
+            <h1 style="font-size:70px;margin-top:-20px;">CRAG</h1>
+            <h2 style="margin-top:-50px">CALDERA Rapid Attack Grapher</h2>
+            <p>
+                CRAG is a plugin/project for taking network scans and mapping the structure and vulnerabilities to
+                potential planner actions based upon the set of available abilities.
+            </p>
+            <div class="toggle">
+                <label class="switch">
+                    <input type="checkbox" id="toggleInputMode" onchange="toggleInputOptions()">
+                    <div class="slider round">
+                        <span class="on">scan</span><span class="off">import</span>
+                    </div>
+                </label>
+            </div>
+            <br><br>
+            <select id="scan-input-format" style="margin-top:-15px; display: none" onchange="validateParser()">
+                <option value="" disabled selected>Select an existing profile</option>
+                {% for p in input_parsers %}
+                    <option value="{{ p.name }}">{{ p.name }}</option>
+                {% endfor %}}
+            </select>
+            <div id="start-import" style="display: none">
+                <br><br>
+                <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
+                        onclick="importScan()">Import</button>
+            </div>
+            <div id="start-scan">
+                <br><br>
+                <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
+                        onclick="startScan()">Scan</button>
+            </div>
+        </div>
+        <div class="column" style="flex:75%">
+            <label for="crag-log">Output</label><br>
+            <textarea id="crag-log" class="column log-box" rows="4"></textarea>
+        </div>
+    </div>
+</div>
+<script>validateNmapInstalled({{ nmap }})</script>
