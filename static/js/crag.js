@@ -20,24 +20,45 @@ function importScan(){
     $('#file-input').trigger('click');
 }
 
-function uploadScan(file){
-//    let file = $('#file-input').files[0];
-//    let file = document.getElementById('file-input').files[0];
+function processScan(filename){
     let data = {'index': 'import_scan',
                 'format': $('#scan-input-format').val(),
-                'file': file
+                'filename': filename
                 }
     restRequest('POST', data, displayOutput, '/plugin/crag/api');
 }
 
-$('#file-input').on('change', function (event){
-        if(event.currentTarget) {
-            let filename = event.currentTarget.files[0].name;
-            if(filename){
-                uploadScan(event.currentTarget.files[0]);
+function restPostFile(file, callback=null, endpoint='/plugin/crag/upload'){
+    let fd = new FormData();
+    fd.append('file', file);
+    $.ajax({
+        type: 'POST',
+        url: endpoint,
+        data: fd,
+        processData: false,
+        contentType: false,
+        success: function(data, status, options) {
+            if(callback) {
+                callback(data);
             }
+            stream("successfully uploaded " + file.name);
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            stream(thrownError);
         }
     });
+}
+
+$('#file-input').on('change', function (event){
+    if(event.currentTarget) {
+        let filename = event.currentTarget.files[0].name;
+            if(filename){
+                restPostFile(event.currentTarget.files[0], function (data) {processScan(filename);})
+                event.currentTarget.value = '';
+
+            }
+    }
+});
 
 
 function displayOutput(data){

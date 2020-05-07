@@ -14,3 +14,4 @@ async def enable(services):
     app.router.add_static('/crag', 'plugins/crag/static/', append_version=True)
     app.router.add_route('GET', '/plugin/crag/gui', crag_gui.splash)
     app.router.add_route('*', '/plugin/crag/api', crag_gui.crag_core)
+    app.router.add_route('POST', '/plugin/crag/upload', crag_gui.store_report)

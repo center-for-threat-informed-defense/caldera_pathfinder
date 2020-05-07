@@ -23,7 +23,7 @@
             <select id="scan-input-format" style="margin-top:-15px; display: none" onchange="validateParser()">
                 <option value="" disabled selected>Select an existing profile</option>
                 {% for p in input_parsers %}
-                    <option value="{{ p.name }}">{{ p.name }}</option>
+                    <option value="{{ p }}">{{ p }}</option>
                 {% endfor %}}
             </select>
             <input id="file-input" type="file" name="name" style="display: none;" />
