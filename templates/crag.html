@@ -20,27 +20,27 @@
                 </label>
             </div>
             <br><br>
-            <select id="scan-input-format" style="margin-top:-15px; display: none" onchange="validateParser()">
-                <option value="" disabled selected>Select an existing profile</option>
-                {% for p in input_parsers %}
-                    <option value="{{ p }}">{{ p }}</option>
-                {% endfor %}}
-            </select>
-            <input id="file-input" type="file" name="name" style="display: none;" />
-            <div id="start-import" style="display: none">
+            <div id="importSection" style="display:none;">
+                <select id="scanInputFormat" style="margin-top:-15px;" onchange="validateParser()">
+                    <option value="" disabled selected>Select an existing profile</option>
+                    {% for p in input_parsers %}
+                        <option value="{{ p }}">{{ p }}</option>
+                    {% endfor %}}
+                </select>
+                <input id="fileInput" type="file" name="name" style="display: none;" />
                 <br><br>
                 <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
                         onclick="importScan()">Import</button>
             </div>
-            <div id="start-scan">
+            <div id="scanSection">
                 <br><br>
                 <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
                         onclick="startScan()">Scan</button>
             </div>
         </div>
         <div class="column" style="flex:75%">
-            <label for="crag-log">Output</label><br>
-            <textarea id="crag-log" class="column log-box" rows="4"></textarea>
+            <label for="cragLog">Output</label><br>
+            <textarea id="cragLog" class="column log-box" rows="4"></textarea>
         </div>
     </div>
 </div>

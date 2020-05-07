@@ -1,7 +1,6 @@
 function toggleInputOptions() {
-    $('#scan-input-format').toggle();
-    $('#start-import').toggle();
-    $('#start-scan').toggle();
+    $('#importSection').toggle();
+    $('#scanSection').toggle();
 }
 
 function validateNmapInstalled(state){
@@ -17,12 +16,12 @@ function startScan(){
 }
 
 function importScan(){
-    $('#file-input').trigger('click');
+    $('#fileInput').trigger('click');
 }
 
 function processScan(filename){
     let data = {'index': 'import_scan',
-                'format': $('#scan-input-format').val(),
+                'format': $('#scanInputFormat').val(),
                 'filename': filename
                 }
     restRequest('POST', data, displayOutput, '/plugin/crag/api');
@@ -49,7 +48,7 @@ function restPostFile(file, callback=null, endpoint='/plugin/crag/upload'){
     });
 }
 
-$('#file-input').on('change', function (event){
+$('#fileInput').on('change', function (event){
     if(event.currentTarget) {
         let filename = event.currentTarget.files[0].name;
             if(filename){
@@ -63,5 +62,5 @@ $('#file-input').on('change', function (event){
 
 function displayOutput(data){
     let results = data;
-    document.getElementById("crag-log").value += results.output + '\n'
+    document.getElementById("cragLog").value += results.output + '\n'
 }
