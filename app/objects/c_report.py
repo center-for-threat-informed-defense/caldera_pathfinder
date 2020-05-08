@@ -1,5 +1,7 @@
 import uuid
 
+from datetime import date
+
 from app.objects.interfaces.i_object import FirstClassObjectInterface
 from app.utility.base_object import BaseObject
 
@@ -10,10 +12,10 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
     def unique(self):
         return self.hash('%s' % self.id)
 
-    def __init__(self, name='', hosts=None):
+    def __init__(self, name=None, hosts=None):
         super().__init__()
-        self.id = uuid.uuid4()
-        self.name = name
+        self.id = str(uuid.uuid4())
+        self.name = name if name else 'crag-report-%s' % date.today().strftime("%b-%d-%Y")
         self.hosts = hosts if hosts else []
 
     def store(self, ram):
