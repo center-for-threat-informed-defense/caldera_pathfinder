@@ -23,38 +23,34 @@ class ReportParser:
             return None
 
         self.parse_xml_report(root, caldera_report)
-        # caldera_report.hosts = [self.parse_host(section) for section in self.separate_hosts(report)]
         return caldera_report
 
-    def separate_hosts(self, report):
-        return ['section']
-
-    def parse_host(self, section):
-        host = Host('192.168.1.1')
-        return host
-
     def parse_xml_report(self, root, report):
+        cve_pattern = r'(CVE-\d{4}-\d{4,})'
+
         for host in root.findall('host'):
+            cves = []
             report_host = Host(host.find('address').get('addr'))
-            self.log.debug(report_host.ip)
             if host.find('hostnames') is not None:
                 if host.find('hostnames').find('hostname') is not None:
                     report_host.hostname = host.find('hostnames').find('hostname').get('name')
-                    self.log.debug(report_host.hostname)
             for port in host.find('ports').findall('port'):
                 report_port = Port(port.get('portid'), '')
                 report_port.protocol = port.get('protocol', '')
-                self.log.debug(f'{report_port.protocol}:{report_port.number}')
                 if port.find('service') is not None:
                     if port.find('service').get('name') is not None:
                         report_port.service = port.find('service').get('name')
-                        self.log.debug(report_port.service)
                     if port.find('service').get('product') is not None:
                         report_port.product = port.find('service').get('product')
-                        self.log.debug(report_port.product)
                     if port.find('service').get('version') is not None:
                         report_port.version = port.find('service').get('version')
-                        self.log.debug(report_port.version)
-                report_host.ports.append(report_port)
+                for script in port.findall('script'):
+                    if script.get('output') is not None:
+                        script_output = script.get('output')
+                        port_cves = list(set(re.findall(cve_pattern, script_output)))
+                        report_port.cves = port_cves
+                        cves.extend(port_cves)
+                report_host.ports[report_port.number] = report_port
+            report_host.cves = cves
             report.hosts.append(report_host)
         return report

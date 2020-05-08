@@ -1,3 +1,4 @@
+import io
 import glob
 import logging
 
@@ -12,13 +13,15 @@ class CragService:
         self.parsers = self.load_parsers()
 
     async def import_scan(self, scan_format, report):
-        plugin, filepath = await self.file_svc.find_file_path(report, location='reports')
-        # _, contents = await self.file_svc.read_file(report, location='reports')
-        parsed_report = self.parsers[scan_format].parse(filepath)
+        # grab and decrypt the file contents and crate a file object to pass to the parser
+        _, contents = await self.file_svc.read_file(report, location='reports')
+        file = io.BytesIO(contents)
+        parsed_report = self.parsers[scan_format].parse(file)
         await self.create_source(parsed_report)
 
     async def create_source(self, report):
-        pass
+        for host in report.hosts:
+            pass
 
     @staticmethod
     def load_parsers():
