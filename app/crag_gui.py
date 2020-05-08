@@ -51,15 +51,18 @@ class CragGui(BaseWorld):
         report_name = '%s-%s.xml' % (machine_ip.replace('.', '_'), date.today().strftime("%b-%d-%Y"))
         self.log.debug('scanning %s' % machine_ip)
         command = 'nmap --script plugins/crag/nmap/scripts/nmap-vulners -sV -Pn -oX plugins/crag/data/reports/%s %s' % (report_name, machine_ip)
-        output = subprocess.check_output(command.split(' '), shell=False)
-        await self.crag_svc.import_scan('nmap', report_name)
-        return dict(output='scanned system and generated report %s' % report_name)
+        failcode = subprocess.call(command.split(' '), shell=False)
+        if not failcode:
+            source = await self.crag_svc.import_scan('nmap', report_name)
+            return dict(output='scanned system and generated source: %s' % source)
+        return dict(output='failure occurred when scanning system, please check server logs')
 
     async def import_report(self, data):
         self.log.debug(json.dumps(data))
         scan_type = data.get('format')
         report_name = data.get('filename')
-        return dict(output=await self.crag_svc.import_scan(scan_type, report_name))
+        source = await self.crag_svc.import_scan(scan_type, report_name)
+        return dict(output='report process and available as source: %s' % source)
 
     @check_authorization
     async def store_report(self, request):

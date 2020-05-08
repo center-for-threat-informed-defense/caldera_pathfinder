@@ -22,12 +22,12 @@ class CragService:
         _, contents = await self.file_svc.read_file(report, location='reports')
         file = io.BytesIO(contents)
         parsed_report = self.parsers[scan_format].parse(file)
-        await self.create_source(parsed_report)
+        return await self.create_source(parsed_report)
 
     async def create_source(self, report):
         def add_fact(fact_list, trait, value):
             fact_list.append(Fact(trait, value, collected_by='CRAG'))
-            return fact_list[-1:]
+            return fact_list[-1:][0]
 
         facts = []
         relationships = []
@@ -44,6 +44,7 @@ class CragService:
         source = Source(report.id, report.name, facts, relationships)
         source.access = BaseWorld.Access.RED
         await self.data_svc.store(source)
+        return source.name
 
 
 
