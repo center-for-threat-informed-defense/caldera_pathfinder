@@ -58,4 +58,4 @@ class CragGui(BaseWorld):
 
     @check_authorization
     async def store_report(self, request):
-        return await self.file_svc.save_multipart_file_upload(request, 'plugins/crag/data/reports/')
+        return await self.file_svc.save_multipart_file_upload(request, 'plugins/crag/data/reports')

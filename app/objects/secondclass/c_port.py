@@ -10,4 +10,5 @@ class Port(BaseObject):
         self.cve = cve
         self.service = None
         self.version = None
+        self.product = None
 

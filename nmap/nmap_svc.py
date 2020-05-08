@@ -28,7 +28,7 @@ class NmapService:
     async def find_hosts(self, option='sn'):
         hosts = []
         pattern = r'(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
-        command = 'nmap -%s %s/24' % (option, self.machine_ip)
+        command = 'nmap -%s -Pn %s' % (option, self.machine_ip)
         output = subprocess.check_output(command.split(' '), shell=False)
         results = re.findall(pattern, output.decode('utf-8'))
         if results:
@@ -37,7 +37,7 @@ class NmapService:
 
     async def scan_host_cves(self, ip):
         self.log.debug('scanning %s' % ip)
-        command = 'nmap --script plugins/crag/nmap/scripts/nmap-vulners -sV %s' % ip
+        command = 'nmap --script plugins/crag/nmap/scripts -sV -Pn %s' % ip
         pattern = r'(CVE-\d{4}-\d{4,})'
         output = subprocess.check_output(command.split(' '), shell=False)
         results = list(set(re.findall(pattern, output.decode('utf-8'))))

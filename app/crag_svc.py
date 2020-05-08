@@ -12,8 +12,9 @@ class CragService:
         self.parsers = self.load_parsers()
 
     async def import_scan(self, scan_format, report):
-        _, contents = await self.file_svc.read_file(report, location='uploads')
-        parsed_report = self.parsers[scan_format].parse(report)
+        plugin, filepath = await self.file_svc.find_file_path(report, location='reports')
+        # _, contents = await self.file_svc.read_file(report, location='reports')
+        parsed_report = self.parsers[scan_format].parse(filepath)
         await self.create_source(parsed_report)
 
     async def create_source(self, report):
