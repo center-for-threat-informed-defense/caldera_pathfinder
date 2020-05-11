@@ -1,0 +1,7 @@
+.log-box {
+    background-color: var(--primary-background);
+    padding: 10px;
+    border-radius: 7px;
+    width: 95%;
+    margin: 7px;
+}
