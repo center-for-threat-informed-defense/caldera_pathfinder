@@ -50,7 +50,7 @@ class CragGui(BaseWorld):
         machine_ip = self.get_machine_ip()
         report_name = '%s-%s.xml' % (machine_ip.replace('.', '_'), date.today().strftime("%b-%d-%Y"))
         self.log.debug('scanning %s' % machine_ip)
-        command = 'nmap --script plugins/crag/nmap/scripts/nmap-vulners -sV -Pn -oX plugins/crag/data/reports/%s %s' % (report_name, machine_ip)
+        command = 'nmap --script plugins/crag/nmap/scripts/nmap-vulners -sV -Pn -oX plugins/crag/data/reports/%s %s/24' % (report_name, machine_ip)
         failcode = subprocess.call(command.split(' '), shell=False)
         if not failcode:
             source = await self.crag_svc.import_scan('nmap', report_name)

@@ -31,7 +31,7 @@ class CragService:
 
         facts = []
         relationships = []
-        for host in report.hosts:
+        for host in report.hosts.values():
             ip_fact = add_fact(facts, 'scan.host.ip', host.ip)
             if host.hostname:
                 relationships.append(Relationship(ip_fact, 'has_hostname', add_fact(facts, 'scan.host.hostname', host.hostname)))
