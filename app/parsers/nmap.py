@@ -1,5 +1,7 @@
 import re
+import yaml
 import logging
+import argparse
 import xml.etree.ElementTree as ET
 
 from plugins.crag.app.objects.c_report import VulnerabilityReport
@@ -52,5 +54,22 @@ class ReportParser:
                         cves.extend(port_cves)
                 report_host.ports[report_port.number] = report_port
             report_host.cves = cves
-            report.hosts.append(report_host)
+            report.hosts[report_host.ip] = report_host
         return report
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser('crag nmap report parser')
+    parser.add_argument('-D', '--debug', action='store_const', required=False, const=logging.DEBUG, default=logging.INFO)
+    parser.add_argument('-f', '--filename', required=True)
+    parser.add_argument('-o', '--output', required=False)
+    args = parser.parse_args()
+
+    logging.basicConfig(level=args.debug)
+    parser = ReportParser()
+    report = parser.parse(args.filename)
+    logging.info(report.name)
+    logging.info(yaml.dump(report.display))
+    if args.output:
+        with open(args.output, 'w') as o:
+            o.write(yaml.dump(report.display))
