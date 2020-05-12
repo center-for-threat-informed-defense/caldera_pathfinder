@@ -25,5 +25,5 @@ class Host(BaseObject):
         super().__init__()
         self.hostname = hostname
         self.ip = ip
-        self.ports = dict()  # dict(port#=Port())
+        self.ports = dict()
         self.cves = []

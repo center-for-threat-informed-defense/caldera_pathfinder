@@ -1,7 +1,7 @@
 import uuid
-import marshmallow as ma
-
 from datetime import date
+
+import marshmallow as ma
 
 from app.utility.base_object import BaseObject
 from app.objects.interfaces.i_object import FirstClassObjectInterface
@@ -32,7 +32,7 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
         super().__init__()
         self.id = str(uuid.uuid4())
         self.name = name if name else 'crag-report-%s' % date.today().strftime("%b-%d-%Y")
-        self.hosts = dict()  # dict(ip=Host())
+        self.hosts = dict()
 
     def store(self, ram):
         existing = self.retrieve(ram['vulnerabilityreports'], self.unique)
