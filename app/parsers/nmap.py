@@ -68,8 +68,10 @@ if __name__ == "__main__":
     logging.basicConfig(level=args.debug)
     parser = ReportParser()
     report = parser.parse(args.filename)
-    logging.info(report.name)
-    logging.info(yaml.dump(report.display))
+    logging.info('parsed %s and produced output report: %s' % (args.filename.split('/')[-1], report.name))
     if args.output:
         with open(args.output, 'w') as o:
             o.write(yaml.dump(report.display))
+            logging.info('output report saved to: %s' % args.output)
+    else:
+        logging.info(yaml.dump(report.display))
