@@ -1,3 +1,4 @@
+import os
 import re
 import yaml
 import logging
@@ -33,19 +34,21 @@ class ReportParser:
         for host in root.findall('host'):
             cves = []
             report_host = Host(host.find('address').get('addr'))
+
             if host.find('hostnames') is not None:
                 if host.find('hostnames').find('hostname') is not None:
                     report_host.hostname = host.find('hostnames').find('hostname').get('name')
+
             for port in host.find('ports').findall('port'):
                 report_port = Port(port.get('portid'), '')
                 report_port.protocol = port.get('protocol', '')
-                if port.find('service') is not None:
-                    if port.find('service').get('name') is not None:
-                        report_port.service = port.find('service').get('name')
-                    if port.find('service').get('product') is not None:
-                        report_port.product = port.find('service').get('product')
-                    if port.find('service').get('version') is not None:
-                        report_port.version = port.find('service').get('version')
+
+                service = port.find('service')
+                if service is not None:
+                    for attribute in ['name', 'product', 'version']:
+                        if service.get(attribute) is not None:
+                            setattr(report_port, attribute, service.get(attribute))
+
                 for script in port.findall('script'):
                     if script.get('output') is not None:
                         script_output = script.get('output')
@@ -53,6 +56,7 @@ class ReportParser:
                         report_port.cves = port_cves
                         cves.extend(port_cves)
                 report_host.ports[report_port.number] = report_port
+
             report_host.cves = cves
             report.hosts[report_host.ip] = report_host
         return report
@@ -68,7 +72,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=args.debug)
     parser = ReportParser()
     report = parser.parse(args.filename)
-    logging.info('parsed %s and produced output report: %s' % (args.filename.split('/')[-1], report.name))
+    logging.info('parsed %s and produced output report: %s' % (os.path.basename(args.filename), report.name))
     if args.output:
         with open(args.output, 'w') as o:
             o.write(yaml.dump(report.display))
