@@ -6,7 +6,6 @@ from plugins.crag.app.objects.secondclass.c_port import PortSchema
 
 class HostSchema(ma.Schema):
 
-    unique = ma.fields.String()
     hostname = ma.fields.String()
     ip = ma.fields.String()
     ports = ma.fields.Dict(keys=ma.fields.Integer(), values=ma.fields.Nested(PortSchema()))
@@ -21,9 +20,9 @@ class Host(BaseObject):
 
     schema = HostSchema()
 
-    def __init__(self, ip, hostname=None, match='.*'):
+    def __init__(self, ip, hostname=None, ports=None, cves=None, match='.*'):
         super().__init__()
         self.hostname = hostname
         self.ip = ip
-        self.ports = dict()
-        self.cves = []
+        self.ports = ports or dict()
+        self.cves = cves or []

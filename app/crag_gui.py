@@ -53,17 +53,20 @@ class CragGui(BaseWorld):
         try:
             failcode = await Scanner().scan(filename=report_file, target_specification=target)
             if not failcode:
-                source = await self.crag_svc.import_scan('nmap', os.path.basename(report_file))
-                return dict(status='pass', output='scanned system and generated source: %s' % source)
-            return dict(status='fail', output='failure occurred when scanning system, please check server logs')
+                source, source_id = await self.crag_svc.import_scan('nmap', os.path.basename(report_file))
+                if source:
+                    return dict(status='pass', output='scanned system and generated source: %s' % source, source=source_id)
+            return dict(status='fail', output='failure occurred during scanning and report generation, please check server logs')
         except Exception as e:
             return dict(status='fail', output='exception occurred during scanning')
 
     async def import_report(self, data):
         scan_type = data.get('format')
         report_name = data.get('filename')
-        source = await self.crag_svc.import_scan(scan_type, report_name)
-        return dict(status='pass', output='source: %s' % source)
+        source, source_id = await self.crag_svc.import_scan(scan_type, report_name)
+        if source:
+            return dict(status='pass', output='source: %s' % source, source=source_id)
+        return dict(status='fail', output='failure occurred during report importing, please check server logs')
 
     @check_authorization
     async def store_report(self, request):

@@ -16,6 +16,8 @@ function startScan(){
         if(data.status == 'pass'){
             displayOutput('scan passed, found new facts');
             displayOutput(data.output);
+            viewSection('sources', '/advanced/sources');
+            setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, data.source);
         }else{
             displayOutput('scan failed, please check server logs for issue');
         }
@@ -36,6 +38,8 @@ function processScan(filename){
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
+            viewSection('sources', '/advanced/sources');
+            setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, data.source);
         }else{
             displayOutput('report import failed, please check server logs for issue');
         }

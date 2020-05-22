@@ -1,4 +1,3 @@
-import os
 import logging
 
 from app.utility.base_world import BaseWorld
@@ -13,9 +12,7 @@ class ReportParser:
 
     def parse(self, report):
         try:
-            open('_tempreport.yml', 'w').write(report.read())
-            caldera_report = VulnerabilityReport.load(BaseWorld.strip_yml('_tempreport.yml'))  # need to fix this as we get a file object, not a path
-            os.remove('_tempreport.yml')
+            caldera_report = VulnerabilityReport.load(BaseWorld.strip_yml(report)[0])
             return caldera_report
         except Exception as e:
             self.log.error('exception when loading caldera report: %s' % repr(e))
