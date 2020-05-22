@@ -9,4 +9,3 @@
 .idea/*
 .logs/*
 !.logs/.gitkeep
-data/reports/*

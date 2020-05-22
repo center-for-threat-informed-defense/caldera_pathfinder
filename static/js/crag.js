@@ -12,7 +12,19 @@ function validateParser(){
 }
 
 function startScan(){
-    restRequest('POST', {'index':'scan', 'network':'local'}, displayOutput, '/plugin/crag/api');
+    function processResults(data){
+        if(data.status == 'pass'){
+            displayOutput('scan passed, found new facts');
+            displayOutput(data.output);
+        }else{
+            displayOutput('scan failed, please check server logs for issue');
+        }
+        validateFormState(true, '#startScan');
+    }
+    validateFormState(false, '#startScan');
+    let target = $('#targetInput').val();
+    displayOutput('scan started on target: ' + target);
+    restRequest('POST', {'index':'scan', 'network':'local', 'target':target}, processResults, '/plugin/crag/api');
 }
 
 function importScan(){
@@ -20,11 +32,21 @@ function importScan(){
 }
 
 function processScan(filename){
+    function processResults(data){
+        if(data.status == 'pass'){
+            displayOutput('report imported, new source created');
+            displayOutput(data.output);
+        }else{
+            displayOutput('report import failed, please check server logs for issue');
+        }
+        validateFormState(true, '#startImport');
+    }
+    validateFormState(false, '#startImport');
     let data = {'index': 'import_scan',
                 'format': $('#scanInputFormat').val(),
                 'filename': filename
                 }
-    restRequest('POST', data, displayOutput, '/plugin/crag/api');
+    restRequest('POST', data, processResults, '/plugin/crag/api');
 }
 
 function restPostFile(file, callback=null, endpoint='/plugin/crag/upload'){
@@ -60,7 +82,6 @@ $('#fileInput').on('change', function (event){
 });
 
 
-function displayOutput(data){
-    let results = data;
-    document.getElementById("cragLog").value += results.output + '\n'
+function displayOutput(text){
+    document.getElementById("cragLog").value += text + '\n'
 }

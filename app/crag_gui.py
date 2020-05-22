@@ -1,7 +1,6 @@
-import json
+import os
 import socket
 import logging
-import subprocess
 from aiohttp import web
 from aiohttp_jinja2 import template
 from datetime import date
@@ -10,6 +9,7 @@ from app.service.auth_svc import check_authorization
 from app.utility.base_world import BaseWorld
 
 from plugins.crag.app.crag_svc import CragService
+from plugins.crag.scanners.nmap.scanner import Scanner
 
 
 class CragGui(BaseWorld):
@@ -25,7 +25,7 @@ class CragGui(BaseWorld):
     @check_authorization
     @template('crag.html')
     async def splash(self, request):
-        return dict(nmap=self.nmap_installed, input_parsers=self.crag_svc.parsers.keys())
+        return dict(nmap=self.nmap_installed, input_parsers=self.crag_svc.parsers.keys(), machine_ip=self.get_machine_ip())
 
     @check_authorization
     async def crag_core(self, request):
@@ -36,7 +36,7 @@ class CragGui(BaseWorld):
                 DELETE=dict(),
                 PUT=dict(),
                 POST=dict(
-                    scan=lambda d: self.scan(),
+                    scan=lambda d: self.scan(d),
                     import_scan=lambda d: self.import_report(d)
                 )
             )
@@ -46,23 +46,24 @@ class CragGui(BaseWorld):
         except Exception as e:
             self.log.error(repr(e), exc_info=True)
 
-    async def scan(self):
-        machine_ip = self.get_machine_ip()
-        report_name = '%s-%s.xml' % (machine_ip.replace('.', '_'), date.today().strftime("%b-%d-%Y"))
-        self.log.debug('scanning %s' % machine_ip)
-        command = 'nmap --script plugins/crag/nmap/scripts/nmap-vulners -sV -Pn -oX plugins/crag/data/reports/%s %s/24' % (report_name, machine_ip)
-        failcode = subprocess.call(command.split(' '), shell=False)
-        if not failcode:
-            source = await self.crag_svc.import_scan('nmap', report_name)
-            return dict(output='scanned system and generated source: %s' % source)
-        return dict(output='failure occurred when scanning system, please check server logs')
+    async def scan(self, data):
+        target = data.pop('target', None) or self.get_machine_ip()
+        report_file = 'plugins/crag/data/reports/%s_%s.xml' % (target.replace('.', '_').replace('/', '-'), date.today().strftime("%b-%d-%Y"))
+        self.log.debug('scanning %s' % target)
+        try:
+            failcode = await Scanner().scan(filename=report_file, target_specification=target)
+            if not failcode:
+                source = await self.crag_svc.import_scan('nmap', os.path.basename(report_file))
+                return dict(status='pass', output='scanned system and generated source: %s' % source)
+            return dict(status='fail', output='failure occurred when scanning system, please check server logs')
+        except Exception as e:
+            return dict(status='fail', output='exception occurred during scanning')
 
     async def import_report(self, data):
-        self.log.debug(json.dumps(data))
         scan_type = data.get('format')
         report_name = data.get('filename')
         source = await self.crag_svc.import_scan(scan_type, report_name)
-        return dict(output='report process and available as source: %s' % source)
+        return dict(status='pass', output='source: %s' % source)
 
     @check_authorization
     async def store_report(self, request):
