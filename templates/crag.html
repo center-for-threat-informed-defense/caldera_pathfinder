@@ -11,35 +11,44 @@
                 CRAG is a plugin/project for taking network scans and mapping the structure and vulnerabilities to
                 potential planner actions based upon the set of available abilities.
             </p>
-            <div class="toggle">
-                <label class="switch">
-                    <input type="checkbox" id="toggleInputMode" onchange="toggleInputOptions()">
-                    <div class="slider round">
-                        <span class="on">scan</span><span class="off">import</span>
-                    </div>
-                </label>
+            <div class="tab-bar">
+                <button class='selected' onclick="changeInputOptions(event, 'scanSection')">Scan</button>
+                <button onclick="changeInputOptions(event, 'importSection')">Import</button>
+                <button onclick="changeInputOptions(event, 'graphSection')">Graph</button>
             </div>
-            <br><br>
-            <div id="importSection" style="display:none;">
-                <select id="scanInputFormat" style="margin-top:-15px;" onchange="validateParser()">
-                    <option value="" disabled selected>Select an existing profile</option>
-                    {% for p in input_parsers %}
-                        <option value="{{ p }}">{{ p }}</option>
-                    {% endfor %}}
-                </select>
-                <input id="fileInput" type="file" name="name" style="display: none;" />
-                <br><br>
-                <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                        onclick="importScan()">Import</button>
-            </div>
-            <div id="scanSection">
-                <div style="margin-top:-15px">
+            <br>
+            <div>
+                <div class="cragSection" id="scanSection">
                     <label for="targetInput">scan target:</label>
-                    <input id="targetInput" type="text" name="target" value="{{ machine_ip }}">
+                    <input id="targetInput" type="text" name="target" value="{{ machine_ip }}" style="width:75%; margin:5px;">
+                    <br><br>
+                    <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
+                            onclick="startScan()">Scan</button>
                 </div>
-                <br><br>
-                <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                        onclick="startScan()">Scan</button>
+                <div class="cragSection" id="importSection" style="display:none;">
+                    <label for="scanInputFormat">report format:</label>
+                    <select id="scanInputFormat" onchange="validateParser()">
+                        <option value="" disabled selected>Select the report format</option>
+                        {% for p in input_parsers %}
+                            <option value="{{ p }}">{{ p }}</option>
+                        {% endfor %}}
+                    </select>
+                    <input id="fileInput" type="file" name="name" style="display: none;" />
+                    <br><br>
+                    <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
+                            onclick="importScan()">Import</button>
+                </div>
+                <div class="cragSection" id="graphSection" style="display:none;">
+                    <label for="vulnerabilityReport">vulnerability report:</label>
+                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph')">
+                        <option value="" disabled selected>Select a report</option>
+                        {% for r in vulnerability_reports %}
+                            <option value="{{ r.name }}">{{ r.name }}</option>
+                        {% endfor %}}
+                    </select>
+                    <br><br>
+                    <button id="showGraph" type="button" class="button-notready atomic-button" onclick="graphReport()" style="margin-top:0">Graph</button>
+                </div>
             </div>
         </div>
         <div class="column" style="flex:75%">
@@ -47,9 +56,5 @@
             <textarea id="cragLog" class="column log-box" rows="4"></textarea>
         </div>
     </div>
-</div>
-<div id="crag-graph" class="section-profile" style="display:hidden">
-    <div class="topleft duk-icon"><img onclick="removeSection('crag-graph')" src="/gui/img/x.png"></div>
-    <div></div>
 </div>
 <script>validateNmapInstalled({{ nmap }})</script>

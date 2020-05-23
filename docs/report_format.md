@@ -4,6 +4,7 @@
 <pre>
 id: d64be1a7-c698-49bb-939e-0b18bfb018a5
 name: crag-report-May-12-2020
+scope: 172.31.32.237
 hosts:
   172.31.32.237:
     cves:
@@ -69,6 +70,7 @@ hosts:
 id: uuid4 (string/optional)
 name: descriptive name (string)
 hosts:  // dictionary of key=ip, value=dictionary for host
+scope: 127.0.0.1/24 (string)
   127.0.0.1:
     hostname: machine hostname (string)
     ip: 127.0.0.1 (string)

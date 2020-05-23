@@ -1,6 +1,11 @@
-function toggleInputOptions() {
-    $('#importSection').toggle();
-    $('#scanSection').toggle();
+var refresher
+
+function changeInputOptions(event, section) {
+    $('.cragSection').css('display', 'none');
+    $('.tab-bar button').removeClass('selected');
+
+    $('#'+section).toggle();
+    event.currentTarget.className = "selected";
 }
 
 function validateNmapInstalled(state){
@@ -14,14 +19,11 @@ function validateParser(){
 function startScan(){
     function processResults(data){
         if(data.status == 'pass'){
-            displayOutput('scan passed, found new facts');
             displayOutput(data.output);
-            viewSection('sources', '/advanced/sources');
-            setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, data.source);
+            refresher = setInterval(checkScanStatus, 20000);
         }else{
-            displayOutput('scan failed, please check server logs for issue');
+            displayOutput('scan issue, ' + data.output + ' please check server logs for more details');
         }
-        validateFormState(true, '#startScan');
     }
     validateFormState(false, '#startScan');
     let target = $('#targetInput').val();
@@ -40,6 +42,7 @@ function processScan(filename){
             displayOutput(data.output);
             viewSection('sources', '/advanced/sources');
             setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, data.source);
+            reloadReports();
         }else{
             displayOutput('report import failed, please check server logs for issue');
         }
@@ -88,4 +91,50 @@ $('#fileInput').on('change', function (event){
 
 function displayOutput(text){
     document.getElementById("cragLog").value += text + '\n'
+}
+
+function graphReport() {
+    report = $('#vulnerabilityReport').val();
+    viewSection('craggraph', '/plugin/crag/graph?report='+report);
+}
+
+function reloadReports(){
+    function updateData(data){
+        data.reports.forEach(function(r) {
+            let found = false;
+            $("#vulnerabilityReport > option").each(function() {
+                if($(this).val() === r.name) {
+                    found = true;
+                }
+            });
+            if(!found){
+                $('#vulnerabilityReport').append('<option value="'+r.name+'">'+r.name+'</option>');
+            }
+        });
+    }
+    restRequest('POST', {'index':'reports'}, updateData, '/plugin/crag/api');
+}
+
+function checkScanStatus(){
+    function updateData(data){
+        number_finished = Object.keys(data.finished).length
+        if (data.pending.length == 0){
+            validateFormState(true, '#startScan');
+            if(number_finished == 0){
+                clearInterval(refresher);
+            }
+        }
+        if (number_finished > 0){
+            source_id = '';
+            console.log('here');
+            for (var key in data.finished){
+                displayOutput('scan of '+key+' finished. new source created: '+data.finished[key].source);
+                source_id = data.finished[key].source_id;
+            }
+            viewSection('sources', '/advanced/sources');
+            setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, source_id);
+            reloadReports();
+        }
+    }
+    restRequest('POST', {'index':'status'}, updateData, '/plugin/crag/api');
 }

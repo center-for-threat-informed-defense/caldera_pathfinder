@@ -24,6 +24,7 @@ class CragService:
             _, contents = await self.file_svc.read_file(report, location='reports')
             open(temp_file, 'wb').write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
+            await self.data_svc.store(parsed_report)
             return await self.create_source(parsed_report)
         finally:
             os.remove(temp_file)

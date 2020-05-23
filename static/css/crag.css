@@ -5,3 +5,25 @@
     width: 95%;
     margin: 7px;
 }
+.tab-bar {
+    overflow:hidden;
+}
+.tab-bar button {
+    background-color: darkgray;
+    float:left;
+    width:25%;
+    border: none;
+    border-bottom:1px solid white;
+    display:block;
+    outline:0;
+    height:25px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-radius: 10px 10px 0 0;
+    color: white;
+}
+.tab-bar button.selected {
+    background-color: transparent;
+    border: 1px solid darkgray;
+    border-bottom: none;
+}

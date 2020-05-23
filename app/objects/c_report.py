@@ -13,6 +13,7 @@ class ReportSchema(ma.Schema):
     id = ma.fields.String(missing=None)
     name = ma.fields.String()
     hosts = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.Nested(HostSchema()))
+    scope = ma.fields.String()
 
     @ma.post_load()
     def build_report(self, data, **_):
@@ -27,11 +28,12 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
     def unique(self):
         return self.hash('%s' % self.id)
 
-    def __init__(self, id=None, name=None, hosts=None, **kwargs):
+    def __init__(self, id=None, name=None, hosts=None, scope=None, **kwargs):
         super().__init__()
         self.id = id or str(uuid.uuid4())
         self.name = name if name else 'crag-report-%s' % date.today().strftime("%b-%d-%Y")
         self.hosts = hosts or dict()
+        self.scope = scope
 
     def store(self, ram):
         existing = self.retrieve(ram['vulnerabilityreports'], self.unique)
