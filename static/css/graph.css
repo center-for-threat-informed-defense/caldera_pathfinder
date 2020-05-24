@@ -1,0 +1,44 @@
+#graphContainer {
+    background-color: white;
+    height: 80vh;
+    width: 100%;
+    border-radius: 25px;
+}
+
+
+
+.links line {
+    stroke: #999;
+    stroke-opacity: 0.6;
+}
+
+.nodes circle {
+    fill: 'tomato';
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+g.qualifier circle {
+    fill: cornsilk;
+    stroke: #333;
+    stroke-width: 6px;
+}
+
+#graphLegend {
+    list-style:none;
+    padding:5px;
+    background-color:white;
+    border-radius: 10px;
+}
+
+#graphLegend span {
+    height: 25px;
+    width: 25px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+#graphLegend li {
+    color: black;
+}

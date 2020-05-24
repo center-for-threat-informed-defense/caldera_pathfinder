@@ -43,7 +43,7 @@
                     <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph')">
                         <option value="" disabled selected>Select a report</option>
                         {% for r in vulnerability_reports %}
-                            <option value="{{ r.name }}">{{ r.name }}</option>
+                            <option value="{{ r.id }}">{{ r.name }}</option>
                         {% endfor %}}
                     </select>
                     <br><br>

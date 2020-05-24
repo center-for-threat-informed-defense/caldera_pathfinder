@@ -103,12 +103,12 @@ function reloadReports(){
         data.reports.forEach(function(r) {
             let found = false;
             $("#vulnerabilityReport > option").each(function() {
-                if($(this).val() === r.name) {
+                if($(this).val() === r.id) {
                     found = true;
                 }
             });
             if(!found){
-                $('#vulnerabilityReport').append('<option value="'+r.name+'">'+r.name+'</option>');
+                $('#vulnerabilityReport').append('<option value="'+r.id+'">'+r.name+'</option>');
             }
         });
     }
@@ -126,7 +126,6 @@ function checkScanStatus(){
         }
         if (number_finished > 0){
             source_id = '';
-            console.log('here');
             for (var key in data.finished){
                 displayOutput('scan of '+key+' finished. new source created: '+data.finished[key].source);
                 source_id = data.finished[key].source_id;

@@ -36,9 +36,25 @@ class CragGui(BaseWorld):
     @template('graph.html')
     async def graph(self, request):
         requested_report = request.query.get('report')
-        report = await self.data_svc.locate('vulnerabilityreports', match=dict(name=requested_report))
+        data = await self.build_visualization_dataset(requested_report)
+        return dict(report_data=data)
 
-        return dict(vulnerability_reports=report.display)
+    async def build_visualization_dataset(self, report):
+        visualization_data = dict(nodes=[], links=[])
+        vr = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report))
+        if not vr:
+            return visualization_data
+
+        scanner_node = 'scanner'
+        visualization_data['nodes'].append(dict(id=scanner_node, group=1))
+        for ip, host in vr[0].hosts.items():
+            visualization_data['nodes'].append(dict(id=ip, group=2, ports=list(host.ports.keys())))
+            visualization_data['links'].append(dict(source=scanner_node, target=ip, value=1))
+            for cve in host.cves:
+                visualization_data['nodes'].append(dict(id=cve, group=3))
+                visualization_data['links'].append(dict(source=ip, target=cve, value=5))
+
+        return visualization_data
 
     @check_authorization
     async def crag_core(self, request):
