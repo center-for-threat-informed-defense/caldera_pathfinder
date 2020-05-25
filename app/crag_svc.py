@@ -22,7 +22,8 @@ class CragService:
         # grab and decrypt the file contents and crate a file object to pass to the parser
         try:
             _, contents = await self.file_svc.read_file(report, location='reports')
-            open(temp_file, 'wb').write(contents)
+            with open(temp_file, 'wb') as f:
+                f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
             await self.data_svc.store(parsed_report)
             return await self.create_source(parsed_report)
