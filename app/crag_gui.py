@@ -86,14 +86,15 @@ class CragGui(BaseWorld):
             self.loop.create_task(self.running_scans[target].scan())
             return dict(status='pass', output='scan initiated, depending on scope it may take a few minutes')
         except Exception as e:
+            self.log.error(repr(e), exc_info=True)
             return dict(status='fail', output='exception occurred while starting scan')
 
     async def import_report(self, data):
         scan_type = data.get('format')
         report_name = data.get('filename')
-        source, source_id = await self.crag_svc.import_scan(scan_type, report_name)
+        source = await self.crag_svc.import_scan(scan_type, report_name)
         if source:
-            return dict(status='pass', output='source: %s' % source, source=source_id)
+            return dict(status='pass', output='source: %s' % source.name, source=source.id)
         return dict(status='fail', output='failure occurred during report importing, please check server logs')
 
     async def retrieve_reports(self):
@@ -107,8 +108,8 @@ class CragGui(BaseWorld):
         for target in [t for t in self.running_scans.keys() if self.running_scans[t].status == 'done']:
             scan = self.running_scans.pop(target)
             if not scan.returncode:
-                source, source_id = await self.crag_svc.import_scan('nmap', os.path.basename(scan.filename))
-                finished[scan.target_specification] = dict(source=source, source_id=source_id)
+                source = await self.crag_svc.import_scan('nmap', os.path.basename(scan.filename))
+                finished[scan.target_specification] = dict(source=source.name, source_id=source.id)
             else:
                 self.log.debug(scan.output['stderr'])
                 errors[scan.target_specification] = dict(message=scan.output['stderr'])

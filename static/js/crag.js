@@ -90,7 +90,7 @@ $('#fileInput').on('change', function (event){
 
 
 function displayOutput(text){
-    document.getElementById("cragLog").value += text + '\n'
+    document.getElementById("logWindow").value += text + '\n'
 }
 
 function graphReport() {

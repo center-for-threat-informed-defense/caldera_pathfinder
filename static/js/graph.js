@@ -103,11 +103,6 @@ var draw = function(graph) {
         .links(graph.links);
 };
 
-
-
-
-
-
 var update = function(qualifier) {
     var item_radius,
         qualifier_size;
@@ -132,8 +127,6 @@ function updateLinkDistance(linkDistance) {
     d3.select('#link-distance').property('value', linkDistance);
 }
 
-
-
 simulation.force('link')
     .id(function(d) {return d.id;})
     .distance(function(d) {return config.linkDistance/d.value;});
@@ -146,8 +139,6 @@ d3.select('#link-distance').on('input', function() {
 });
 
 updateLinkDistance(config.linkDistance);
-
-
 
 var q = d3.queue();
 

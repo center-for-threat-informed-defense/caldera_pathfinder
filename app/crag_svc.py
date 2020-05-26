@@ -36,7 +36,7 @@ class CragService:
             return fact_list[-1:][0]
 
         if not report:
-            return None, None
+            return None
         facts = []
         relationships = []
         for host in report.hosts.values():
@@ -52,7 +52,7 @@ class CragService:
         source = Source(report.id, report.name, facts, relationships)
         source.access = BaseWorld.Access.RED
         await self.data_svc.store(source)
-        return source.name, source.id
+        return source
 
 
 
