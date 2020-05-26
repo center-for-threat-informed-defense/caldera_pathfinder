@@ -7,6 +7,7 @@ class Scanner:
         self.name = 'nmap'
         self.status = None
         self.returncode = None
+        self.output = None
         self.filename = filename
         self.target_specification = target_specification
 
@@ -14,6 +15,7 @@ class Scanner:
         self.status = 'running'
         command = 'nmap --script plugins/crag/scanners/nmap/scripts/nmap-vulners -sV -Pn -oX %s %s' % (self.filename, self.target_specification)
         process = await asyncio.create_subprocess_exec(*command.split(' '), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
-        await process.communicate()
+        stdout, stderr = await process.communicate()
         self.status = 'done'
+        self.output = dict(stdout=stdout.decode('utf-8'), stderr=stderr.decode('utf-8'))
         self.returncode = process.returncode

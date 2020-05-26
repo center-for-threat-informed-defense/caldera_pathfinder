@@ -103,13 +103,17 @@ class CragGui(BaseWorld):
     async def check_scan_status(self):
         pending = [s.target_specification for s in self.running_scans.values() if s.status != 'done']
         finished = dict()
+        errors = dict()
         for target in [t for t in self.running_scans.keys() if self.running_scans[t].status == 'done']:
             scan = self.running_scans.pop(target)
             if not scan.returncode:
                 source, source_id = await self.crag_svc.import_scan('nmap', os.path.basename(scan.filename))
                 finished[scan.target_specification] = dict(source=source, source_id=source_id)
+            else:
+                self.log.debug(scan.output['stderr'])
+                errors[scan.target_specification] = dict(message=scan.output['stderr'])
 
-        return dict(pending=pending, finished=finished)
+        return dict(pending=pending, finished=finished, errors=errors)
 
     @check_authorization
     async def store_report(self, request):
