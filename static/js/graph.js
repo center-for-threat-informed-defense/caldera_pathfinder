@@ -17,7 +17,6 @@ var simulation = d3.forceSimulation()
 
 var group_colors = {1: 'grey', 2: 'deepskyblue', 3:'orangered'};
 
-// eventually use different symbols for ports with exploits vs open ports vs protected ports
 var propertySymbolFiles = [
     '/crag/img/item-bell.svg',
     '/crag/img/item-bolt.svg',
@@ -115,7 +114,6 @@ var update = function(qualifier) {
     var item_radius,
         qualifier_size;
 
-    //change this to be equidistant around the node, or co-aligned with the link that relates to a CVE on the port
     qualifier.attr('transform', function(d, i) {
         item_radius = +d3.select(this.parentElement).select('circle').attr('r');
         return 'translate(' +
