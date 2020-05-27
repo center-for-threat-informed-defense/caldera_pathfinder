@@ -1,0 +1,24 @@
+#graphContainer {
+    background-color: black;
+    height: 80vh;
+    width: 100%;
+    border-radius: 25px;
+    border: 1px solid white;
+}
+
+.links line {
+    stroke: #999;
+    stroke-opacity: 0.6;
+}
+
+.nodes circle {
+    fill: 'tomato';
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+g.qualifier circle {
+    fill: cornsilk;
+    stroke: #333;
+    stroke-width: 6px;
+}

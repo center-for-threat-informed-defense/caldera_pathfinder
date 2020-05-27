@@ -1,3 +1,4 @@
+import os
 import re
 import yaml
 import logging
@@ -20,11 +21,11 @@ class ReportParser:
         try:
             xml_report = ET.parse(report)
             root = xml_report.getroot()
+            self.parse_xml_report(root, caldera_report)
         except Exception as e:
             self.log.error('exception when parsing nmap results xml: %s' % repr(e))
             return None
 
-        self.parse_xml_report(root, caldera_report)
         return caldera_report
 
     def parse_xml_report(self, root, report):
@@ -39,13 +40,11 @@ class ReportParser:
             for port in host.find('ports').findall('port'):
                 report_port = Port(port.get('portid'), '')
                 report_port.protocol = port.get('protocol', '')
-                if port.find('service') is not None:
-                    if port.find('service').get('name') is not None:
-                        report_port.service = port.find('service').get('name')
-                    if port.find('service').get('product') is not None:
-                        report_port.product = port.find('service').get('product')
-                    if port.find('service').get('version') is not None:
-                        report_port.version = port.find('service').get('version')
+                port_service = port.find('service')
+                if port_service is not None:
+                    report_port.service = port_service.get('name')
+                    report_port.product = port_service.get('product')
+                    report_port.version = port_service.get('version')
                 for script in port.findall('script'):
                     if script.get('output') is not None:
                         script_output = script.get('output')
@@ -68,7 +67,7 @@ if __name__ == "__main__":
     logging.basicConfig(level=args.debug)
     parser = ReportParser()
     report = parser.parse(args.filename)
-    logging.info('parsed %s and produced output report: %s' % (args.filename.split('/')[-1], report.name))
+    logging.info('parsed %s and produced output report: %s' % (os.path.basename(args.filename), report.name))
     if args.output:
         with open(args.output, 'w') as o:
             o.write(yaml.dump(report.display))

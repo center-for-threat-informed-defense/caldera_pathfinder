@@ -5,3 +5,45 @@
     width: 95%;
     margin: 7px;
 }
+.tab-bar {
+    overflow:hidden;
+}
+.tab-bar button {
+    background-color: darkgray;
+    float:left;
+    width:25%;
+    border: none;
+    border-bottom:1px solid white;
+    display:block;
+    outline:0;
+    height:25px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-radius: 10px 10px 0 0;
+    color: white;
+}
+.tab-bar button.selected {
+    background-color: transparent;
+    border: 1px solid darkgray;
+    border-bottom: none;
+}
+.tab-bar button:hover {
+    color: red;
+}
+
+#graphLegend {
+    list-style:none;
+    padding:5px;
+    background-color:transparent;
+    border-radius: 10px;
+    border: 1px solid white;
+    width: 75%;
+}
+
+#graphLegend span {
+    height: 25px;
+    width: 25px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+}

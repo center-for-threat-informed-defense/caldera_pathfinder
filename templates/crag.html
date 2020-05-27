@@ -11,41 +11,71 @@
                 CRAG is a plugin/project for taking network scans and mapping the structure and vulnerabilities to
                 potential planner actions based upon the set of available abilities.
             </p>
-            <div class="toggle">
-                <label class="switch">
-                    <input type="checkbox" id="toggleInputMode" onchange="toggleInputOptions()">
-                    <div class="slider round">
-                        <span class="on">scan</span><span class="off">import</span>
+            <div class="tab-bar">
+                <button class='selected' onclick="changeInputOptions(event, 'scanSection')">Scan</button>
+                <button onclick="changeInputOptions(event, 'importSection')">Import</button>
+                <button onclick="changeInputOptions(event, 'graphSection')">Graph</button>
+            </div>
+            <br>
+            <div>
+                <div class="cragSection" id="scanSection">
+                    <label for="targetInput">scan target:</label>
+                    <input id="targetInput" type="text" name="target" value="{{ machine_ip }}" style="width:75%; margin:5px;">
+                    <br><br>
+                    <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
+                            onclick="startScan()">Scan</button>
+                </div>
+                <div class="cragSection" id="importSection" style="display:none;">
+                    <label for="scanInputFormat">report format:</label>
+                    <select id="scanInputFormat" onchange="validateParser()">
+                        <option value="" disabled selected>Select the report format</option>
+                        {% for p in input_parsers %}
+                            <option value="{{ p }}">{{ p }}</option>
+                        {% endfor %}}
+                    </select>
+                    <input id="fileInput" type="file" name="name" style="display: none;" />
+                    <br><br>
+                    <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
+                            onclick="importScan()">Import</button>
+                </div>
+                <div class="cragSection" id="graphSection" style="display:none;">
+                    <label for="vulnerabilityReport">vulnerability report:</label>
+                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph')">
+                        <option value="" disabled selected>Select a report</option>
+                        {% for r in vulnerability_reports %}
+                            <option value="{{ r.id }}">{{ r.name }}</option>
+                        {% endfor %}}
+                    </select>
+                    <div>
+                        <div class='controls'>
+                            <div class='setting'>
+                                <label for='nLinkDistance'>Force link distance = <span id='link-distance-value'></span></label>
+                                <input type='range' min='50' max='500' id='link-distance'>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="graphLegend">Legend:</label>
+                            <ul id="graphLegend">
+                                <li><span class="legend_dot" style="background-color:gray"></span>&nbsp&nbsp scanner</li>
+                                <li><span class="legend_dot" style="background-color:deepskyblue"></span>&nbsp&nbsp network host</li>
+                                <li><span class="legend_dot" style="background-color:orangered"></span>&nbsp&nbsp CVE</li>
+                                <li><span class="legend_dot" style="background-color:blue"></span>&nbsp&nbsp open port</li>
+                            </ul>
+                        </div>
                     </div>
-                </label>
-            </div>
-            <br><br>
-            <div id="importSection" style="display:none;">
-                <select id="scanInputFormat" style="margin-top:-15px;" onchange="validateParser()">
-                    <option value="" disabled selected>Select an existing profile</option>
-                    {% for p in input_parsers %}
-                        <option value="{{ p }}">{{ p }}</option>
-                    {% endfor %}}
-                </select>
-                <input id="fileInput" type="file" name="name" style="display: none;" />
-                <br><br>
-                <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                        onclick="importScan()">Import</button>
-            </div>
-            <div id="scanSection">
-                <br><br>
-                <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                        onclick="startScan()">Scan</button>
+                    <br><br>
+                    <button id="showGraph" type="button" class="button-notready atomic-button" onclick="graphReport()" style="margin-top:0">Graph</button>
+                </div>
             </div>
         </div>
         <div class="column" style="flex:75%">
-            <label for="cragLog">Output</label><br>
-            <textarea id="cragLog" class="column log-box" rows="4"></textarea>
+            <div id="logView">
+                <label for="logWindow">Output</label><br>
+                <textarea id="logWindow" class="column log-box" rows="4"></textarea>
+            </div>
+            <div id="graphView" style="display:none;">
+            </div>
         </div>
     </div>
-</div>
-<div id="crag-graph" class="section-profile" style="display:hidden">
-    <div class="topleft duk-icon"><img onclick="removeSection('crag-graph')" src="/gui/img/x.png"></div>
-    <div></div>
 </div>
 <script>validateNmapInstalled({{ nmap }})</script>

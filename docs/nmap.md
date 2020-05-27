@@ -26,7 +26,11 @@ nmap has a built in scripting engine where simple lua scripts can be executed in
 
 there are a number of built in and external scripts for vulnerability scanning
 
-the ones we have considered are:
+nmap has some more documentation on using their scripting engine here:
+https://nmap.org/book/nse-usage.html
+
+
+the ones we have considered for gathering CVEs are:
 <pre>
 nmap-vulners
 vulscan
@@ -35,8 +39,10 @@ vuln
 
 
 #examples
-ran on a vlan with a handful of devices put up for testing on it
+these commands were run on a vlan with a handful of devices put up for testing on it
 
+
+simple ping presence report:
 <pre>
 $nmap -sP 192.168.44.1/24
 
@@ -60,6 +66,9 @@ Host is up (0.0048s latency).
 Nmap done: 256 IP addresses (8 hosts up) scanned in 3.21 seconds
 </pre>
 
+
+
+port version report:
 <pre>
 $nmap -sv 192.168.44.1
 
@@ -136,6 +145,9 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 256 IP addresses (8 hosts up) scanned in 160.68 seconds
 </pre>
 
+
+
+vulnerability scan report output:
 <pre>
 $nmap --script nmap-vulners -sV 192.168.44.1/24
 
@@ -168,10 +180,6 @@ PORT     STATE SERVICE    VERSION
 |     Date: Wed, 29 Apr 2020 14:52:14 GMT
 |     Content-Type: text/html
 |     Connection: close
-|     <HTML><HEAD><TITLE>404 Not Found</TITLE></HEAD>
-|     <BODY BGCOLOR="#cc9999"><H4>404 Not Found</H4>
-|     File not found.
-|     </BODY></HTML>
 |   GetRequest: 
 |     HTTP/1.0 200 OK
 |     Server: httpd/2.0
@@ -180,8 +188,6 @@ PORT     STATE SERVICE    VERSION
 |     Date: Wed, 29 Apr 2020 14:52:09 GMT
 |     Content-Type: text/html
 |     Connection: close
-|     <HTML><HEAD><script>top.location.href='/Main_Login.asp';</script>
-|     </HEAD></HTML>
 |   HTTPOptions, RTSPRequest: 
 |     HTTP/1.0 501 Not Implemented
 |     Server: httpd/2.0
@@ -190,10 +196,6 @@ PORT     STATE SERVICE    VERSION
 |     Date: Wed, 29 Apr 2020 14:52:09 GMT
 |     Content-Type: text/html
 |     Connection: close
-|     <HTML><HEAD><TITLE>501 Not Implemented</TITLE></HEAD>
-|     <BODY BGCOLOR="#cc9999"><H4>501 Not Implemented</H4>
-|     That method is not implemented.
-|     </BODY></HTML>
 |   Help: 
 |     HTTP/1.0 400 Bad Request
 |     Server: httpd/2.0
@@ -202,10 +204,6 @@ PORT     STATE SERVICE    VERSION
 |     Date: Wed, 29 Apr 2020 14:52:29 GMT
 |     Content-Type: text/html
 |     Connection: close
-|     <HTML><HEAD><TITLE>400 Bad Request</TITLE></HEAD>
-|     <BODY BGCOLOR="#cc9999"><H4>400 Bad Request</H4>
-|     Can't parse request.
-|_    </BODY></HTML>
 |_http-server-header: httpd/2.0
 515/tcp  open  printer
 9100/tcp open  jetdirect?
@@ -233,8 +231,6 @@ PORT     STATE SERVICE         VERSION
 |     Content-Length: 796
 |     Date: Wed, 29 Apr 2020 14:52:08 GMT
 |     Connection: close
-|     <!doctype html><html lang="en"><head><title>HTTP Status 404 
-|     Found</title><style type="text/css">h1 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:22px;} h2 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:16px;} h3 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:14px;} body {font-family:Tahoma,Arial,sans-serif;color:black;background-color:white;} b {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;} p {font-family:Tahoma,Arial,sans-serif;background:white;color:black;font-size:12px;} a {color:black;} a.name {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><
 |   GetRequest, HTTPOptions: 
 |     HTTP/1.1 302 
 |     Location: http://localhost:8080/manage
@@ -311,6 +307,4 @@ PORT     STATE SERVICE    VERSION
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 256 IP addresses (8 hosts up) scanned in 143.79 seconds
-
-
 </pre>
