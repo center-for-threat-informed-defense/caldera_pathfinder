@@ -1,11 +1,10 @@
 #graphContainer {
-    background-color: white;
+    background-color: black;
     height: 80vh;
     width: 100%;
     border-radius: 25px;
+    border: 1px solid white;
 }
-
-
 
 .links line {
     stroke: #999;
@@ -22,23 +21,4 @@ g.qualifier circle {
     fill: cornsilk;
     stroke: #333;
     stroke-width: 6px;
-}
-
-#graphLegend {
-    list-style:none;
-    padding:5px;
-    background-color:white;
-    border-radius: 10px;
-}
-
-#graphLegend span {
-    height: 25px;
-    width: 25px;
-    background-color: #bbb;
-    border-radius: 50%;
-    display: inline-block;
-}
-
-#graphLegend li {
-    color: black;
 }

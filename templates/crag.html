@@ -46,14 +46,35 @@
                             <option value="{{ r.id }}">{{ r.name }}</option>
                         {% endfor %}}
                     </select>
+                    <div>
+                        <div class='controls'>
+                            <div class='setting'>
+                                <label for='nLinkDistance'>Force link distance = <span id='link-distance-value'></span></label>
+                                <input type='range' min='50' max='500' id='link-distance'>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="graphLegend">Legend:</label>
+                            <ul id="graphLegend">
+                                <li><span class="legend_dot" style="background-color:gray"></span>&nbsp&nbsp scanner</li>
+                                <li><span class="legend_dot" style="background-color:deepskyblue"></span>&nbsp&nbsp network host</li>
+                                <li><span class="legend_dot" style="background-color:orangered"></span>&nbsp&nbsp CVE</li>
+                                <li><span class="legend_dot" style="background-color:blue"></span>&nbsp&nbsp open port</li>
+                            </ul>
+                        </div>
+                    </div>
                     <br><br>
                     <button id="showGraph" type="button" class="button-notready atomic-button" onclick="graphReport()" style="margin-top:0">Graph</button>
                 </div>
             </div>
         </div>
         <div class="column" style="flex:75%">
-            <label for="logWindow">Output</label><br>
-            <textarea id="logWindow" class="column log-box" rows="4"></textarea>
+            <div id="logView">
+                <label for="logWindow">Output</label><br>
+                <textarea id="logWindow" class="column log-box" rows="4"></textarea>
+            </div>
+            <div id="graphView" style="display:none;">
+            </div>
         </div>
     </div>
 </div>

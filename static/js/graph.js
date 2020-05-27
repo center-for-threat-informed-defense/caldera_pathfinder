@@ -76,6 +76,14 @@ var draw = function(graph) {
         .attr('fill', function(d) { return group_colors[d.group];})
     nodes.append('title')
         .text(function(d) { return d.id; });
+    nodes.append('text')
+        .attr('dx', 12)
+        .attr('dy', ".35em")
+        .text(function(d) {return d.id})
+      .clone(true).lower()
+        .attr("fill", "none")
+        .attr("stroke", "white")
+        .attr("stroke-width", 3);
 
     var qualifiers = nodes
             .selectAll('.qualifier')

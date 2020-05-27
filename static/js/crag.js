@@ -6,6 +6,13 @@ function changeInputOptions(event, section) {
 
     $('#'+section).toggle();
     event.currentTarget.className = "selected";
+    if (section == 'graphSection') {
+        $('#logView').css('display', 'none')
+        $('#graphView').css('display', 'block')
+    } else {
+        $('#logView').css('display', 'block')
+        $('#graphView').css('display', 'none')
+    }
 }
 
 function validateNmapInstalled(state){
@@ -95,7 +102,9 @@ function displayOutput(text){
 
 function graphReport() {
     report = $('#vulnerabilityReport').val();
-    viewSection('craggraph', '/plugin/crag/graph?report='+report);
+//    viewSection('craggraph', '/plugin/crag/graph?report='+report);
+    loadGraph('graphView', '/plugin/crag/graph?report='+report);
+
 }
 
 function reloadReports(){
@@ -142,4 +151,14 @@ function checkScanStatus(){
         }
     }
     restRequest('POST', {'index':'status'}, updateData, '/plugin/crag/api');
+}
+
+function loadGraph(element, address){
+    function display(data) {
+        let content = $($.parseHTML(data, keepScripts=true));
+        console.log(element);
+        let elem = $('#'+element);
+        elem.html(content);
+    }
+    restRequest('GET', null, display, address);
 }
