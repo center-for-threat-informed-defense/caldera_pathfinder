@@ -5,7 +5,7 @@ import marshmallow as ma
 
 from app.utility.base_object import BaseObject
 from app.objects.interfaces.i_object import FirstClassObjectInterface
-from plugins.crag.app.objects.secondclass.c_host import HostSchema
+from plugins.pathfinder.app.objects.secondclass.c_host import HostSchema
 
 
 class ReportSchema(ma.Schema):
@@ -31,7 +31,7 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
     def __init__(self, id=None, name=None, hosts=None, scope=None, **kwargs):
         super().__init__()
         self.id = id or str(uuid.uuid4())
-        self.name = name if name else 'crag-report-%s' % date.today().strftime("%b-%d-%Y")
+        self.name = name if name else 'vulnerability-report-%s' % date.today().strftime("%b-%d-%Y")
         self.hosts = hosts or dict()
         self.scope = scope
 

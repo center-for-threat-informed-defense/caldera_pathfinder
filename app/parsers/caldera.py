@@ -1,7 +1,7 @@
 import logging
 
 from app.utility.base_world import BaseWorld
-from plugins.crag.app.objects.c_report import VulnerabilityReport
+from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 
 
 class ReportParser:

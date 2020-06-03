@@ -1,7 +1,7 @@
 import marshmallow as ma
 
 from app.utility.base_object import BaseObject
-from plugins.crag.app.objects.secondclass.c_port import PortSchema
+from plugins.pathfinder.app.objects.secondclass.c_port import PortSchema
 
 
 class HostSchema(ma.Schema):
