@@ -13,7 +13,7 @@ class Scanner:
 
     async def scan(self):
         self.status = 'running'
-        command = 'nmap --script plugins/crag/scanners/nmap/scripts/nmap-vulners -sV -Pn -oX %s %s' % (self.filename, self.target_specification)
+        command = 'nmap --script plugins/pathfinder/scanners/nmap/scripts/nmap-vulners -sV -Pn -oX %s %s' % (self.filename, self.target_specification)
         process = await asyncio.create_subprocess_exec(*command.split(' '), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         stdout, stderr = await process.communicate()
         self.status = 'done'

@@ -1,14 +1,14 @@
-<link rel="stylesheet" href="/crag/css/crag.css">
-<script src="/crag/js/crag.js"></script>
+<link rel="stylesheet" href="/pathfinder/css/pathfinder.css">
+<script src="/pathfinder/js/pathfinder.js"></script>
 
-<div id="crag-section" class="section-profile">
+<div id="pathfinder-section" class="section-profile">
     <div class="row">
-        <div class="topleft duk-icon"><img onclick="removeSection('crag-section')" src="/gui/img/x.png"></div>
+        <div class="topleft duk-icon"><img onclick="removeSection('pathfinder-section')" src="/gui/img/x.png"></div>
         <div class="column section-border" style="flex:25%;text-align:left;padding:15px;">
-            <h1 style="font-size:70px;margin-top:-20px;">CRAG</h1>
+            <h1 style="font-size:70px;margin-top:-20px;">Pathfinder</h1>
             <h2 style="margin-top:-50px">CALDERA Rapid Attack Grapher</h2>
             <p>
-                CRAG is a plugin/project for taking network scans and mapping the structure and vulnerabilities to
+                Pathfinder is a project for taking network scans and mapping the structure and vulnerabilities to
                 potential planner actions based upon the set of available abilities.
             </p>
             <div class="tab-bar">
@@ -18,14 +18,14 @@
             </div>
             <br>
             <div>
-                <div class="cragSection" id="scanSection">
+                <div class="pathfinderSection" id="scanSection">
                     <label for="targetInput">scan target:</label>
                     <input id="targetInput" type="text" name="target" value="{{ machine_ip }}" style="width:75%; margin:5px;">
                     <br><br>
                     <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
                             onclick="startScan()">Scan</button>
                 </div>
-                <div class="cragSection" id="importSection" style="display:none;">
+                <div class="pathfinderSection" id="importSection" style="display:none;">
                     <label for="scanInputFormat">report format:</label>
                     <select id="scanInputFormat" onchange="validateParser()">
                         <option value="" disabled selected>Select the report format</option>
@@ -38,7 +38,7 @@
                     <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
                             onclick="importScan()">Import</button>
                 </div>
-                <div class="cragSection" id="graphSection" style="display:none;">
+                <div class="pathfinderSection" id="graphSection" style="display:none;">
                     <label for="vulnerabilityReport">vulnerability report:</label>
                     <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph')">
                         <option value="" disabled selected>Select a report</option>

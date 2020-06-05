@@ -1,7 +1,7 @@
 var refresher
 
 function changeInputOptions(event, section) {
-    $('.cragSection').css('display', 'none');
+    $('.pathfinderSection').css('display', 'none');
     $('.tab-bar button').removeClass('selected');
 
     $('#'+section).toggle();
@@ -35,7 +35,7 @@ function startScan(){
     validateFormState(false, '#startScan');
     let target = $('#targetInput').val();
     displayOutput('scan started on target: ' + target);
-    restRequest('POST', {'index':'scan', 'network':'local', 'target':target}, processResults, '/plugin/crag/api');
+    restRequest('POST', {'index':'scan', 'network':'local', 'target':target}, processResults, '/plugin/pathfinder/api');
 }
 
 function importScan(){
@@ -60,10 +60,10 @@ function processScan(filename){
                 'format': $('#scanInputFormat').val(),
                 'filename': filename
                 }
-    restRequest('POST', data, processResults, '/plugin/crag/api');
+    restRequest('POST', data, processResults, '/plugin/pathfinder/api');
 }
 
-function restPostFile(file, callback=null, endpoint='/plugin/crag/upload'){
+function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload'){
     let fd = new FormData();
     fd.append('file', file);
     $.ajax({
@@ -102,8 +102,7 @@ function displayOutput(text){
 
 function graphReport() {
     report = $('#vulnerabilityReport').val();
-//    viewSection('craggraph', '/plugin/crag/graph?report='+report);
-    loadGraph('graphView', '/plugin/crag/graph?report='+report);
+    loadGraph('graphView', '/plugin/pathfinder/graph?report='+report);
 
 }
 
@@ -121,7 +120,7 @@ function reloadReports(){
             }
         });
     }
-    restRequest('POST', {'index':'reports'}, updateData, '/plugin/crag/api');
+    restRequest('POST', {'index':'reports'}, updateData, '/plugin/pathfinder/api');
 }
 
 function checkScanStatus(){
@@ -150,7 +149,7 @@ function checkScanStatus(){
             }
         }
     }
-    restRequest('POST', {'index':'status'}, updateData, '/plugin/crag/api');
+    restRequest('POST', {'index':'status'}, updateData, '/plugin/pathfinder/api');
 }
 
 function loadGraph(element, address){

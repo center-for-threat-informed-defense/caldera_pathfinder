@@ -3,7 +3,7 @@
 ## example
 <pre>
 id: d64be1a7-c698-49bb-939e-0b18bfb018a5
-name: crag-report-May-12-2020
+name: vulnerability-report-May-12-2020
 scope: 172.31.32.237
 hosts:
   172.31.32.237:

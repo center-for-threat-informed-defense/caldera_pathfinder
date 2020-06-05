@@ -8,14 +8,15 @@ from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
 
-temp_file = 'plugins/crag/data/_temp_report_file.tmp'
+temp_file = 'plugins/pathfinder/data/_temp_report_file.tmp'
 
-class CragService:
+
+class PathfinderService:
     def __init__(self, services):
         self.services = services
         self.file_svc = services.get('file_svc')
         self.data_svc = services.get('data_svc')
-        self.log = logging.getLogger('crag_svc')
+        self.log = logging.getLogger('pathfinder_svc')
         self.parsers = self.load_parsers()
 
     async def import_scan(self, scan_format, report):
@@ -32,7 +33,7 @@ class CragService:
 
     async def create_source(self, report):
         def add_fact(fact_list, trait, value):
-            fact_list.append(Fact(trait, value, collected_by='CRAG'))
+            fact_list.append(Fact(trait, value, collected_by='pathfinder'))
             return fact_list[-1:][0]
 
         if not report:
@@ -54,12 +55,17 @@ class CragService:
         await self.data_svc.store(source)
         return source
 
-
+    async def gather_techniques(self, report, host):
+        if host not in report.hosts:
+            return []
+        host_vulnerabilities = report.hosts[host].cves
+        available_techniques = [t for cve in host_vulnerabilities for t in await self.data_svc.locate('abilities', match=dict(additional_info=dict(cve=cve))) or []]
+        return available_techniques
 
     @staticmethod
     def load_parsers():
         parsers = {}
-        for filepath in glob.iglob('plugins/crag/app/parsers/*.py'):
+        for filepath in glob.iglob('plugins/pathfinder/app/parsers/*.py'):
             module = import_module(filepath.replace('/', '.').replace('\\', '.').replace('.py', ''))
             p = module.ReportParser()
             parsers[p.format] = p

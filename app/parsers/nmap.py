@@ -5,9 +5,9 @@ import logging
 import argparse
 import xml.etree.ElementTree as ET
 
-from plugins.crag.app.objects.c_report import VulnerabilityReport
-from plugins.crag.app.objects.secondclass.c_host import Host
-from plugins.crag.app.objects.secondclass.c_port import Port
+from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
+from plugins.pathfinder.app.objects.secondclass.c_host import Host
+from plugins.pathfinder.app.objects.secondclass.c_port import Port
 
 
 class ReportParser:
@@ -58,7 +58,7 @@ class ReportParser:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser('crag nmap report parser')
+    parser = argparse.ArgumentParser('nmap xml report parser')
     parser.add_argument('-D', '--debug', action='store_const', required=False, const=logging.DEBUG, default=logging.INFO)
     parser.add_argument('-f', '--filename', required=True)
     parser.add_argument('-o', '--output', required=False)

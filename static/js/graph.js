@@ -18,10 +18,10 @@ var simulation = d3.forceSimulation()
 var group_colors = {1: 'grey', 2: 'deepskyblue', 3:'orangered'};
 
 var propertySymbolFiles = [
-    '/crag/img/item-bell.svg',
-    '/crag/img/item-bolt.svg',
-    '/crag/img/item-certificate.svg',
-    '/crag/img/item-exclamation.svg'];
+    '/pathfinder/img/item-bell.svg',
+    '/pathfinder/img/item-bolt.svg',
+    '/pathfinder/img/item-certificate.svg',
+    '/pathfinder/img/item-exclamation.svg'];
 
 var propertySymbolSVGs = [],
     degreeToRadians = Math.PI / 180,

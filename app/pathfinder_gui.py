@@ -9,11 +9,11 @@ from datetime import date
 from app.service.auth_svc import check_authorization
 from app.utility.base_world import BaseWorld
 
-from plugins.crag.app.crag_svc import CragService
-from plugins.crag.scanners.nmap.scanner import Scanner
+from plugins.pathfinder.app.pathfinder_svc import PathfinderService
+from plugins.pathfinder.scanners.nmap.scanner import Scanner
 
 
-class CragGui(BaseWorld):
+class PathfinderGui(BaseWorld):
 
     def __init__(self, services, nmap_installed):
         self.services = services
@@ -21,16 +21,16 @@ class CragGui(BaseWorld):
         self.file_svc = services.get('file_svc')
         self.data_svc = services.get('data_svc')
         self.nmap_installed = 1 if nmap_installed else 0
-        self.crag_svc = CragService(services)
-        self.log = logging.getLogger('crag_gui')
+        self.pathfinder_svc = PathfinderService(services)
+        self.log = logging.getLogger('pathfinder_gui')
         self.loop = asyncio.get_event_loop()
         self.running_scans = dict()
 
     @check_authorization
-    @template('crag.html')
+    @template('pathfinder.html')
     async def splash(self, request):
         reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]
-        return dict(nmap=self.nmap_installed, input_parsers=self.crag_svc.parsers.keys(), machine_ip=self.get_machine_ip(), vulnerability_reports=reports)
+        return dict(nmap=self.nmap_installed, input_parsers=self.pathfinder_svc.parsers.keys(), machine_ip=self.get_machine_ip(), vulnerability_reports=reports)
 
     @check_authorization
     @template('graph.html')
@@ -57,7 +57,7 @@ class CragGui(BaseWorld):
         return visualization_data
 
     @check_authorization
-    async def crag_core(self, request):
+    async def pathfinder_core(self, request):
         try:
             data = dict(await request.json())
             index = data.pop('index')
@@ -72,14 +72,14 @@ class CragGui(BaseWorld):
                 )
             )
             if index not in options[request.method]:
-                return web.HTTPBadRequest(text='index: %s is not a valid index for the crag plugin' % index)
+                return web.HTTPBadRequest(text='index: %s is not a valid index for the pathfinder plugin' % index)
             return web.json_response(await options[request.method][index](data))
         except Exception as e:
             self.log.error(repr(e), exc_info=True)
 
     async def scan(self, data):
         target = data.pop('target', None) or self.get_machine_ip()
-        report_file = 'plugins/crag/data/reports/%s_%s.xml' % (target.replace('.', '_').replace('/', '-'), date.today().strftime("%b-%d-%Y"))
+        report_file = 'plugins/pathfinder/data/reports/%s_%s.xml' % (target.replace('.', '_').replace('/', '-'), date.today().strftime("%b-%d-%Y"))
         self.log.debug('scanning %s' % target)
         try:
             self.running_scans[target] = Scanner(filename=report_file, target_specification=target)
@@ -92,7 +92,7 @@ class CragGui(BaseWorld):
     async def import_report(self, data):
         scan_type = data.get('format')
         report_name = data.get('filename')
-        source = await self.crag_svc.import_scan(scan_type, report_name)
+        source = await self.pathfinder_svc.import_scan(scan_type, report_name)
         if source:
             return dict(status='pass', output='source: %s' % source.name, source=source.id)
         return dict(status='fail', output='failure occurred during report importing, please check server logs')
@@ -108,7 +108,7 @@ class CragGui(BaseWorld):
         for target in [t for t in self.running_scans.keys() if self.running_scans[t].status == 'done']:
             scan = self.running_scans.pop(target)
             if not scan.returncode:
-                source = await self.crag_svc.import_scan('nmap', os.path.basename(scan.filename))
+                source = await self.pathfinder_svc.import_scan('nmap', os.path.basename(scan.filename))
                 finished[scan.target_specification] = dict(source=source.name, source_id=source.id)
             else:
                 self.log.debug(scan.output['stderr'])
@@ -118,7 +118,7 @@ class CragGui(BaseWorld):
 
     @check_authorization
     async def store_report(self, request):
-        return await self.file_svc.save_multipart_file_upload(request, 'plugins/crag/data/reports')
+        return await self.file_svc.save_multipart_file_upload(request, 'plugins/pathfinder/data/reports')
 
     @staticmethod
     def get_machine_ip():
