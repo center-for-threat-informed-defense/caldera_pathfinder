@@ -6,4 +6,4 @@ Pathfinder is a plugin for mapping network vulnerabilities, scanned by caldera o
 imported by a supported network scanner, and translating those scans into adversaries
 for network traversal
 
-![plugin home](docs/plugin_selfie.jpeg)
+![plugin home](docs/pathfinder.jpg)

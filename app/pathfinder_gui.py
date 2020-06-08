@@ -30,7 +30,8 @@ class PathfinderGui(BaseWorld):
     @template('pathfinder.html')
     async def splash(self, request):
         reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]
-        return dict(nmap=self.nmap_installed, input_parsers=self.pathfinder_svc.parsers.keys(), machine_ip=self.get_machine_ip(), vulnerability_reports=reports)
+        return dict(nmap=self.nmap_installed, input_parsers=self.pathfinder_svc.parsers.keys(), machine_ip=self.get_machine_ip(), vulnerability_reports=reports,
+                    scanner_scripts=Scanner().list_available_scripts())
 
     @check_authorization
     @template('graph.html')
@@ -80,9 +81,10 @@ class PathfinderGui(BaseWorld):
     async def scan(self, data):
         target = data.pop('target', None) or self.get_machine_ip()
         report_file = 'plugins/pathfinder/data/reports/%s_%s.xml' % (target.replace('.', '_').replace('/', '-'), date.today().strftime("%b-%d-%Y"))
+        scripts = [data.pop('script', None)] if 'script' in data else []
         self.log.debug('scanning %s' % target)
         try:
-            self.running_scans[target] = Scanner(filename=report_file, target_specification=target)
+            self.running_scans[target] = Scanner(filename=report_file, target_specification=target, scripts=scripts)
             self.loop.create_task(self.running_scans[target].scan())
             return dict(status='pass', output='scan initiated, depending on scope it may take a few minutes')
         except Exception as e:

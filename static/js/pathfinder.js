@@ -1,4 +1,6 @@
 var refresher
+var latest_source
+var current_report
 
 function changeInputOptions(event, section) {
     $('.pathfinderSection').css('display', 'none');
@@ -33,9 +35,16 @@ function startScan(){
         }
     }
     validateFormState(false, '#startScan');
+    validateFormState(false, '#viewFacts');
+    let script = $()
     let target = $('#targetInput').val();
     displayOutput('scan started on target: ' + target);
-    restRequest('POST', {'index':'scan', 'network':'local', 'target':target}, processResults, '/plugin/pathfinder/api');
+    let data = {'index':'scan',
+                'network':'local',
+                'target':target,
+                'script':$('#scanScriptSelection').val()
+                };
+    restRequest('POST', data, processResults, '/plugin/pathfinder/api');
 }
 
 function importScan(){
@@ -47,8 +56,7 @@ function processScan(filename){
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
-            viewSection('sources', '/advanced/sources');
-            setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, data.source);
+            openSource(data.source);
             reloadReports();
         }else{
             displayOutput('report import failed, please check server logs for issue');
@@ -101,9 +109,8 @@ function displayOutput(text){
 }
 
 function graphReport() {
-    report = $('#vulnerabilityReport').val();
-    loadGraph('graphView', '/plugin/pathfinder/graph?report='+report);
-
+    current_report = $('#vulnerabilityReport').val();
+    loadGraph('graphView', '/plugin/pathfinder/graph?report='+current_report);
 }
 
 function reloadReports(){
@@ -123,6 +130,11 @@ function reloadReports(){
     restRequest('POST', {'index':'reports'}, updateData, '/plugin/pathfinder/api');
 }
 
+function openSource(source_id){
+    viewSection('sources', '/advanced/sources');
+    setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, source_id);
+}
+
 function checkScanStatus(){
     function updateData(data){
         number_finished = Object.keys(data.finished).length
@@ -139,8 +151,8 @@ function checkScanStatus(){
                 displayOutput('scan of '+key+' finished. new source created: '+data.finished[key].source);
                 source_id = data.finished[key].source_id;
             }
-            viewSection('sources', '/advanced/sources');
-            setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, source_id);
+            latest_source = source_id;
+            validateFormState(true, '#viewFacts');
             reloadReports();
         }
         if (number_failed > 0){
@@ -152,10 +164,13 @@ function checkScanStatus(){
     restRequest('POST', {'index':'status'}, updateData, '/plugin/pathfinder/api');
 }
 
+function openFacts(){
+    openSource(latest_source);
+}
+
 function loadGraph(element, address){
     function display(data) {
         let content = $($.parseHTML(data, keepScripts=true));
-        console.log(element);
         let elem = $('#'+element);
         elem.html(content);
     }

@@ -21,9 +21,19 @@
                 <div class="pathfinderSection" id="scanSection">
                     <label for="targetInput">scan target:</label>
                     <input id="targetInput" type="text" name="target" value="{{ machine_ip }}" style="width:75%; margin:5px;">
+                    <br>
+                    <label for="scanScriptSelection">scanner script:</label>
+                    <select id="scanScriptSelection">
+                        <option value="" disabled selected>Select the nmap script to use</option>
+                        {% for s in scanner_scripts %}
+                            <option value="{{ s }}">{{ s }}</option>
+                        {% endfor %}}
+                    </select>
                     <br><br>
                     <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
                             onclick="startScan()">Scan</button>
+                    <button id="viewFacts" type="button" class="button-notready atomic-button" style="margin-top:0;"
+                            onclick="openFacts()">View Facts</button>
                 </div>
                 <div class="pathfinderSection" id="importSection" style="display:none;">
                     <label for="scanInputFormat">report format:</label>
