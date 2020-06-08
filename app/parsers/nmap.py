@@ -4,6 +4,7 @@ import yaml
 import logging
 import argparse
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 from plugins.pathfinder.app.objects.secondclass.c_host import Host
@@ -17,19 +18,20 @@ class ReportParser:
         self.log = logging.getLogger('nmap parser')
 
     def parse(self, report):
-        caldera_report = VulnerabilityReport()
         try:
             xml_report = ET.parse(report)
             root = xml_report.getroot()
-            self.parse_xml_report(root, caldera_report)
+            caldera_report = self.parse_xml_report(root)
+            self.generate_network_map(caldera_report)
         except Exception as e:
             self.log.error('exception when parsing nmap results xml: %s' % repr(e))
             return None
 
         return caldera_report
 
-    def parse_xml_report(self, root, report):
+    def parse_xml_report(self, root):
         cve_pattern = r'(CVE-\d{4}-\d{4,})'
+        report = VulnerabilityReport()
 
         for host in root.findall('host'):
             cves = []
@@ -55,6 +57,14 @@ class ReportParser:
             report_host.cves = cves
             report.hosts[report_host.ip] = report_host
         return report
+
+    def generate_network_map(self, report):
+        network_map = defaultdict(list)
+        report_hosts = report.hosts.keys()
+        for host in report_hosts:
+            if report.hosts[host].ports:
+                [network_map[h2].append(host) for h2 in report_hosts if h2 != host]
+        report.network_map = dict(network_map)
 
 
 if __name__ == "__main__":
