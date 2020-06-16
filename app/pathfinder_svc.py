@@ -8,6 +8,7 @@ from app.utility.base_world import BaseWorld
 from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
+from app.objects.c_adversary import Adversary
 
 temp_file = 'plugins/pathfinder/data/_temp_report_file.tmp'
 
@@ -27,7 +28,6 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
-            await self.gather_techniques(parsed_report, list(parsed_report.hosts)[0])
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -65,10 +65,13 @@ class PathfinderService:
         for path in attack_paths:
             if len(path) < len(shortest_path):
                 shortest_path = path
-        technique_list = [t.id for host in shortest_path[1:] for t in await self.gather_techniques(report, host)]
+        technique_list = [t.ability_id for host in shortest_path[1:] for t in await self.gather_techniques(report, host)]
+        cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves]
         # create adversary
         adv_id = uuid.uuid4()
-        adv = dict(id=adv_id, name='temp', description='auto generated', atomic_ordering=technique_list, objective=[])
+        adv = Adversary(str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder', atomic_ordering=technique_list, tags=cves)
+        self.data_svc.store(adv)
+        return shortest_path, adv
 
     async def gather_techniques(self, report, host):
         if host not in report.hosts:
@@ -78,19 +81,20 @@ class PathfinderService:
         available_adversaries = [t for cve in host_vulnerabilities for t in await self.data_svc.search(cve, 'adversaries') or []]
         return available_techniques
 
-    async def find_paths(self, report, start, end, path=None, avoid=None):
-        path = path or []
-        path.append(start)
+    async def find_paths(self, report, start, end, past=None, avoid=None):
+        past = past or []
+        path = list(past) + [start]
+        avoid = avoid or []
         if start == end:
             return [path]
         if start not in report.network_map:
-            return None
+            return []
         paths = []
         for next_host in report.network_map[start]:
             if not report.hosts[next_host].cves or next_host in path or next_host in avoid:
                 continue
-            next_paths = self.find_paths(report, next_host, end, path)
-            [paths.append(next_path) for next_path in next_paths]
+            next_paths = await self.find_paths(report, next_host, end, path)
+            [paths.append(next_path) for next_path in next_paths if next_path]
         return paths
 
     @staticmethod

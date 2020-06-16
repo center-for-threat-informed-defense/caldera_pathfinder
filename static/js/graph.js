@@ -28,7 +28,7 @@ var propertySymbolSVGs = [],
     degreeToRadians = Math.PI / 180,
     nodes,
     config = {
-        linkDistance:350,
+        linkDistance:200,
         propertyScaleFactor : .2,   //scale factor relative to node size
         radius : 3,
         angleInitial : -45,
@@ -191,7 +191,7 @@ function dynamicallyCenter(svg) {
     }
 }
 
-function updateContextStyles(){
+function updateElements(){
     nodes.selectAll('g circle')
         .attr('fill', function(d){
             if(d.id == startingNode){
@@ -203,7 +203,10 @@ function updateContextStyles(){
             else {
                 return group_colors[d.group];
             }
-        })
+        });
+    if(startingNode && targetNode){
+        validateFormState(true, '#createAdversary');
+    }
 }
 
 function clearSelections(){
@@ -221,7 +224,7 @@ var menu = [
             action: function(d, index) {
                 if(d.group == 'hosts'){
                     startingNode = d.id;
-                    updateContextStyles();
+                    updateElements();
                 }
             }
         },
@@ -230,7 +233,7 @@ var menu = [
             action: function(d, index) {
                 if(d.group == 'hosts'){
                     targetNode = d.id;
-                    updateContextStyles();
+                    updateElements();
                 }
             }
         }
@@ -246,6 +249,26 @@ var menu = [
     }
 ];
 
-function drawPath(){
+function createAdversary(){
+    function processResults(data){
+        openAdversary(data.adversary_id);
+        drawPath(data.new_links);
+    }
+    report = $('#vulnerabilityReport').val();
+    let data = {
+        'index': 'create_adversary',
+        'id': report,
+        'start': startingNode,
+        'target': targetNode
+    }
+    restRequest('POST', data, processResults, '/plugin/pathfinder/api');
+}
+
+function openAdversary(adversary_id){
+    viewSection('adversaries', '/section/profiles');
+    setTimeout(function(s){ $('#profile-existing-name').val(s).change(); }, 1000, 'adversary-'+adversary_id);
+}
+
+function drawPath(links){
 
 }
