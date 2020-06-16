@@ -14,7 +14,7 @@
             <div class="tab-bar">
                 <button class='selected' onclick="changeInputOptions(event, 'scanSection')">Scan</button>
                 <button onclick="changeInputOptions(event, 'importSection')">Import</button>
-                <button onclick="changeInputOptions(event, 'graphSection')">Graph</button>
+                <button onclick="changeInputOptions(event, 'graphSection')">View</button>
             </div>
             <br>
             <div>
@@ -50,7 +50,7 @@
                 </div>
                 <div class="pathfinderSection" id="graphSection" style="display:none;">
                     <label for="vulnerabilityReport">vulnerability report:</label>
-                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph')">
+                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph'); validateFormState(true, '#downloadReport');">
                         <option value="" disabled selected>Select a report</option>
                         {% for r in vulnerability_reports %}
                             <option value="{{ r.id }}">{{ r.name }}</option>
@@ -75,6 +75,7 @@
                     </div>
                     <br><br>
                     <button id="showGraph" type="button" class="button-notready atomic-button" onclick="graphReport()" style="margin-top:0">Graph</button>
+                    <button id="downloadReport" type="button" class="button-notready atomic-button" onclick="downloadVulnerabilityReport()" style="margin-top:0">Download</button>
                 </div>
             </div>
         </div>
