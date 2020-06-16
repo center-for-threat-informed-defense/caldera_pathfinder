@@ -1,5 +1,6 @@
 import os
 import glob
+import uuid
 import logging
 from importlib import import_module
 
@@ -26,6 +27,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
+            await self.gather_techniques(parsed_report, list(parsed_report.hosts)[0])
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -64,13 +66,16 @@ class PathfinderService:
             if len(path) < len(shortest_path):
                 shortest_path = path
         technique_list = [t.id for host in shortest_path[1:] for t in await self.gather_techniques(report, host)]
-        # // need more
+        # create adversary
+        adv_id = uuid.uuid4()
+        adv = dict(id=adv_id, name='temp', description='auto generated', atomic_ordering=technique_list, objective=[])
 
     async def gather_techniques(self, report, host):
         if host not in report.hosts:
             return []
         host_vulnerabilities = report.hosts[host].cves
-        available_techniques = [t for cve in host_vulnerabilities for t in await self.data_svc.locate('abilities', match=dict(cve=cve)) or []]
+        available_techniques = [t for cve in host_vulnerabilities for t in await self.data_svc.search(cve, 'abilities') or []]
+        available_adversaries = [t for cve in host_vulnerabilities for t in await self.data_svc.search(cve, 'adversaries') or []]
         return available_techniques
 
     async def find_paths(self, report, start, end, path=None, avoid=None):

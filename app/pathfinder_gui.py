@@ -47,12 +47,12 @@ class PathfinderGui(BaseWorld):
             return visualization_data
 
         scanner_node = 'scanner'
-        visualization_data['nodes'].append(dict(id=scanner_node, group=1))
+        visualization_data['nodes'].append(dict(id=scanner_node, group='scanners'))
         for ip, host in vr[0].hosts.items():
-            visualization_data['nodes'].append(dict(id=ip, group=2, ports=list(host.ports.keys())))
+            visualization_data['nodes'].append(dict(id=ip, group='hosts', ports=list(host.ports.keys())))
             visualization_data['links'].append(dict(source=scanner_node, target=ip, value=1))
             for cve in host.cves:
-                visualization_data['nodes'].append(dict(id=cve, group=3))
+                visualization_data['nodes'].append(dict(id=cve, group='cves'))
                 visualization_data['links'].append(dict(source=ip, target=cve, value=5))
 
         return visualization_data

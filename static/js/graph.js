@@ -2,6 +2,7 @@ var data;
 function setData(d){
     data = d;
 }
+var startingNode, targetNode;
 
 var width = $('#graphContainer').width();
 var height = $(window).height() * 0.8; //$('#graphContainer').height(); the dynamic loading of the modals catches this in a transition state
@@ -15,7 +16,7 @@ var simulation = d3.forceSimulation()
     .force('charge', d3.forceManyBody())
     .force('center', d3.forceCenter(width / 2, height / 2));
 
-var group_colors = {1: 'grey', 2: 'deepskyblue', 3:'orangered'};
+var group_colors = {'scanners': 'grey', 'hosts': 'deepskyblue', 'cves':'orangered'};
 
 var propertySymbolFiles = [
     '/pathfinder/img/item-bell.svg',
@@ -41,7 +42,7 @@ var draw = function(graph) {
         .selectAll('line')
         .data(graph.links)
         .enter().append('line')
-            .attr('stroke-width', function(d) { return Math.sqrt(d.value); });
+            .attr('stroke-width', 3);
 
     nodes = svg.append('g')
         .attr('class', 'nodes')
@@ -73,8 +74,11 @@ var draw = function(graph) {
                         return 15;
                     }})
         .attr('fill', function(d) { return group_colors[d.group];})
+        .on('contextmenu', d3.contextmenu(menu));
+
     nodes.append('title')
         .text(function(d) { return d.id; });
+
     nodes.append('text')
         .attr('dx', 12)
         .attr('dy', ".35em")
@@ -119,7 +123,7 @@ var update = function(qualifier) {
         return 'translate(' +
             item_radius * Math.cos((config.angleInitial + (config.angleIncrement * i)) * degreeToRadians) + ',' +
             item_radius * Math.sin((config.angleInitial + (config.angleIncrement * i)) * degreeToRadians) + ')';
-    });
+        });
     qualifier.selectAll('g')
         .attr('transform', function(d, i) {
             item_radius = +d3.select(this.parentElement.parentElement).select('circle').attr('r');
@@ -135,12 +139,12 @@ function updateLinkDistance(linkDistance) {
 
 simulation.force('link')
     .id(function(d) {return d.id;})
-    .distance(function(d) {return config.linkDistance/d.value;});
+    .distance(function(d) {return config.linkDistance/Math.sqrt(d.value);});
 
 d3.select('#link-distance').on('input', function() {
     config.linkDistance = +this.value;
     updateLinkDistance(config.linkDistance);
-    simulation.force('link').distance(function(d) {return config.linkDistance/d.value;});
+    simulation.force('link').distance(function(d) {return config.linkDistance/Math.sqrt(d.value);});
     simulation.alpha(1).restart();
 });
 
@@ -185,4 +189,63 @@ function dynamicallyCenter(svg) {
         const targetHeight = parseInt(container.style('height'));
         simulation.force('center', d3.forceCenter(targetWidth / 2, targetHeight / 2));
     }
+}
+
+function updateContextStyles(){
+    nodes.selectAll('g circle')
+        .attr('fill', function(d){
+            if(d.id == startingNode){
+                return '#0f0';
+            }
+            else if(d.id == targetNode){
+                return '#f00';
+            }
+            else {
+                return group_colors[d.group];
+            }
+        })
+}
+
+function clearSelections(){
+    startingNode = null;
+    targetNode = null;
+}
+
+// Context Menu
+var menu = [
+    {
+        label: 'task',
+        items: [
+        {
+            label: 'set starting point',
+            action: function(d, index) {
+                if(d.group == 'hosts'){
+                    startingNode = d.id;
+                    updateContextStyles();
+                }
+            }
+        },
+        {
+            label: 'set target node',
+            action: function(d, index) {
+                if(d.group == 'hosts'){
+                    targetNode = d.id;
+                    updateContextStyles();
+                }
+            }
+        }
+        ]
+    },
+    {
+        label: 'info',
+        action: function(d, index) {
+            console.log(d);
+            console.log(startingNode);
+            console.log(targetNode);
+        }
+    }
+];
+
+function drawPath(){
+
 }
