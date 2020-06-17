@@ -1,4 +1,5 @@
 import os
+import yaml
 import socket
 import logging
 import asyncio
@@ -8,7 +9,6 @@ from datetime import date
 
 from app.service.auth_svc import check_authorization
 from app.utility.base_world import BaseWorld
-
 from plugins.pathfinder.app.pathfinder_svc import PathfinderService
 from plugins.pathfinder.scanners.nmap.scanner import Scanner
 
@@ -121,6 +121,22 @@ class PathfinderGui(BaseWorld):
     @check_authorization
     async def store_report(self, request):
         return await self.file_svc.save_multipart_file_upload(request, 'plugins/pathfinder/data/reports')
+
+    @check_authorization
+    async def download_report(self, request):
+        report_id = request.query.get('report_id')
+        report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
+        if report:
+            try:
+                filename = '%s.yml' % report[0].id
+                content = yaml.dump(report[0].display).encode('utf-8')
+                headers = dict([('CONTENT-DISPOSITION', 'attachment; filename="%s"' % filename),
+                                ('FILENAME', filename)])
+                return web.Response(body=content, headers=headers)
+            except FileNotFoundError:
+                return web.HTTPNotFound(body='Report not found')
+            except Exception as e:
+                return web.HTTPNotFound(body=str(e))
 
     @staticmethod
     def get_machine_ip():

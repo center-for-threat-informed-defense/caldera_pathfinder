@@ -15,5 +15,6 @@ async def enable(services):
     app.router.add_static('/%s' % name, 'plugins/%s/static/' % name, append_version=True)
     app.router.add_route('GET', '/plugin/%s/gui' % name, plugin_gui.splash)
     app.router.add_route('GET', '/plugin/%s/graph' % name, plugin_gui.graph)
+    app.router.add_route('GET', '/plugin/%s/download' % name, plugin_gui.download_report)
     app.router.add_route('*', '/plugin/%s/api' % name, plugin_gui.pathfinder_core)
     app.router.add_route('POST', '/plugin/%s/upload' % name, plugin_gui.store_report)
