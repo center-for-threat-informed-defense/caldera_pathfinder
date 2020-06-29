@@ -1,49 +1,45 @@
 var data;
 function setData(d){
     data = d;
+    draw(data);
 }
 var startingNode, targetNode;
-
 var width = $('#graphContainer').width();
 var height = $(window).height() * 0.8; //$('#graphContainer').height(); the dynamic loading of the modals catches this in a transition state
+var config = {
+        linkDistance: 50,
+        propertyScaleFactor: .2   //scale factor relative to node size
+    };
+
+var group_colors = {'scanners': 'grey', 'hosts': 'deepskyblue', 'cves':'orangered', 'ports':'blue'};
+var node_radii = {'scanners': 15, 'hosts': 15, 'cves': 5, 'ports': 10};
+var link_lengths = {'network': 2, 'port': 1, 'cve': 1, 'path': 4};
+var link_colors = {'network': '#999', 'port': '#999', 'cve': '#999', 'path': '#ff0'};
 
 var svg = d3.select('#networkGraph')
     .call(dynamicallyCenter)
-    .append('g')
+    .append('g');
 
 var simulation = d3.forceSimulation()
     .force('link', d3.forceLink())
     .force('charge', d3.forceManyBody())
-    .force('center', d3.forceCenter(width / 2, height / 2));
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collision', d3.forceCollide().radius(function(d) {return node_radii[d.group]}));
 
-var group_colors = {'scanners': 'grey', 'hosts': 'deepskyblue', 'cves':'orangered'};
-
-var propertySymbolFiles = [
-    '/pathfinder/img/item-bell.svg',
-    '/pathfinder/img/item-bolt.svg',
-    '/pathfinder/img/item-certificate.svg',
-    '/pathfinder/img/item-exclamation.svg'];
-
-var propertySymbolSVGs = [],
-    degreeToRadians = Math.PI / 180,
-    nodes,
-    config = {
-        linkDistance:200,
-        propertyScaleFactor : .2,   //scale factor relative to node size
-        radius : 3,
-        angleInitial : -45,
-        angleIncrement : 45
-    };
+var nodes;
 
 var draw = function(graph) {
 
+    svg.selectAll('g.links').remove();
     var link = svg.append('g')
         .attr('class', 'links')
         .selectAll('line')
         .data(graph.links)
         .enter().append('line')
-            .attr('stroke-width', 3);
+            .attr('stroke-width', 3)
+            .attr('stroke', function(d) {return link_colors[d.type]});
 
+    svg.selectAll('g.nodes').remove();
     nodes = svg.append('g')
         .attr('class', 'nodes')
         .selectAll('g')
@@ -62,43 +58,23 @@ var draw = function(graph) {
                 })
                 .on('end', function dragended(d) {
                     if (!d3.event.active) simulation.alphaTarget(0);
-                    d.fx = null;
-                    d.fy = null;
                 }));
 
     nodes.append('circle')
-        .attr('r', function(d) {
-                    if (d.ports) {
-                        return 15+2*d.ports.length;
-                    } else {
-                        return 15;
-                    }})
+        .attr('r', function(d) { return node_radii[d.group] })
         .attr('fill', function(d) { return group_colors[d.group];})
-        .on('contextmenu', d3.contextmenu(menu));
+        .on('contextmenu', d3.contextmenu(menu))
+        .on('dblclick', freeNode);
 
     nodes.append('title')
-        .text(function(d) { return d.id; });
+        .text(function(d) { return d.label; });
 
     nodes.append('text')
         .attr('dx', 12)
         .attr('dy', ".35em")
-        .text(function(d) {return d.id})
-      .clone(true).lower()
-        .attr("fill", "none")
         .attr("stroke", "white")
-        .attr("stroke-width", 3);
-
-    var qualifiers = nodes
-            .selectAll('.qualifier')
-            .data(function(d) { return d.qualifiers; })
-            .enter().append('g')
-            .attr('class', 'qualifier');
-
-    qualifiers.each(function(qualifier) {
-        d3.select(this).node().appendChild(qualifier.cloneNode(true));
-    });
-
-    update(qualifiers);
+        .attr("fill", "white")
+        .text(function(d) {return d.label})
 
     simulation
         .nodes(graph.nodes)
@@ -114,22 +90,7 @@ var draw = function(graph) {
         .links(graph.links);
 };
 
-var update = function(qualifier) {
-    var item_radius,
-        qualifier_size;
-
-    qualifier.attr('transform', function(d, i) {
-        item_radius = +d3.select(this.parentElement).select('circle').attr('r');
-        return 'translate(' +
-            item_radius * Math.cos((config.angleInitial + (config.angleIncrement * i)) * degreeToRadians) + ',' +
-            item_radius * Math.sin((config.angleInitial + (config.angleIncrement * i)) * degreeToRadians) + ')';
-        });
-    qualifier.selectAll('g')
-        .attr('transform', function(d, i) {
-            item_radius = +d3.select(this.parentElement.parentElement).select('circle').attr('r');
-            qualifier_size = (item_radius*2) * config.propertyScaleFactor;
-            return 'scale(' + (qualifier_size / this.getBBox().width) + ')';
-        });
+function addVisualizationLinks() {
 }
 
 function updateLinkDistance(linkDistance) {
@@ -139,46 +100,22 @@ function updateLinkDistance(linkDistance) {
 
 simulation.force('link')
     .id(function(d) {return d.id;})
-    .distance(function(d) {return config.linkDistance/Math.sqrt(d.value);});
+    .distance(function(d) {return config.linkDistance*link_lengths[d.type];});
+//    .strength(function(d) {return 3});
 
 d3.select('#link-distance').on('input', function() {
     config.linkDistance = +this.value;
     updateLinkDistance(config.linkDistance);
-    simulation.force('link').distance(function(d) {return config.linkDistance/Math.sqrt(d.value);});
+    simulation.force('link').distance(function(d) {return config.linkDistance*link_lengths[d.type];});
     simulation.alpha(1).restart();
 });
 
 updateLinkDistance(config.linkDistance);
 
-var q = d3.queue();
-
-propertySymbolFiles.forEach(function(propertySymbolFile) {
-    q.defer(d3.xml, propertySymbolFile);
-});
-
-q.awaitAll(function(error, files) {
-    if (error) throw error;
-    files.forEach(function(file) {
-        // assuming that every svg file contains a single child, a 'g'
-        // node containing the visuals, get this placeholder
-        propertySymbolSVGs.push(file.getElementsByTagName('svg')[0].getElementsByTagName('g')[0]);
-    });
-
-    //load network and add a set of qualifiers for each node.
-    // each qualifier is a visual symbol
-    graph = data;
-    graph.nodes.forEach(function(node) {
-        if (node.ports) {
-            var ports = node.ports.length;
-            node.qualifiers = [];
-            for(var i=0; i<ports; i++)
-                node.qualifiers.push(propertySymbolSVGs[2]);
-        } else {
-            node.qualifiers = [];
-        }
-    });
-    draw(graph);
-});
+function freeNode(d) {
+    d.fx = null;
+    d.fy = null;
+}
 
 function dynamicallyCenter(svg) {
     const container = d3.select(svg.node().parentNode);
@@ -252,7 +189,7 @@ var menu = [
 function createAdversary(){
     function processResults(data){
         openAdversary(data.adversary_id);
-        drawPath(data.new_links);
+        addNewLinks(data.new_links);
     }
     report = $('#vulnerabilityReport').val();
     let data = {
@@ -265,10 +202,17 @@ function createAdversary(){
 }
 
 function openAdversary(adversary_id){
-    viewSection('adversaries', '/section/profiles');
-    setTimeout(function(s){ $('#profile-existing-name').val(s).change(); }, 1000, 'adversary-'+adversary_id);
+    console.log(adversary_id);
+    viewSection('profiles', '/campaign/profiles');
+    setTimeout(function(s){ $('#profile-existing-name').val(s).change(); }, 1000, adversary_id);
 }
 
-function drawPath(links){
-
+function addNewLinks(links){
+    console.log(links);
+    for (var link in links) {
+        console.log(links[link]);
+        data.links.push(links[link]);
+    }
+    draw(data);
+    updateElements();
 }

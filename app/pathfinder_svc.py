@@ -1,6 +1,7 @@
 import os
 import glob
 import uuid
+import yaml
 import logging
 from importlib import import_module
 
@@ -9,8 +10,7 @@ from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
 from app.objects.c_adversary import Adversary
-
-temp_file = 'plugins/pathfinder/data/_temp_report_file.tmp'
+import plugins.pathfinder.settings as settings
 
 
 class PathfinderService:
@@ -25,6 +25,7 @@ class PathfinderService:
         # grab and decrypt the file contents and crate a file object to pass to the parser
         try:
             _, contents = await self.file_svc.read_file(report, location='reports')
+            temp_file = '%s/_temp_report_file.tmp' % settings.data_dir
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
@@ -69,9 +70,20 @@ class PathfinderService:
         cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves]
         # create adversary
         adv_id = uuid.uuid4()
-        adv = Adversary(str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder', atomic_ordering=technique_list, tags=cves)
-        self.data_svc.store(adv)
-        return shortest_path, adv
+        obj_default = (await self.data_svc.locate('objectives', match=dict(name='default')))[0]
+        adv = dict(id=str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder',
+                   atomic_ordering=technique_list, tags=cves, objective=obj_default.id)
+        await self.save_adversary(adv)
+        return shortest_path, adv['id']
+
+    async def save_adversary(self, adversary):
+        folder_path = '%s/adversaries/' % settings.data_dir
+        file = os.path.join(folder_path, '%s.yml' % adversary['id'])
+        with open(file, 'w+') as f:
+            f.seek(0)
+            f.write(yaml.dump(adversary))
+            f.truncate()
+        await self.data_svc.reload_data()
 
     async def gather_techniques(self, report, host):
         if host not in report.hosts:
