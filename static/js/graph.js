@@ -70,7 +70,7 @@ var draw = function(graph) {
         .text(function(d) { return d.label; });
 
     nodes.append('text')
-        .attr('dx', 12)
+        .attr('dx', function(d) {return node_radii[d.group]/2 + 8})
         .attr('dy', ".35em")
         .attr("stroke", "white")
         .attr("fill", "white")
@@ -101,7 +101,6 @@ function updateLinkDistance(linkDistance) {
 simulation.force('link')
     .id(function(d) {return d.id;})
     .distance(function(d) {return config.linkDistance*link_lengths[d.type];});
-//    .strength(function(d) {return 3});
 
 d3.select('#link-distance').on('input', function() {
     config.linkDistance = +this.value;
@@ -178,11 +177,7 @@ var menu = [
     },
     {
         label: 'info',
-        action: function(d, index) {
-            console.log(d);
-            console.log(startingNode);
-            console.log(targetNode);
-        }
+        action: function(d, index) {}
     }
 ];
 
@@ -202,17 +197,15 @@ function createAdversary(){
 }
 
 function openAdversary(adversary_id){
-    console.log(adversary_id);
     viewSection('profiles', '/campaign/profiles');
     setTimeout(function(s){ $('#profile-existing-name').val(s).change(); }, 1000, adversary_id);
 }
 
 function addNewLinks(links){
-    console.log(links);
     for (var link in links) {
-        console.log(links[link]);
         data.links.push(links[link]);
     }
     draw(data);
     updateElements();
+    simulation.alpha(1).restart();
 }
