@@ -176,3 +176,15 @@ function loadGraph(element, address){
     }
     restRequest('GET', null, display, address);
 }
+
+function downloadVulnerabilityReport(){
+    current_report = $('#vulnerabilityReport').val();
+    stream('Downloading report: '+ current_report);
+    uri = "/plugin/pathfinder/download?report_id=" + current_report;
+    let downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", uri);
+    downloadAnchorNode.setAttribute("download", current_report + ".yml");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}

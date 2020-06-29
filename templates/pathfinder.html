@@ -6,7 +6,6 @@
         <div class="topleft duk-icon"><img onclick="removeSection('pathfinder-section')" src="/gui/img/x.png"></div>
         <div class="column section-border" style="flex:25%;text-align:left;padding:15px;">
             <h1 style="font-size:70px;margin-top:-20px;">Pathfinder</h1>
-            <h2 style="margin-top:-50px">CALDERA Rapid Attack Grapher</h2>
             <p>
                 Pathfinder is a project for taking network scans and mapping the structure and vulnerabilities to
                 potential planner actions based upon the set of available abilities.
@@ -14,7 +13,7 @@
             <div class="tab-bar">
                 <button class='selected' onclick="changeInputOptions(event, 'scanSection')">Scan</button>
                 <button onclick="changeInputOptions(event, 'importSection')">Import</button>
-                <button onclick="changeInputOptions(event, 'graphSection')">Graph</button>
+                <button onclick="changeInputOptions(event, 'graphSection')">View</button>
             </div>
             <br>
             <div>
@@ -50,7 +49,7 @@
                 </div>
                 <div class="pathfinderSection" id="graphSection" style="display:none;">
                     <label for="vulnerabilityReport">vulnerability report:</label>
-                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph')">
+                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph'); validateFormState(true, '#downloadReport');">
                         <option value="" disabled selected>Select a report</option>
                         {% for r in vulnerability_reports %}
                             <option value="{{ r.id }}">{{ r.name }}</option>
@@ -76,6 +75,7 @@
                     <br><br>
                     <button id="showGraph" type="button" class="button-notready atomic-button" onclick="graphReport()" style="margin-top:0">Graph</button>
                     <button id="createAdversary" type="button" class="button-notready atomic-button" onclick="createAdversary()" style="margin-top:0">Create Adversary</button>
+                    <button id="downloadReport" type="button" class="button-notready atomic-button" onclick="downloadVulnerabilityReport()" style="margin-top:0">Download</button>
                 </div>
             </div>
         </div>
