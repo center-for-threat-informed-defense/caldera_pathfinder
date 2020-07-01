@@ -87,7 +87,9 @@ class PathfinderGui(BaseWorld):
 
     async def scan(self, data):
         target = data.pop('target', None) or self.get_machine_ip()
-        report_file = '%s/reports/%s_%s.xml' % (settings.data_dir, target.replace('.', '_').replace('/', '-'), date.today().strftime("%b-%d-%Y"))
+        filename = self.sanitize_filename('%s_%s' % (target, date.today().strftime("%b-%d-%Y")))
+        report_file = '%s/reports/%s.xml' % (settings.data_dir, filename)
+
         scripts = [data.pop('script', None)] if 'script' in data else []
         self.log.debug('scanning %s' % target)
         try:
@@ -173,3 +175,11 @@ class PathfinderGui(BaseWorld):
             return ip
 
         return get_ip()
+
+    @staticmethod
+    def sanitize_filename(proposed):
+        subs = [('.', '_'), ('/', '-')]
+        new = proposed
+        for character, replacement in subs:
+            new = new.replace(character, replacement)
+        return new

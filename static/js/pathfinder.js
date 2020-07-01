@@ -111,6 +111,7 @@ function displayOutput(text){
 function graphReport() {
     current_report = $('#vulnerabilityReport').val();
     loadGraph('graphView', '/plugin/pathfinder/graph?report='+current_report);
+    stream('Right click to select starting and ending points to create an adversary');
 }
 
 function reloadReports(){
