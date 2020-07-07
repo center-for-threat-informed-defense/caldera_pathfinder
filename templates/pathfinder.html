@@ -6,10 +6,6 @@
         <div class="topleft duk-icon"><img onclick="removeSection('pathfinder-section')" src="/gui/img/x.png"></div>
         <div class="column section-border" style="flex:25%;text-align:left;padding:15px;">
             <h1 style="font-size:70px;margin-top:-20px;">Pathfinder</h1>
-            <p>
-                Pathfinder is a project for taking network scans and mapping the structure and vulnerabilities to
-                potential planner actions based upon the set of available abilities.
-            </p>
             <div class="tab-bar">
                 <button class='selected' onclick="changeInputOptions(event, 'scanSection')">Scan</button>
                 <button onclick="changeInputOptions(event, 'importSection')">Import</button>
@@ -18,10 +14,10 @@
             <br>
             <div>
                 <div class="pathfinderSection" id="scanSection">
-                    <label for="targetInput">scan target:</label>
+                    <label for="targetInput">Scan Target:</label>
                     <input id="targetInput" type="text" name="target" value="{{ machine_ip }}" style="width:75%; margin:5px;">
                     <br>
-                    <label for="scanScriptSelection">scanner script:</label>
+                    <label for="scanScriptSelection">Scanner Script:</label>
                     <select id="scanScriptSelection">
                         <option value="" disabled selected>Select the nmap script to use</option>
                         {% for s in scanner_scripts %}
@@ -35,7 +31,7 @@
                             onclick="openFacts()">View Facts</button>
                 </div>
                 <div class="pathfinderSection" id="importSection" style="display:none;">
-                    <label for="scanInputFormat">report format:</label>
+                    <label for="scanInputFormat">Report Format:</label>
                     <select id="scanInputFormat" onchange="validateParser()">
                         <option value="" disabled selected>Select the report format</option>
                         {% for p in input_parsers %}
@@ -48,7 +44,7 @@
                             onclick="importScan()">Import</button>
                 </div>
                 <div class="pathfinderSection" id="graphSection" style="display:none;">
-                    <label for="vulnerabilityReport">vulnerability report:</label>
+                    <label for="vulnerabilityReport">Vulnerability Report:</label>
                     <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph'); validateFormState(true, '#downloadReport');">
                         <option value="" disabled selected>Select a report</option>
                         {% for r in vulnerability_reports %}
@@ -58,8 +54,9 @@
                     <div>
                         <div class='controls'>
                             <div class='setting'>
-                                <label for='nLinkDistance'>Force link distance = <span id='link-distance-value'></span></label>
-                                <input type='range' min='50' max='500' id='link-distance'>
+                                <label for='link-distance'>Size: <span id='link-distance-value'></span></label>
+                                <br>
+                                <input type='range' min='1' max='100' default='50' id='link-distance'>
                             </div>
                         </div>
                         <div>
@@ -72,8 +69,9 @@
                             </ul>
                         </div>
                     </div>
-                    <br><br>
+                    <br>
                     <button id="showGraph" type="button" class="button-notready atomic-button" onclick="graphReport()" style="margin-top:0">Graph</button>
+                    <button id="createAdversary" type="button" class="button-notready atomic-button" onclick="createAdversary()" style="margin-top:0">Create Adversary</button>
                     <button id="downloadReport" type="button" class="button-notready atomic-button" onclick="downloadVulnerabilityReport()" style="margin-top:0">Download</button>
                 </div>
             </div>

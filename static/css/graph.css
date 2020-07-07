@@ -7,7 +7,6 @@
 }
 
 .links line {
-    stroke: #999;
     stroke-opacity: 0.6;
 }
 
@@ -21,4 +20,41 @@ g.qualifier circle {
     fill: cornsilk;
     stroke: #333;
     stroke-width: 6px;
+}
+
+.d3-context-menu {
+	position: absolute;
+	display: none;
+	background-color: #f2f2f2;
+	border-radius: 4px;
+
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	min-width: 150px;
+	border: 1px solid #d4d4d4;
+
+	z-index:1200;
+}
+
+.d3-context-menu ul {
+	list-style-type: none;
+	margin: 4px 0px;
+	padding: 0px;
+	cursor: default;
+}
+
+.d3-context-menu ul li {
+	padding: 4px 16px;
+}
+
+.d3-context-menu ul li:hover {
+	background-color: #4677f8;
+	color: #fefefe;
+}
+.d3-v4-context-menu-container {
+    background-color: #f2f2f2;
+	border-radius: 4px;
+	font-family: Arial, sans-serif;
+    font-size: 35px;
+    padding: 4px;
 }
