@@ -187,11 +187,13 @@ function createAdversary(){
         addNewLinks(data.new_links);
     }
     report = $('#vulnerabilityReport').val();
+    tags = $('#adversaryTags').val();
     let data = {
         'index': 'create_adversary',
         'id': report,
         'start': startingNode,
-        'target': targetNode
+        'target': targetNode,
+        'adversary_tags': tags
     }
     restRequest('POST', data, processResults, '/plugin/pathfinder/api');
 }

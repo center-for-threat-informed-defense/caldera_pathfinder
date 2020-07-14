@@ -60,21 +60,32 @@ class PathfinderService:
         await self.data_svc.store(source)
         return source
 
-    async def generate_adversary(self, report, initial_host, target_host):
+    async def generate_adversary(self, report, initial_host, target_host, tags=None):
         attack_paths = await self.find_paths(report, initial_host, target_host)
         shortest_path = attack_paths[0]
         for path in attack_paths:
             if len(path) < len(shortest_path):
                 shortest_path = path
-        technique_list = [t.ability_id for host in shortest_path[1:] for t in await self.gather_techniques(report, host)]
-        cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves]
+        technique_list = [(t.ability_id, t.tags) for host in shortest_path[1:] for t in await self.gather_techniques(report, host)]
+        technique_tags = [st for t in technique_list for st in t[1]]
+        cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves if c in technique_tags]
         # create adversary
         adv_id = uuid.uuid4()
         obj_default = (await self.data_svc.locate('objectives', match=dict(name='default')))[0]
         adv = dict(id=str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder',
-                   atomic_ordering=technique_list, tags=cves, objective=obj_default.id)
+                   atomic_ordering=[t[0] for t in technique_list], tags=cves, objective=obj_default.id)
+        # join tagged adversaries with our CVE adversary
+        if tags:
+            tags = [t.strip() for t in tags.split(',')]
+            tagged_adversaries = [a.display for tag in tags for a in await self.data_svc.search(tag, 'adversaries') or []]
+            new_ordering = await self.join_adversaries(adv, *tagged_adversaries)
+            adv['atomic_ordering'] = new_ordering['atomic_ordering']
+            adv['tags'].extend([t for a in tagged_adversaries for t in a['tags'] if t in tags])
         await self.save_adversary(adv)
         return shortest_path, adv['id']
+
+    async def join_adversaries(self, *args):
+        return dict(atomic_ordering=[a for arg in args for a in arg.get('atomic_ordering')])
 
     async def save_adversary(self, adversary):
         folder_path = '%s/adversaries/' % settings.data_dir
