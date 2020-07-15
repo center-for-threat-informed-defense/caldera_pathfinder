@@ -61,31 +61,38 @@ class PathfinderService:
         return source
 
     async def generate_adversary(self, report, initial_host, target_host, tags=None):
+        def retrieve_shortest_path(paths):
+            shortest = paths[0]
+            for path in paths:
+                if len(path) < len(shortest):
+                    shortest = path
+            return shortest
+
+        async def create_cve_adversary(techniques, tags):
+            adv_id = uuid.uuid4()
+            obj_default = (await self.data_svc.locate('objectives', match=dict(name='default')))[0]
+            return dict(id=str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder',
+                        atomic_ordering=techniques, tags=tags, objective=obj_default.id)
+
+        def get_all_tags(objlist):
+            return [t for a in objlist for t in a.tags]
+
         attack_paths = await self.find_paths(report, initial_host, target_host)
-        shortest_path = attack_paths[0]
-        for path in attack_paths:
-            if len(path) < len(shortest_path):
-                shortest_path = path
-        technique_list = [(t.ability_id, t.tags) for host in shortest_path[1:] for t in await self.gather_techniques(report, host)]
-        technique_tags = [st for t in technique_list for st in t[1]]
-        cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves if c in technique_tags]
-        # create adversary
-        adv_id = uuid.uuid4()
-        obj_default = (await self.data_svc.locate('objectives', match=dict(name='default')))[0]
-        adv = dict(id=str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder',
-                   atomic_ordering=[t[0] for t in technique_list], tags=cves, objective=obj_default.id)
-        # join tagged adversaries with our CVE adversary
+        shortest_path = retrieve_shortest_path(attack_paths)
+        technique_list = await self.gather_techniques(report, path=shortest_path)
+        implemented_cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves if c in get_all_tags(technique_list)]
+        adv = await create_cve_adversary([t.ability_id for t in technique_list], implemented_cves)
+
         if tags:
-            tags = [t.strip() for t in tags.split(',')]
-            tagged_adversaries = [a.display for tag in tags for a in await self.data_svc.search(tag, 'adversaries') or []]
-            new_ordering = await self.join_adversaries(adv, *tagged_adversaries)
-            adv['atomic_ordering'] = new_ordering['atomic_ordering']
+            tagged_adversaries = await self.collect_tagged_adversaries([t.strip() for t in tags.split(',')])
+            adv['atomic_ordering'] = await self.join_adversary_abilities(adv, *tagged_adversaries)
             adv['tags'].extend([t for a in tagged_adversaries for t in a['tags'] if t in tags])
         await self.save_adversary(adv)
         return shortest_path, adv['id']
 
-    async def join_adversaries(self, *args):
-        return dict(atomic_ordering=[a for arg in args for a in arg.get('atomic_ordering')])
+    @staticmethod
+    async def join_adversary_abilities(*args):
+        return [a for arg in args for a in arg.get('atomic_ordering')]
 
     async def save_adversary(self, adversary):
         folder_path = '%s/adversaries/' % settings.data_dir
@@ -96,13 +103,21 @@ class PathfinderService:
             f.truncate()
         await self.data_svc.reload_data()
 
-    async def gather_techniques(self, report, host):
-        if host not in report.hosts:
-            return []
-        host_vulnerabilities = report.hosts[host].cves
-        available_techniques = [t for cve in host_vulnerabilities for t in await self.data_svc.search(cve, 'abilities') or []]
-        available_adversaries = [t for cve in host_vulnerabilities for t in await self.data_svc.search(cve, 'adversaries') or []]
-        return available_techniques
+    async def gather_techniques(self, report, targetedhost=None, path=None):
+        async def get_host_exploits(host):
+            if host not in report.hosts:
+                return []
+            host_vulnerabilities = report.hosts[host].cves
+            available_techniques = [t for cve in host_vulnerabilities for t in await self.data_svc.search(cve, 'abilities') or []]
+            return available_techniques
+
+        if path:
+            return [t for h in path[1:] for t in await get_host_exploits(h)]
+        else:
+            return get_host_exploits(targetedhost)
+
+    async def collect_tagged_adversaries(self, adversary_tags):
+        return [a.display for tag in adversary_tags for a in await self.data_svc.search(tag, 'adversaries') or []]
 
     async def find_paths(self, report, start, end, past=None, avoid=None):
         past = past or []
