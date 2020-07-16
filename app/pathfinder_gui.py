@@ -136,8 +136,9 @@ class PathfinderGui(BaseWorld):
         target = data.pop('target')
         report_id = data.pop('id')
         report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
+        tags = data.pop('adversary_tags')
         if report and start and target:
-            path, adversary_id = await self.pathfinder_svc.generate_adversary(report[0], start, target)
+            path, adversary_id = await self.pathfinder_svc.generate_adversary(report[0], start, target, tags)
             return dict(adversary_id=adversary_id, new_links=generate_links(path))
 
     @check_authorization
