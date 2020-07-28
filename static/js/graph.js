@@ -3,7 +3,7 @@ function setData(d){
     data = d;
     draw(data);
 }
-var startingNode, targetNode;
+var sourceNode, targetNode;
 var width = $('#graphContainer').width();
 var height = $(window).height() * 0.8; //$('#graphContainer').height(); the dynamic loading of the modals catches this in a transition state
 var config = {
@@ -130,7 +130,7 @@ function dynamicallyCenter(svg) {
 function updateElements(){
     nodes.selectAll('g circle')
         .attr('fill', function(d){
-            if(d.id == startingNode){
+            if(d.id == sourceNode){
                 return '#0f0';
             }
             else if(d.id == targetNode){
@@ -140,49 +140,50 @@ function updateElements(){
                 return group_colors[d.group];
             }
         });
-    if(startingNode && targetNode){
+    if(sourceNode && targetNode){
         validateFormState(true, '#createAdversary');
     }
 }
 
 function clearSelections(){
-    startingNode = null;
+    sourceNode = null;
     targetNode = null;
 }
 
 // Context Menu
 var menu = [
     {
-        label: 'task',
-        items: [
-        {
-            label: 'set starting point',
-            action: function(d, index) {
-                if(d.group == 'hosts'){
-                    startingNode = d.id;
-                    updateElements();
-                }
-            }
-        },
-        {
-            label: 'set target node',
-            action: function(d, index) {
-                if(d.group == 'hosts'){
-                    targetNode = d.id;
-                    updateElements();
-                }
+        label: 'set source node',
+        action: function(d, index) {
+            if(d.group == 'hosts'){
+                sourceNode = d.id;
+                updateElements();
             }
         }
-        ]
+    },
+    {
+        label: 'set target node',
+        action: function(d, index) {
+            if(d.group == 'hosts'){
+                targetNode = d.id;
+                updateElements();
+            }
+        }
     },
     {
         label: 'info',
-        action: function(d, index) {}
+        items:[
+        {
+            label: function(d, index) { return d.id; },
+            action: function(d, index) {}
+        }
+        ]
     }
 ];
 
 function createAdversary(){
     function processResults(data){
+        removeOldPaths();
         openAdversary(data.adversary_id);
         addNewLinks(data.new_links);
     }
@@ -191,7 +192,7 @@ function createAdversary(){
     let data = {
         'index': 'create_adversary',
         'id': report,
-        'start': startingNode,
+        'start': sourceNode,
         'target': targetNode,
         'adversary_tags': tags
     }
@@ -206,6 +207,17 @@ function openAdversary(adversary_id){
 function addNewLinks(links){
     for (var link in links) {
         data.links.push(links[link]);
+    }
+    draw(data);
+    updateElements();
+    simulation.alpha(1).restart();
+}
+
+function removeOldPaths() {
+    for(var link in data.links) {
+        if(data.links[link].type == 'path') {
+            data.links.pop(link);
+        }
     }
     draw(data);
     updateElements();

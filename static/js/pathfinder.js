@@ -19,6 +19,9 @@ function changeInputOptions(event, section) {
 
 function validateNmapInstalled(state){
     validateFormState(state, '#startScan');
+    if(!state){
+       displayOutput('Please install nmap for scanning, scanning disabled!')
+    }
 }
 
 function validateParser(){
