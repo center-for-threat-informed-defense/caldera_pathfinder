@@ -89,11 +89,13 @@ class PathfinderGui(BaseWorld):
         target = data.pop('target', None) or self.get_machine_ip()
         filename = self.sanitize_filename('%s_%s' % (target, date.today().strftime("%b-%d-%Y")))
         report_file = '%s/reports/%s.xml' % (settings.data_dir, filename)
+        script_args = data.pop('script_args', None)
+        scan_ports = data.pop('ports', None)
 
         scripts = [data.pop('script', None)] if 'script' in data else []
         self.log.debug('scanning %s' % target)
         try:
-            self.running_scans[target] = Scanner(filename=report_file, target_specification=target, scripts=scripts)
+            self.running_scans[target] = Scanner(filename=report_file, target_specification=target, scripts=scripts, script_args=script_args, ports=scan_ports)
             self.loop.create_task(self.running_scans[target].scan())
             return dict(status='pass', output='scan initiated, depending on scope it may take a few minutes')
         except Exception as e:
