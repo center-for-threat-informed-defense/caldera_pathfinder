@@ -92,7 +92,7 @@ class PathfinderGui(BaseWorld):
         script_args = data.pop('script_args', None)
         scan_ports = data.pop('ports', None)
 
-        scripts = [data.pop('script', None)] if 'script' in data else []
+        scripts = [data.pop('script')] if data.get('script', None) else []
         self.log.debug('scanning %s' % target)
         try:
             self.running_scans[target] = Scanner(filename=report_file, target_specification=target, scripts=scripts, script_args=script_args, ports=scan_ports)
