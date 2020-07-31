@@ -1,0 +1,15 @@
+- description: executing heartbleed exploit
+  id: 315f8fcc-c05a-4db0-9f9a-5daade661540
+  name: Heartbleed information grabbing
+  platforms:
+    linux:
+      sh:
+        command: 'python heartbleed.py #{scan.host.ip}'
+        payloads:
+        - heartbleed.py
+  tactic: initial-access
+  tags:
+  - CVE-2014-0160
+  technique:
+    attack_id: T1190
+    name: Exploit Public-Facing Application

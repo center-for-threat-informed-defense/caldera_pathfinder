@@ -35,17 +35,19 @@ function startScan(){
             refresher = setInterval(checkScanStatus, 20000);
         }else{
             displayOutput('scan issue, ' + data.output + ' please check server logs for more details');
+            validateFormState(true, '#startScan')
         }
     }
     validateFormState(false, '#startScan');
     validateFormState(false, '#viewFacts');
-    let script = $()
     let target = $('#targetInput').val();
-    displayOutput('scan started on target: ' + target);
+    displayOutput('scan started for target: ' + target);
     let data = {'index':'scan',
                 'network':'local',
                 'target':target,
-                'script':$('#scanScriptSelection').val()
+                'script':$('#scanScriptSelection').val(),
+                'script_args':$('#scriptArgs').val(),
+                'ports':$('#scanPorts').val()
                 };
     restRequest('POST', data, processResults, '/plugin/pathfinder/api');
 }

@@ -34,6 +34,7 @@ class ReportParser:
         report = VulnerabilityReport()
 
         for host in root.findall('host'):
+            host_exists = False
             cves = []
             report_host = Host(host.find('address').get('addr'))
             if host.find('hostnames') is not None:
@@ -42,6 +43,13 @@ class ReportParser:
             for port in host.find('ports').findall('port'):
                 report_port = Port(port.get('portid'), '')
                 report_port.protocol = port.get('protocol', '')
+                port_state = port.find('state')
+                if port_state is not None:
+                    state = port_state.get('state')
+                    if state == 'filtered':
+                        continue
+                    report_port.state = state
+                host_exists = True
                 port_service = port.find('service')
                 if port_service is not None:
                     report_port.service = port_service.get('name')
@@ -55,7 +63,8 @@ class ReportParser:
                         cves.extend(port_cves)
                 report_host.ports[report_port.number] = report_port
             report_host.cves = cves
-            report.hosts[report_host.ip] = report_host
+            if host_exists:
+                report.hosts[report_host.ip] = report_host
         return report
 
     def generate_network_map(self, report):
