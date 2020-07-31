@@ -5,8 +5,8 @@
     linux:
       sh:
         command: 'python heartbleed.py #{scan.host.ip}'
-      payloads:
-      - heartbleed.py
+        payloads:
+        - heartbleed.py
   tactic: initial-access
   tags:
   - CVE-2014-0160
