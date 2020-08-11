@@ -1,6 +1,7 @@
 var refresher
 var latest_source
 var current_report
+var scanner_fields = []
 
 function changeInputOptions(event, section) {
     $('.pathfinderSection').css('display', 'none');
@@ -14,13 +15,6 @@ function changeInputOptions(event, section) {
     } else {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'none')
-    }
-}
-
-function validateNmapInstalled(state){
-    validateFormState(state, '#startScan');
-    if(!state){
-       displayOutput('Please install nmap for scanning, scanning disabled!')
     }
 }
 
@@ -40,14 +34,14 @@ function startScan(){
     }
     validateFormState(false, '#startScan');
     validateFormState(false, '#viewFacts');
-    let target = $('#targetInput').val();
-    displayOutput('scan started for target: ' + target);
+    let fields = {}
+    for (var param in scanner_fields){
+        fields[scanner_fields[param]] = $('#'+scanner_fields[param]).val();
+    }
+    displayOutput('scan started with parameters:\n' + JSON.stringify(fields, null, 4));
     let data = {'index':'scan',
-                'network':'local',
-                'target':target,
-                'script':$('#scanScriptSelection').val(),
-                'script_args':$('#scriptArgs').val(),
-                'ports':$('#scanPorts').val()
+                'scanner': $('#scannerSelection').val(),
+                'fields':fields
                 };
     restRequest('POST', data, processResults, '/plugin/pathfinder/api');
 }
@@ -154,7 +148,7 @@ function checkScanStatus(){
         if (number_finished > 0){
             source_id = '';
             for (var key in data.finished){
-                displayOutput('scan of '+key+' finished. new source created: '+data.finished[key].source);
+                displayOutput('scan ID:'+key+' finished. new source created: '+data.finished[key].source);
                 source_id = data.finished[key].source_id;
             }
             latest_source = source_id;
@@ -163,7 +157,7 @@ function checkScanStatus(){
         }
         if (number_failed > 0){
             for (var key in data.errors){
-                displayOutput('scan of '+key+' failed. error output: '+data.errors[key].message);
+                displayOutput('scan ID:'+key+' failed. error output: '+data.errors[key].message);
             }
         }
     }
@@ -193,4 +187,66 @@ function downloadVulnerabilityReport(){
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+}
+
+function setupScannerSection(){
+    function setupScanner(data) {
+        $('#dynamicScannerSection').empty();
+        validateFormState(data.enabled, '#startScan');
+        if(data.error){
+            displayOutput(data.name + ': ' + data.error);
+            return;
+        }
+        if(!data.enabled) {
+            displayOutput(data.name + ': Please install scanner dependencies before scanning, scanning disabled!');
+            return;
+        }
+        while(scanner_fields.length > 0) { scanner_fields.pop(); }
+        for (var field in data.fields) {
+            addScannerField($('#scannerSelection').val(), data.fields[field].type, data.fields[field]);
+        }
+
+    }
+    selected_scanner = $('#scannerSelection').val();
+    restRequest('POST', {'index':'scanner_config', 'name':selected_scanner}, setupScanner, '/plugin/pathfinder/api');
+}
+
+function addScannerField(scanner, type, field_data) {
+    function setupTextField(config) {
+        let template = $('#textInputTemplate').clone();
+        template.attr('id', scanner + config.param);
+        template.find('label').text(config.name);
+        template.find('input').attr('id', config.param);
+        if (config.default != null)
+            template.find('input').attr('value', config.default);
+        template.show();
+        $('#dynamicScannerSection').append(template);
+    }
+    function setupPulldownField(config) {
+        let template = $('#pulldownInputTemplate').clone();
+        template.attr('id', scanner + config.param);
+        template.find('label').text(config.name);
+        let selection = template.find('select');
+        selection.attr('id', config.param);
+        if (config.prompt != null)
+            selection.append($('<option value="" disabled selected>' + config.prompt + '</option>'));
+        config.values.forEach(function(script) {selection.append($('<option value="' + script + '">' + script + '</option>'));})
+        template.show();
+        $('#dynamicScannerSection').append(template);
+    }
+    function setupCheckboxField(config) {
+        let template = $('#checkboxInputTemplate').clone();
+        template.attr('id', scanner + config.param);
+        template.find('input').attr('id', config.param);
+        template.find('span').text(config.name);
+        template.show();
+        $('#dynamicScannerSection').append(template);
+    }
+
+    var setupFunctions = {'text': setupTextField,
+                          'pulldown': setupPulldownField,
+                          'checkbox': setupCheckboxField
+                          };
+    setupFunctions[type](field_data);
+    scanner_fields.push(field_data.param);
 }

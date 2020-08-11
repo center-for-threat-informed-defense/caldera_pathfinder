@@ -14,26 +14,14 @@
             <br>
             <div>
                 <div class="pathfinderSection" id="scanSection">
-                    <label for="targetInput">Target Specification:</label>
-                    <input id="targetInput" type="text" name="target" value="{{ machine_ip }}" style="width:75%; margin:5px;">
-                    <br>
-                    <label for="scanScriptSelection">Scanner Script:</label>
-                    <select id="scanScriptSelection">
-                        <option value="" disabled selected>Select the nmap script to use</option>
-                        {% for s in scanner_scripts %}
+                    <label for="scannerSelection">Scanner:</label><br>
+                    <select id="scannerSelection" onchange="setupScannerSection()">
+                        <option value="" disabled selected>Select the scanner to use</option>
+                        {% for s in scanners %}
                             <option value="{{ s }}">{{ s }}</option>
                         {% endfor %}}
                     </select>
-                    <br>
-                    <span><input type="checkbox" onchange="$('#scriptArgsSection').toggle()">args</span><span><input type="checkbox" onchange="$('#scanPortsSection').toggle()">ports</span>
-                    <br>
-                    <div id="scriptArgsSection" style="display:none;">
-                        <label for="scriptArgs">Script Arguments:</label>
-                        <input id="scriptArgs" type="text" name="scriptargs" value="" style="width:75%; margin:5px;">
-                    </div>
-                    <div id="scanPortsSection" style="display:none;">
-                        <label for="scanPorts">Ports to Scan:</label>
-                        <input id="scanPorts" type="text" name="scanports" value="" style="width:75%; margin:5px;">
+                    <div id="dynamicScannerSection">
                     </div>
                     <br>
                     <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
@@ -99,4 +87,18 @@
         </div>
     </div>
 </div>
-<script>validateNmapInstalled({{ nmap }})</script>
+
+<div id="templateSection" style="display:none">
+    <div id="textInputTemplate" style="display:none; margin:5px">
+        <label for="textInput">text field:</label><br>
+        <input id="textInput" type="text" name="txi1" value="" style="width:75%; margin:5px;">
+    </div>
+    <div id="pulldownInputTemplate" style="display:none; margin:5px">
+        <label for="pulldownInput">pulldown:</label>
+        <select id="pulldownInput">
+        </select>
+    </div>
+    <div id="checkboxInputTemplate" style="display:none; margin:5px">
+        <input type="checkbox" value="0" onchange="$(this).val(this.checked ? 1 : 0)"><span>checkbox title</span>
+    </div>
+</div>

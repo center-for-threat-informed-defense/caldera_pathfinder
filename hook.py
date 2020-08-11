@@ -18,7 +18,7 @@ async def enable(services):
     app = services.get('app_svc').application
     nmap_installed = await services.get('app_svc').validate_requirement('nmap', dict(type='installed_program', command='nmap --version', version='0.0.0'))
     await services.get('data_svc').apply('vulnerabilityreports')
-    plugin_gui = PathfinderGui(services, nmap_installed)
+    plugin_gui = PathfinderGui(services, dict(nmap=nmap_installed))
     app.router.add_static('/%s' % name, 'plugins/%s/static/' % name, append_version=True)
     app.router.add_route('GET', '/plugin/%s/gui' % name, plugin_gui.splash)
     app.router.add_route('GET', '/plugin/%s/graph' % name, plugin_gui.graph)

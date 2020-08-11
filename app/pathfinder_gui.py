@@ -1,4 +1,5 @@
 import os
+import glob
 import yaml
 import socket
 import logging
@@ -6,33 +7,33 @@ import asyncio
 from aiohttp import web
 from aiohttp_jinja2 import template
 from datetime import date
+from importlib import import_module
 
 from app.service.auth_svc import check_authorization
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.pathfinder_svc import PathfinderService
-from plugins.pathfinder.scanners.nmap.scanner import Scanner
 import plugins.pathfinder.settings as settings
 
 
 class PathfinderGui(BaseWorld):
 
-    def __init__(self, services, nmap_installed):
+    def __init__(self, services, installed_dependencies):
         self.services = services
         self.auth_svc = services.get('auth_svc')
         self.file_svc = services.get('file_svc')
         self.data_svc = services.get('data_svc')
-        self.nmap_installed = 1 if nmap_installed else 0
+        self.installed_dependencies = installed_dependencies
         self.pathfinder_svc = PathfinderService(services)
         self.log = logging.getLogger('pathfinder_gui')
         self.loop = asyncio.get_event_loop()
         self.running_scans = dict()
+        self.scanners = self.load_scanners()
 
     @check_authorization
     @template('pathfinder.html')
     async def splash(self, request):
         reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]
-        return dict(nmap=self.nmap_installed, input_parsers=self.pathfinder_svc.parsers.keys(), machine_ip=self.get_machine_ip(), vulnerability_reports=reports,
-                    scanner_scripts=Scanner().list_available_scripts())
+        return dict(scanners=list(self.scanners.keys()), input_parsers=self.pathfinder_svc.parsers.keys(), vulnerability_reports=reports)
 
     @check_authorization
     @template('graph.html')
@@ -76,7 +77,8 @@ class PathfinderGui(BaseWorld):
                     import_scan=lambda d: self.import_report(d),
                     reports=lambda d: self.retrieve_reports(),
                     status=lambda d: self.check_scan_status(),
-                    create_adversary=lambda d: self.generate_adversary(d)
+                    create_adversary=lambda d: self.generate_adversary(d),
+                    scanner_config=lambda d: self.return_scanner_configuration(d)
                 )
             )
             if index not in options[request.method]:
@@ -86,18 +88,15 @@ class PathfinderGui(BaseWorld):
             self.log.error(repr(e), exc_info=True)
 
     async def scan(self, data):
-        target = data.pop('target', None) or self.get_machine_ip()
-        filename = self.sanitize_filename('%s_%s' % (target, date.today().strftime("%b-%d-%Y")))
+        scanner = data.pop('scanner', None)
+        filename = sanitize_filename('pathfinder_%s' % date.today().strftime("%b-%d-%Y"))
         report_file = '%s/reports/%s.xml' % (settings.data_dir, filename)
-        script_args = data.pop('script_args', None)
-        scan_ports = data.pop('ports', None)
-
-        scripts = [data.pop('script')] if data.get('script', None) else []
-        self.log.debug('scanning %s' % target)
+        fields = data.pop('fields', None)
         try:
-            self.running_scans[target] = Scanner(filename=report_file, target_specification=target, scripts=scripts, script_args=script_args, ports=scan_ports)
-            self.loop.create_task(self.running_scans[target].scan())
-            return dict(status='pass', output='scan initiated, depending on scope it may take a few minutes')
+            scan = self.load_scanner(scanner).Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
+            self.running_scans[scan.id] = scan
+            self.loop.create_task(scan.scan())
+            return dict(status='pass', id=scan.id, output='scan initiated, depending on scope it may take a few minutes')
         except Exception as e:
             self.log.error(repr(e), exc_info=True)
             return dict(status='fail', output='exception occurred while starting scan')
@@ -115,17 +114,17 @@ class PathfinderGui(BaseWorld):
         return dict(reports=reports)
 
     async def check_scan_status(self):
-        pending = [s.target_specification for s in self.running_scans.values() if s.status != 'done']
+        pending = [s.id for s in self.running_scans.values() if s.status != 'done']
         finished = dict()
         errors = dict()
         for target in [t for t in self.running_scans.keys() if self.running_scans[t].status == 'done']:
             scan = self.running_scans.pop(target)
             if not scan.returncode:
-                source = await self.pathfinder_svc.import_scan('nmap', os.path.basename(scan.filename))
-                finished[scan.target_specification] = dict(source=source.name, source_id=source.id)
+                source = await self.pathfinder_svc.import_scan(scan.name, os.path.basename(scan.filename))
+                finished[scan.id] = dict(source=source.name, source_id=source.id)
             else:
                 self.log.debug(scan.output['stderr'])
-                errors[scan.target_specification] = dict(message=scan.output['stderr'])
+                errors[scan.id] = dict(message=scan.output['stderr'])
 
         return dict(pending=pending, finished=finished, errors=errors)
 
@@ -163,26 +162,46 @@ class PathfinderGui(BaseWorld):
             except Exception as e:
                 return web.HTTPNotFound(body=str(e))
 
-    @staticmethod
-    def get_machine_ip():
-        # this gets the exit IP, so if you are on a VPN it will get you the IP on the VPN network and not your local network IP
-        def get_ip():
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            try:
-                s.connect(('10.255.255.255', 1))
-                ip = s.getsockname()[0]
-            except Exception:
-                ip = '127.0.0.1'
-            finally:
-                s.close()
-            return ip
+    async def return_scanner_configuration(self, data):
+        scanner = data.pop('name')
+        self.log.debug(self.scanners)
+        if scanner in self.scanners:
+            return dict(name=scanner, fields=self.scanners[scanner].fields, enabled=self.scanners[scanner].enabled, error=False)
+        else:
+            return dict(name=scanner, error='scanner not able to be found')
 
-        return get_ip()
+    def load_scanners(self):
+        scanners = {}
+        for filepath in glob.iglob('plugins/pathfinder/scanners/*/scanner.py'):
+            module = import_module(filepath.replace('/', '.').replace('\\', '.').replace('.py', ''))
+            scanner = module.Scanner(dependencies=self.installed_dependencies)
+            scanners[scanner.name] = scanner
+        return scanners
 
     @staticmethod
-    def sanitize_filename(proposed):
-        subs = [('.', '_'), ('/', '-')]
-        new = proposed
-        for character, replacement in subs:
-            new = new.replace(character, replacement)
-        return new
+    def load_scanner(name):
+        return import_module('plugins.pathfinder.scanners.%s.scanner' % name)
+
+
+def get_machine_ip():
+    # this gets the exit IP, so if you are on a VPN it will get you the IP on the VPN network and not your local network IP
+    def get_ip():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(('10.255.255.255', 1))
+            ip = s.getsockname()[0]
+        except Exception:
+            ip = '127.0.0.1'
+        finally:
+            s.close()
+        return ip
+
+    return get_ip()
+
+
+def sanitize_filename(proposed):
+    subs = [('.', '_'), ('/', '-')]
+    new = proposed
+    for character, replacement in subs:
+        new = new.replace(character, replacement)
+    return new
