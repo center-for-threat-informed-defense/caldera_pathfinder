@@ -2,7 +2,7 @@ import os
 import glob
 import uuid
 import asyncio
-# from plugins.pathfinder.app.pathfinder_gui import get_machine_ip
+from plugins.pathfinder.app.pathfinder_gui import get_machine_ip
 
 
 class Scanner:
@@ -21,17 +21,17 @@ class Scanner:
         self.ports = ports
         self.pingless = pingless
         self.enabled = self.check_dependencies(dependencies)
-        self.fields = [dict(name='Target Specification', param='target_specification', type='text', default=0),
+        self.fields = [dict(name='Target Specification', param='target_specification', type='text', default=get_machine_ip()),
                        dict(name='Scanner Script', param='script', type='pulldown', values=self.list_available_scripts(), prompt='Select the nmap script to use'),
                        dict(name='Script Arguments', param='script_args', type='text'),
                        dict(name='Ports', param='ports', type='text'),
-                       dict(name='No Ping', param='pingless', type='checkbox')]
+                       dict(name='No Ping (-Pn)', param='pingless', type='checkbox')]
 
     async def scan(self):
         try:
             self.status = 'running'
             script_args = '--script-args %s' % self.script_args if self.script_args else ''
-            no_ping = '-Pn' if self.pingless else ''
+            no_ping = '-Pn' if int(self.pingless) else ''
             ports = '-p %s' % self.ports if self.ports else ''
             command = 'nmap --script %s %s -sV %s -oX %s %s %s' % (self.script, script_args, no_ping, os.path.abspath(self.filename), ports, self.target_specification)
             process = await asyncio.create_subprocess_exec(*command.split(' '), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=self.script_folder)

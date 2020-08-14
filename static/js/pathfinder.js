@@ -26,7 +26,7 @@ function startScan(){
     function processResults(data){
         if(data.status == 'pass'){
             displayOutput(data.output);
-            refresher = setInterval(checkScanStatus, 20000);
+            refresher = setInterval(checkScanStatus, 10000);
         }else{
             displayOutput('scan issue, ' + data.output + ' please check server logs for more details');
             validateFormState(true, '#startScan')
@@ -34,13 +34,14 @@ function startScan(){
     }
     validateFormState(false, '#startScan');
     validateFormState(false, '#viewFacts');
-    let fields = {}
+    scanner = $('#scannerSelection').val();
+    let fields = {};
     for (var param in scanner_fields){
         fields[scanner_fields[param]] = $('#'+scanner_fields[param]).val();
     }
-    displayOutput('scan started with parameters:\n' + JSON.stringify(fields, null, 4));
+    displayOutput(scanner + ' scan started with parameters:\n' + JSON.stringify(fields, null, 4));
     let data = {'index':'scan',
-                'scanner': $('#scannerSelection').val(),
+                'scanner': scanner,
                 'fields':fields
                 };
     restRequest('POST', data, processResults, '/plugin/pathfinder/api');
