@@ -172,7 +172,7 @@ class PathfinderGui(BaseWorld):
 
     def load_scanners(self):
         scanners = {}
-        for filepath in glob.iglob('plugins/pathfinder/scanners/*/scanner.py'):
+        for filepath in glob.iglob(os.path.join('plugins', 'pathfinder', 'scanners', '*', 'scanner.py')):
             module = import_module(filepath.replace('/', '.').replace('\\', '.').replace('.py', ''))
             scanner = module.Scanner(dependencies=self.installed_dependencies)
             scanners[scanner.name] = scanner
