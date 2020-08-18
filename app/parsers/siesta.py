@@ -20,7 +20,7 @@ class ReportParser:
             caldera_report = self.parse_json_report(siesta_report)
             self.generate_network_map(caldera_report)
         except Exception as e:
-            self.log.error('exception when parsing nmap results xml: %s' % repr(e))
+            self.log.error('exception when parsing siesta report: %s' % repr(e))
             return None
 
         return caldera_report
