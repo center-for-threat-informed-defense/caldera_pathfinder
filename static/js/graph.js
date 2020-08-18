@@ -72,8 +72,8 @@ var draw = function(graph) {
     nodes.append('text')
         .attr('dx', function(d) {return node_radii[d.group]/2 + 8})
         .attr('dy', ".35em")
-        .attr("stroke", "white")
-        .attr("fill", "white")
+        .attr("stroke", function(d) { if(d.dim) return "grey"; else return "white"; })
+        .attr("fill", function(d) { if(d.dim) return "grey"; else return "white"; })
         .text(function(d) {return d.label})
 
     simulation

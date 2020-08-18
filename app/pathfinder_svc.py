@@ -108,13 +108,16 @@ class PathfinderService:
             if host not in report.hosts:
                 return []
             host_vulnerabilities = report.hosts[host].cves
-            available_techniques = [t for cve in host_vulnerabilities for t in await self.data_svc.search(cve, 'abilities') or []]
+            available_techniques = self.collect_tagged_abilities(host_vulnerabilities)
             return available_techniques
 
         if path:
             return [t for h in path[1:] for t in await get_host_exploits(h)]
         else:
             return get_host_exploits(targetedhost)
+
+    async def collect_tagged_abilities(self, ability_tags):
+        return [a for tag in ability_tags for a in await self.data_svc.search(tag, 'abilities') or []]
 
     async def collect_tagged_adversaries(self, adversary_tags):
         return [a.display for tag in adversary_tags for a in await self.data_svc.search(tag, 'adversaries') or []]
