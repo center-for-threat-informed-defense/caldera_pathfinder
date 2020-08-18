@@ -2,7 +2,8 @@ import os
 import glob
 import uuid
 import asyncio
-from plugins.pathfinder.app.pathfinder_gui import get_machine_ip
+from plugins.pathfinder.app.pathfinder_util import get_machine_ip
+from plugins.pathfinder.scanners.fields import TextField, PulldownField, CheckboxField
 
 
 class Scanner:
@@ -21,11 +22,11 @@ class Scanner:
         self.ports = ports
         self.pingless = pingless
         self.enabled = self.check_dependencies(dependencies)
-        self.fields = [dict(name='Target Specification', param='target_specification', type='text', default=get_machine_ip()),
-                       dict(name='Scanner Script', param='script', type='pulldown', values=self.list_available_scripts(), prompt='Select the nmap script to use'),
-                       dict(name='Script Arguments', param='script_args', type='text'),
-                       dict(name='Ports', param='ports', type='text'),
-                       dict(name='No Ping (-Pn)', param='pingless', type='checkbox')]
+        self.fields = [TextField('target_specification', label='Target Specification', default=get_machine_ip()),
+                       PulldownField('script', label='Scanner Script', values=self.list_available_scripts(), prompt='Select the nmap script to use'),
+                       TextField('script_args', label='Script Arguments'),
+                       TextField('ports', label='Ports'),
+                       CheckboxField('pingless', label='No Ping (-Pn)')]
 
     async def scan(self):
         try:

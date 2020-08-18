@@ -1,7 +1,6 @@
 import os
 import glob
 import yaml
-import socket
 import logging
 import asyncio
 from aiohttp import web
@@ -12,6 +11,7 @@ from importlib import import_module
 from app.service.auth_svc import check_authorization
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.pathfinder_svc import PathfinderService
+from plugins.pathfinder.app.pathfinder_util import sanitize_filename
 import plugins.pathfinder.settings as settings
 
 
@@ -164,9 +164,8 @@ class PathfinderGui(BaseWorld):
 
     async def return_scanner_configuration(self, data):
         scanner = data.pop('name')
-        self.log.debug(self.scanners)
         if scanner in self.scanners:
-            return dict(name=scanner, fields=self.scanners[scanner].fields, enabled=self.scanners[scanner].enabled, error=False)
+            return dict(name=scanner, fields=[f.__dict__ for f in self.scanners[scanner].fields], enabled=self.scanners[scanner].enabled, error=False)
         else:
             return dict(name=scanner, error='scanner not able to be found')
 
@@ -181,27 +180,3 @@ class PathfinderGui(BaseWorld):
     @staticmethod
     def load_scanner(name):
         return import_module('plugins.pathfinder.scanners.%s.scanner' % name)
-
-
-def get_machine_ip():
-    # this gets the exit IP, so if you are on a VPN it will get you the IP on the VPN network and not your local network IP
-    def get_ip():
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            s.connect(('10.255.255.255', 1))
-            ip = s.getsockname()[0]
-        except Exception:
-            ip = '127.0.0.1'
-        finally:
-            s.close()
-        return ip
-
-    return get_ip()
-
-
-def sanitize_filename(proposed):
-    subs = [('.', '_'), ('/', '-')]
-    new = proposed
-    for character, replacement in subs:
-        new = new.replace(character, replacement)
-    return new
