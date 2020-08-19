@@ -59,7 +59,8 @@ class PathfinderGui(BaseWorld):
                 visualization_data['links'].append(dict(source=ip, target=id, type='port'))
                 for cve in port.cves:
                     id2 = '%s:%s' % (id, cve)
-                    visualization_data['nodes'].append(dict(id=id2, label=cve, group='cves'))
+                    dim = False if await self.pathfinder_svc.collect_tagged_abilities([cve]) != [] else True
+                    visualization_data['nodes'].append(dict(id=id2, label=cve, group='cves', dim=dim))
                     visualization_data['links'].append(dict(source=id, target=id2, type='cve'))
 
         return visualization_data
