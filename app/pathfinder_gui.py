@@ -79,7 +79,8 @@ class PathfinderGui(BaseWorld):
                     reports=lambda d: self.retrieve_reports(),
                     status=lambda d: self.check_scan_status(),
                     create_adversary=lambda d: self.generate_adversary(d),
-                    scanner_config=lambda d: self.return_scanner_configuration(d)
+                    scanner_config=lambda d: self.return_scanner_configuration(d),
+                    source_name=lambda d: self.get_source_name(d)
                 )
             )
             if index not in options[request.method]:
@@ -142,6 +143,12 @@ class PathfinderGui(BaseWorld):
         if report and start and target:
             path, adversary_id = await self.pathfinder_svc.generate_adversary(report[0], start, target, tags)
             return dict(adversary_id=adversary_id, new_links=generate_links(path))
+
+    async def get_source_name(self, data):
+        source = await self.data_svc.locate('sources', dict(id=data['source_id']))
+        if source:
+            return dict(name=source[0].name)
+        return dict()
 
     @check_authorization
     async def store_report(self, request):
