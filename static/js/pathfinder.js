@@ -3,6 +3,7 @@ var latest_source
 var current_report
 var scanner_fields = []
 
+
 function changeInputOptions(event, section) {
     $('.pathfinderSection').css('display', 'none');
     $('.tab-bar button').removeClass('selected');
@@ -56,6 +57,7 @@ function processScan(filename){
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
+            latest_source = data.source;
             openSource(data.source);
             reloadReports();
         }else{

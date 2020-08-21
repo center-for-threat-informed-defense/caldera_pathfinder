@@ -108,7 +108,7 @@ class PathfinderService:
             if host not in report.hosts:
                 return []
             host_vulnerabilities = report.hosts[host].cves
-            available_techniques = self.collect_tagged_abilities(host_vulnerabilities)
+            available_techniques = await self.collect_tagged_abilities(host_vulnerabilities)
             return available_techniques
 
         if path:
