@@ -5,9 +5,10 @@ from collections import defaultdict
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 from plugins.pathfinder.app.objects.secondclass.c_host import Host
 from plugins.pathfinder.app.objects.secondclass.c_port import Port
+from plugins.pathfinder.app.interfaces.i_parser import ParserInterface
 
 
-class ReportParser:
+class ReportParser(ParserInterface):
 
     def __init__(self):
         self.format = 'siesta'

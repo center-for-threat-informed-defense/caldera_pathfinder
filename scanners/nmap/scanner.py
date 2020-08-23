@@ -4,11 +4,12 @@ import uuid
 import asyncio
 from plugins.pathfinder.app.pathfinder_util import get_machine_ip
 from plugins.pathfinder.scanners.fields import TextField, PulldownField, CheckboxField
+from plugins.pathfinder.app.interfaces.i_scanner import ScannerInterface
 
 
-class Scanner:
+class Scanner(ScannerInterface):
 
-    def __init__(self, filename=None, target_specification=None, script=None, script_args=None, ports=None, dependencies=None, pingless=None):
+    def __init__(self, filename=None, target_specification=None, script=None, script_args=None, ports=None, dependencies=None, pingless=None, **kwargs):
         self.name = 'nmap'
         self.id = str(uuid.uuid4())
         self.status = None
@@ -21,7 +22,7 @@ class Scanner:
         self.script_args = script_args
         self.ports = ports
         self.pingless = pingless
-        self.enabled = self.check_dependencies(dependencies)
+        self.enabled = self.check_dependencies(dependencies or {})
         self.fields = [TextField('target_specification', label='Target Specification', default=get_machine_ip()),
                        PulldownField('script', label='Scanner Script', values=self.list_available_scripts(), prompt='Select the nmap script to use'),
                        TextField('script_args', label='Script Arguments'),
