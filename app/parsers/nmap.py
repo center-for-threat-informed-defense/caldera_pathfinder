@@ -9,9 +9,10 @@ from collections import defaultdict
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 from plugins.pathfinder.app.objects.secondclass.c_host import Host
 from plugins.pathfinder.app.objects.secondclass.c_port import Port
+from plugins.pathfinder.app.interfaces.i_parser import ParserInterface
 
 
-class ReportParser:
+class ReportParser(ParserInterface):
 
     def __init__(self):
         self.format = 'nmap'
@@ -41,7 +42,7 @@ class ReportParser:
                 if host.find('hostnames').find('hostname') is not None:
                     report_host.hostname = host.find('hostnames').find('hostname').get('name')
             for port in host.find('ports').findall('port'):
-                report_port = Port(port.get('portid'), '')
+                report_port = Port(port.get('portid'))
                 report_port.protocol = port.get('protocol', '')
                 port_state = port.find('state')
                 if port_state is not None:

@@ -2,9 +2,10 @@ import logging
 
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
+from plugins.pathfinder.app.interfaces.i_parser import ParserInterface
 
 
-class ReportParser:
+class ReportParser(ParserInterface):
 
     def __init__(self):
         self.format = 'caldera'
