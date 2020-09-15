@@ -1,4 +1,4 @@
-# CALDERA Pathfinder
+# CALDERA&trade; Pathfinder
 A CALDERA plugin: https://github.com/center-for-threat-informed-defense/caldera_pathfinder
 ###### map network vulnerabilities, plan network attacks
 
