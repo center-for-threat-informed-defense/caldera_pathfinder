@@ -1,10 +1,10 @@
 # CALDERA Pathfinder
 A CALDERA plugin: https://github.com/center-for-threat-informed-defense/caldera_pathfinder
-######map network vulnerabilities, plan network attacks
+###### map network vulnerabilities, plan network attacks
 
 ![plugin home](docs/pathfinder.jpg)
 
-##Overview
+## Overview
 Pathfinder seeks to extend the CALDERA automated adversary emulation platform to support automated ingestion of network scanning tool output for CALDERA to analyze and execute against. The principal objective of the project is to extend CALDERA to allow a user to do the following:
 1. Run a scan of a target network or system
 2. Upload the scan results to a running instance of CALDERA
