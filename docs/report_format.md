@@ -1,6 +1,6 @@
 # Native Caldera Vulnerability Report Format
 
-## example
+## Example
 <pre>
 id: d64be1a7-c698-49bb-939e-0b18bfb018a5
 name: vulnerability-report-May-12-2020
