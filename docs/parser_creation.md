@@ -1,6 +1,6 @@
-#Pathfinder Parser Creation
-######Enter your happy place, prime your keyboard and, "copy, paste, change!"
-##example
+# Pathfinder Parser Creation
+###### Enter your happy place, prime your keyboard and, "copy, paste, change!"
+## Example
 
 ```python
 import logging
@@ -49,7 +49,7 @@ class ReportParser:
         report.network_map = dict(network_map)
 ```
 
-#Tutorial
+# Tutorial
 
 From the example above you can see a very simplified and pruned down example of a report parser.
 The format of a report parser is very simple and starts as a python module with a `ReportParser` class within it.
