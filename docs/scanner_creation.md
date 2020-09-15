@@ -1,6 +1,6 @@
-#Pathfinder Scanner Setup
-######To be successful you must follow the sage advice: "copy, paste, change!"
-##Example
+# Pathfinder Scanner Setup
+###### To be successful you must follow the sage advice: "copy, paste, change!"
+## Example
 
 ```python
 import os
@@ -43,7 +43,7 @@ class Scanner:
             self.status = 'done'
 ```
 
-#Tutorial
+# Tutorial
 
 Adding a scanner to pathfinder was designed to be simple and flexible.
 Before adding a scanner you should make sure to create a parser so that your results are able to be parsed into a caldera report upon scan completion.
