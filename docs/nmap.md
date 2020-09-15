@@ -1,11 +1,11 @@
-#nmap
+# nmap
 
-##overview
+## Overview
 nmap is a network scanning tool
 
 
-##useful parameters/settings
-###scanning
+## useful parameters/settings
+### scanning
 <pre>
 -sS       scan all open ports
 -O        try to determine OS version
@@ -15,13 +15,13 @@ nmap is a network scanning tool
 -sU       scan UDP ports as well (long)
 </pre>
 
-###evasion
+### evasion
 <pre>
 -D             scan from deceptive address
 --spoofmac     spoof mac address for scan
 </pre>
 
-#scripts
+# scripts
 nmap has a built in scripting engine where simple lua scripts can be executed in parallel against the nmap output
 
 there are a number of built in and external scripts for vulnerability scanning
@@ -38,7 +38,7 @@ vuln
 </pre>
 
 
-#examples
+# examples
 these commands were run on a vlan with a handful of devices put up for testing on it
 
 
