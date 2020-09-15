@@ -11,6 +11,7 @@ Pathfinder seeks to extend the CALDERA automated adversary emulation platform to
 3. Use the ingested results to draw out potential attack paths CALDERA could notionally take
 4. Create workflows so that CALDERA can follow the actual attack paths and execute a real attack
 
+More information is provided under [docs](https://github.com/center-for-threat-informed-defense/caldera_pathfinder/tree/master/docs)
 
 ## Questions and Feedback
 
