@@ -8,7 +8,7 @@ You are welcome to comment on issues, open new issues, and open pull requests.
 
 If you contribute any source code, we need you to agree to the following Developer's Certificate of Origin below.
 
-## Reporting issues with emulation procedures
+## Reporting issues
   
 * Describe (in detail) what should have happened. Include any supporting information that may be helpful in resolving the issue.
   
