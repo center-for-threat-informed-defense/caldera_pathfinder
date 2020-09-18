@@ -6,9 +6,7 @@ Thanks for contributing to Pathfinder!
 
 You are welcome to comment on issues, open new issues, and open pull requests.
 
-Pull requests should target the **[develop](https://github.com/center-for-threat-informed-defense/caldera_pathfinder/tree/develop)** branch of the repository.
-
-Also, if you contribute any source code, we need you to agree to the following Developer's Certificate of Origin below.
+If you contribute any source code, we need you to agree to the following Developer's Certificate of Origin below.
 
 ## Reporting issues with emulation procedures
   
