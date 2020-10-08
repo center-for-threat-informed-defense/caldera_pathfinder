@@ -1,5 +1,5 @@
 # CALDERA&trade; Pathfinder
-A CALDERA plugin
+A CALDERA plugin developed by the Center For Threat-Informed Defense to enable CALDERA to intelligently leverage vulnerability scan data in its operations. With Pathfinder, CALDERA can demonstrate how an adversary might use vulnerabilities in your environment to achieve their goals, highlighting a path through your network and showing the real impact of a vulnerability.  
 
 ###### map network vulnerabilities, plan network attacks
 
