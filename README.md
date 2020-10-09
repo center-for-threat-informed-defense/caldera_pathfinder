@@ -1,16 +1,17 @@
 # CALDERA&trade; Pathfinder
-A CALDERA plugin
-
-###### map network vulnerabilities, plan network attacks
-
-![plugin home](docs/pathfinder.jpg)
 
 ## Overview
-Pathfinder seeks to extend the CALDERA automated adversary emulation platform to support automated ingestion of network scanning tool output for CALDERA to analyze and execute against. The principal objective of the project is to extend CALDERA to allow a user to do the following:
+Pathfinder is a [CALDERA](https://github.com/mitre/caldera) plugin developed by the Center for Threat-Informed Defense. Pathfinder extends CALDERA's functionality to support automated ingestion of network scanning tool output. By intelligently integrating scan data with an automated adversary emulation platform, Pathfinder will demonstrate how an adversary might use vulnerabilities in an environment to achieve their goals, highlighting a path through a network, and showing the real impact of a vulnerability for CALDERA to analyze and execute against. 
+
+Pathfinder extends CALDERA to do the following:
 1. Run a scan of a target network or system
 2. Upload the scan results to a running instance of CALDERA
 3. Use the ingested results to draw out potential attack paths CALDERA could notionally take
 4. Create workflows so that CALDERA can follow the actual attack paths and execute a real attack
+
+###### map vulnerabilities. plan attacks.
+
+![plugin home](docs/pathfinder.jpg)
 
 More information is provided under [docs](https://github.com/center-for-threat-informed-defense/caldera_pathfinder/tree/master/docs)
 
