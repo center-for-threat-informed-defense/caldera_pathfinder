@@ -17,9 +17,11 @@ Pathfinder extends CALDERA to do the following:
       </a>
 </div>
 
-###### map vulnerabilities. plan attacks.
+## Screenshot
 
 ![plugin home](docs/pathfinder.jpg)
+
+###### map vulnerabilities. plan attacks.
 
 More information is provided under [docs](https://github.com/center-for-threat-informed-defense/caldera_pathfinder/tree/master/docs)
 
