@@ -9,6 +9,14 @@ Pathfinder extends CALDERA to do the following:
 3. Use the ingested results to draw out potential attack paths CALDERA could notionally take
 4. Create workflows so that CALDERA can follow the actual attack paths and execute a real attack
 
+## Tutorial Video
+
+<div align="left">
+      <a href="https://www.youtube.com/watch?v=gQRWkHFRG-s">
+         <img src="https://img.youtube.com/vi/gQRWkHFRG-s/0.jpg" style="width:100%;">
+      </a>
+</div>
+
 ###### map vulnerabilities. plan attacks.
 
 ![plugin home](docs/pathfinder.jpg)
