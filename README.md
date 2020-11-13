@@ -25,6 +25,16 @@ More information is provided under [docs](https://github.com/center-for-threat-i
 
 ###### map vulnerabilities. plan attacks.
 
+## Getting Started
+
+If you want to run scans with nmap directly with the pathfinder plugin make sure to install nmap on your system
+
+Install CALDERA (if you don't have it already) and clone down the pathfinder repo into the `caldera/plugins` folder with this command:
+
+`git clone https://github.com/center-for-threat-informed-defense/caldera_pathfinder.git pathfinder --recursive`
+
+After that add `pathfinder` to enabled plugins list in the caldera conf file for your environment and you are set to start scanning and path finding!
+
 ## Questions and Feedback
 
 Please submit issues for any technical questions/concerns or contact ctid@mitre-engenuity.org directly for more general inquiries.
