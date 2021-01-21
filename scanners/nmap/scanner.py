@@ -35,7 +35,7 @@ class Scanner(ScannerInterface):
             script_args = '--script-args %s' % self.script_args if self.script_args else ''
             no_ping = '-Pn' if int(self.pingless) else ''
             ports = '-p %s' % self.ports if self.ports else ''
-            command = 'nmap --script %s %s -sV %s -oX %s %s %s' % (self.script, script_args, no_ping, os.path.abspath(self.filename), ports, self.target_specification)
+            command = 'nmap --script %s %s -sV %s -oX %s %s %s' % (self.format_script(self.script), script_args, no_ping, os.path.abspath(self.filename), ports, self.target_specification)
             process = await asyncio.create_subprocess_exec(*command.split(' '), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, cwd=self.script_folder)
             stdout, stderr = await process.communicate()
             self.status = 'done'
@@ -48,6 +48,9 @@ class Scanner(ScannerInterface):
 
     def list_available_scripts(self):
         return [os.path.basename(p) for p in glob.iglob('%s/*' % self.script_folder)]
+
+    def format_script(self, path):
+        return os.path.join(path, '') if os.path.isdir(os.path.join(self.script_folder, path)) else path
 
     def check_dependencies(self, dependencies):
         return dependencies.get('nmap', False)
