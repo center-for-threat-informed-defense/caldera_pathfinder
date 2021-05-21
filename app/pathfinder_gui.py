@@ -123,7 +123,12 @@ class PathfinderGui(BaseWorld):
             scan = self.running_scans.pop(target)
             if not scan.returncode:
                 source = await self.pathfinder_svc.import_scan(scan.name, os.path.basename(scan.filename))
-                finished[scan.id] = dict(source=source.name, source_id=source.id)
+                if not source:
+                    err = 'error importing report output, check server log'
+                    self.log.debug(err)
+                    errors[scan.id] = dict(message=err)
+                else:
+                    finished[scan.id] = dict(source=source.name, source_id=source.id)
             else:
                 self.log.debug(scan.output['stderr'])
                 errors[scan.id] = dict(message=scan.output['stderr'])
