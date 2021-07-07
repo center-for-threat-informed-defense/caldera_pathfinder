@@ -10,7 +10,9 @@ class HostSchema(ma.Schema):
     ip = ma.fields.String()
     ports = ma.fields.Dict(keys=ma.fields.Integer(), values=ma.fields.Nested(PortSchema()))
     cves = ma.fields.List(ma.fields.String())
-
+    software = ma.fields.List()
+    os = ma.field.String()
+    
     @ma.post_load()
     def build_host(self, data, **_):
         return Host(**data)
