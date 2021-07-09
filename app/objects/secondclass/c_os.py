@@ -4,7 +4,7 @@ from app.utility.base_object import BaseObject
 
 
 class OSSchema(ma.Schema):
-    os_type = ma.field.String()
+    osType = ma.field.String()
     subtype = ma.fields.String()
     notes = ma.fields.String()
 
@@ -17,9 +17,9 @@ class OS(BaseObject):
 
     schema = OSSchema()
 
-    def __init__(self, os_type = None, subtype=None, notes=None, match='.*'):
+    def __init__(self, osType, subtype=None, notes=None, match='.*'):
         super().__init__()
-        self.os_type = os_type
+        self.osType = os_type
         self.subtype = subtype
         self.notes = notes
 
