@@ -2,6 +2,7 @@ import marshmallow as ma
 
 from app.utility.base_object import BaseObject
 from plugins.pathfinder.app.objects.secondclass.c_port import PortSchema
+from plugins.pathfinder.app.objects.secondclass.c_os import OSSchema
 
 
 class HostSchema(ma.Schema):
@@ -11,7 +12,7 @@ class HostSchema(ma.Schema):
     ports = ma.fields.Dict(keys=ma.fields.Integer(), values=ma.fields.Nested(PortSchema()))
     cves = ma.fields.List(ma.fields.String())
     software = ma.fields.List(ma.fields.String())
-    os = ma.field.OSSchema()
+    os = ma.fields.Nested(OSSchema())
 
     @ma.post_load()
     def build_host(self, data, **_):
