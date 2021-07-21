@@ -13,6 +13,7 @@ class HostSchema(ma.Schema):
     cves = ma.fields.List(ma.fields.String())
     software = ma.fields.List(ma.fields.String())
     os = ma.fields.Nested(OSSchema())
+    mac = ma.fields.String()
 
     @ma.post_load()
     def build_host(self, data, **_):
@@ -23,7 +24,7 @@ class Host(BaseObject):
 
     schema = HostSchema()
 
-    def __init__(self, ip, hostname=None, ports=None, cves=None, software=None, os=None, match='.*'):
+    def __init__(self, ip, hostname=None, ports=None, cves=None, software=None, os=None, mac=None, match='.*'):
         super().__init__()
         self.hostname = hostname
         self.ip = ip
@@ -31,3 +32,4 @@ class Host(BaseObject):
         self.cves = cves or []
         self.software = software or []
         self.os = os
+        self.mac = mac
