@@ -11,4 +11,3 @@
 !.logs/.gitkeep
 data/reports/**
 data/adversaries/**
-app/parsers/**
