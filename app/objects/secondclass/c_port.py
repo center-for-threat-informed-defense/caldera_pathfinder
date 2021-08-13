@@ -23,7 +23,7 @@ class Port(BaseObject):
 
     schema = PortSchema()
 
-    def __init__(self, number, protocol='TCP', cves=None, service=None, version=None, product=None, state='open', stateReason=None, match='.*'):
+    def __init__(self, number, protocol='TCP', cves=None, service=None, version=None, product=None, state='open', statereason=None, match='.*'):
         super().__init__()
         self.number = number
         self.protocol = protocol
@@ -32,5 +32,5 @@ class Port(BaseObject):
         self.version = version
         self.product = product
         self.state = state
-        self.stateReason = stateReason
+        self.stateReason = statereason
 
