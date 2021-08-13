@@ -12,7 +12,7 @@ class PortSchema(ma.Schema):
     version = ma.fields.String(missing=None)
     product = ma.fields.String(missing=None)
     state = ma.fields.String(missing='open')
-    stateReason = ma.fields.String(missing=None)
+    state_reason = ma.fields.String(missing=None)
 
     @ma.post_load()
     def build_port(self, data, **_):
@@ -32,5 +32,5 @@ class Port(BaseObject):
         self.version = version
         self.product = product
         self.state = state
-        self.stateReason = state_reason
+        self.state_reason = state_reason
 
