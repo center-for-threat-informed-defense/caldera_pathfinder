@@ -18,8 +18,8 @@ class Service(BaseObject):
 
     schema = ServiceSchema()
 
-    def __init__(self, servicetype, subtype=None, notes=None, match='.*'):
+    def __init__(self, service_type, subtype=None, notes=None, match='.*'):
         super().__init__()
-        self.serviceType = servicetype
+        self.serviceType = service_type
         self.subtype = subtype
         self.notes = notes
