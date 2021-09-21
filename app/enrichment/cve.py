@@ -8,7 +8,7 @@ https://nvd.nist.gov/general/News/New-NVD-CVE-CPE-API-and-SOAP-Retirement
 import re
 import requests
 
-from app.objects.c_cve import CVE
+from plugins.pathfinder.app.objects.c_cve import CVE
 
 
 CVE_SEARCH_URL = 'https://cvepremium.circl.lu/api'
