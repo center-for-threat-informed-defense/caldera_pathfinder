@@ -11,6 +11,7 @@ from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
 from app.objects.c_adversary import Adversary
 import plugins.pathfinder.settings as settings
+import plugins.pathfinder.app.enrichment.cve as cve
 
 
 class PathfinderService:
@@ -29,6 +30,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
+            parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -132,11 +134,32 @@ class PathfinderService:
             return []
         paths = []
         for next_host in report.network_map[start]:
-            if not report.hosts[next_host].cves or next_host in path or next_host in avoid:
+            if next_host in path: #not report.hosts[next_host].cves or next_host in path or next_host in avoid:
                 continue
             next_paths = await self.find_paths(report, next_host, end, path)
             [paths.append(next_path) for next_path in next_paths if next_path]
         return paths
+
+    def enrich_report(self, report):
+        for key, host in report.hosts.items():
+            for soft in host.software:
+                try:
+                    cves = cve.keyword_cve(soft.subtype)
+                except Exception as e:
+                    continue
+                ids = [cve.id for cve in cves]
+                if len(ids) != 0:
+                    host.cves.append(ids)
+            if host.os:
+                try:
+                    cves = cve.keyword_cve(host.os.os_type)
+                except Exception as e:
+                    continue
+                ids = [cve.id for cve in cves]
+                if len(ids) != 0:
+                    host.cves.append(ids)
+        report.hosts[key] = host
+        return report
 
     @staticmethod
     def load_parsers():
