@@ -134,7 +134,7 @@ class PathfinderService:
             return []
         paths = []
         for next_host in report.network_map[start]:
-            if next_host in path: #not report.hosts[next_host].cves or next_host in path or next_host in avoid:
+            if next_host in path or next_host in avoid: #or not report.hosts[next_host].cves
                 continue
             next_paths = await self.find_paths(report, next_host, end, path)
             [paths.append(next_path) for next_path in next_paths if next_path]
