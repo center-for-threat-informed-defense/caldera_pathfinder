@@ -7,6 +7,7 @@ from importlib import import_module
 
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.enrichment.cve import keyword_cve
+from plugins.pathfinder.app.objects.secondclass.c_port import Port
 from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
@@ -32,12 +33,19 @@ class PathfinderService:
             parsed_report = self.parsers[scan_format].parse(temp_file)
             # enrich report with new CVEs using keyword_cve
             for k in list(parsed_report.hosts.keys()):
-                v = parsed_report.hosts[k]
-                s = v.software
-                c = []
-                c.extend(keyword_cve(s))
-                v.cve = c
-                parsed_report.hosts[k] = v
+                v = parsed_report.hosts[k]  # get report host from host key
+                sw = v.software  # get list of software on host
+                c = []  # capture CVEs
+                p = {}  # store new port objects as proof-of-concept viz
+                for idx, s in enumerate(sw):  # iterate through installed software, creating new port objects for viz.
+                    try:
+                        c.extend(keyword_cve(s.service_type))
+                    except KeyError as e:
+                        print(e)  # In the case that no CVE's are returned (or the request chain breaks)
+                    p[idx] = Port(number=idx, cves=[cve.id for cve in c])  # create new port objects
+                v.cve = [c.id for c in c]  # append all CVE id's to the host
+                v.ports = p  # set the new ports for viz
+                parsed_report.hosts[k] = v  # modify the host in the parsed report
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
