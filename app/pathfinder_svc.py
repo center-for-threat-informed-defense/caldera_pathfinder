@@ -6,6 +6,7 @@ import logging
 from importlib import import_module
 
 from app.utility.base_world import BaseWorld
+from plugins.pathfinder.app.enrichment.cve import keyword_cve
 from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
@@ -29,6 +30,14 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
+            # enrich report with new CVEs using keyword_cve
+            for k in list(parsed_report.hosts.keys()):
+                v = parsed_report.hosts[k]
+                s = v.software
+                c = []
+                c.extend(keyword_cve(s))
+                v.cve = c
+                parsed_report.hosts[k] = v
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
