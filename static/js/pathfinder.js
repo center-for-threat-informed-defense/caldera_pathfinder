@@ -54,6 +54,7 @@ function importScan(){
 
 function processScan(filename){
     function processResults(data){
+        data = JSON.parse(data);
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
