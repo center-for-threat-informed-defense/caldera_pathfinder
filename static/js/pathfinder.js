@@ -13,6 +13,7 @@ function changeInputOptions(event, section) {
     if (section == 'graphSection') {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
+        reloadReports();
     } else {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'none')
@@ -54,7 +55,7 @@ function importScan(){
 
 function processScan(filename){
     function processResults(data){
-        data = JSON.parse(data);
+        data = JSON.parse(data);   //TODO: This shouldnt have to be done here, bc then it would need to be done for all. Use other REST request function?
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
@@ -65,6 +66,7 @@ function processScan(filename){
             displayOutput('report import failed, please check server logs for issue');
         }
         validateFormState(true, '#startImport');
+        reloadReports();
     }
     validateFormState(false, '#startImport');
     let data = {'index': 'import_scan',
@@ -157,7 +159,6 @@ function checkScanStatus(){
             }
             latest_source = source_id;
             validateFormState(true, '#viewFacts');
-            reloadReports();
         }
         if (number_failed > 0){
             for (var key in data.errors){
