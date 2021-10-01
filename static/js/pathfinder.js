@@ -66,7 +66,6 @@ function processScan(filename){
             displayOutput('report import failed, please check server logs for issue');
         }
         validateFormState(true, '#startImport');
-        reloadReports();
     }
     validateFormState(false, '#startImport');
     let data = {'index': 'import_scan',
@@ -159,6 +158,7 @@ function checkScanStatus(){
             }
             latest_source = source_id;
             validateFormState(true, '#viewFacts');
+            reloadReports();
         }
         if (number_failed > 0){
             for (var key in data.errors){
