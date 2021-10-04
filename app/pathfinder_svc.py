@@ -142,7 +142,20 @@ class PathfinderService:
 
     def enrich_report(self, report):
         for key, host in report.hosts.items():
-            for soft in host.software:
+            if host.software:
+                cves = software_enrich(host.software)
+                if len(cves) != 0:
+                    host.cves.append(cves)
+            if host.os:
+                cves = host_enrich(host.os)
+                if len(cves) != 0:
+                    host.cves.append(cves)
+        report.hosts[key] = host
+        return report
+    
+    def software_enrich(self, software):
+        exploits = []
+        for soft in software:
                 try:
                     cves = cve.keyword_cve(soft.subtype)
                 except Exception as e:
@@ -150,18 +163,21 @@ class PathfinderService:
                     continue
                 ids = [cve.id for cve in cves]
                 if len(ids) != 0:
-                    host.cves.append(ids)
-            if host.os:
-                try:
-                    cves = cve.keyword_cve(host.os.os_type)
-                except Exception as e:
-                    self.log.error('exception when enriching: %s' % repr(e))
-                    continue
-                ids = [cve.id for cve in cves]
-                if len(ids) != 0:
-                    host.cves.append(ids)
-        report.hosts[key] = host
-        return report
+                    exploits.append(ids)
+        return exploits
+
+    def host_enrich(self,os):
+        exploits = []
+        try:
+            cves = cve.keyword_cve(os.os_type)
+        except Exception as e:
+            self.log.error('exception when enriching: %s' % repr(e))
+            return []
+        ids = [cve.id for cve in cves]
+        if len(ids) != 0:
+            exploits.append(ids)
+        return exploits
+            
 
     @staticmethod
     def load_parsers():
@@ -171,5 +187,3 @@ class PathfinderService:
             p = module.ReportParser()
             parsers[p.format] = p
         return parsers
-
-
