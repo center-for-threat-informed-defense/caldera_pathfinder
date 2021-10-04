@@ -134,7 +134,7 @@ class PathfinderService:
             return []
         paths = []
         for next_host in report.network_map[start]:
-            if next_host in path or next_host in avoid: #or not report.hosts[next_host].cves
+            if not report.hosts[next_host].cves or next_host in path or next_host in avoid:
                 continue
             next_paths = await self.find_paths(report, next_host, end, path)
             [paths.append(next_path) for next_path in next_paths if next_path]
@@ -146,6 +146,7 @@ class PathfinderService:
                 try:
                     cves = cve.keyword_cve(soft.subtype)
                 except Exception as e:
+                    self.log.error('exception when enriching: %s' % repr(e))
                     continue
                 ids = [cve.id for cve in cves]
                 if len(ids) != 0:
@@ -154,6 +155,7 @@ class PathfinderService:
                 try:
                     cves = cve.keyword_cve(host.os.os_type)
                 except Exception as e:
+                    self.log.error('exception when enriching: %s' % repr(e))
                     continue
                 ids = [cve.id for cve in cves]
                 if len(ids) != 0:
