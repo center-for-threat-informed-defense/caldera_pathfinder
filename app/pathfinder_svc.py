@@ -162,7 +162,7 @@ class PathfinderService:
                 try:
                     cves = cve.keyword_cve(soft.subtype)
                 except Exception as e:
-                    self.log.error('exception when enriching: %s' % repr(e))
+                    self.log.error(f'exception when enriching: {repr(e)}')
                     continue
                 ids = [cve.id for cve in cves]
                 if ids:
@@ -174,7 +174,7 @@ class PathfinderService:
         try:
             cves = cve.keyword_cve(os.os_type)
         except Exception as e:
-            self.log.error('exception when enriching: %s' % repr(e))
+            self.log.error(f'exception when enriching: {repr(e)}')
             return []
         ids = [cve.id for cve in cves]
         if ids:
