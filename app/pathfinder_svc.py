@@ -114,11 +114,14 @@ class PathfinderService:
             return available_techniques
 
         if path:
+            # path[1:] because the first node is assumed to be under control already.
             return [t for h in path[1:] for t in await get_host_exploits(h)]
         else:
             return get_host_exploits(targetedhost)
 
     async def collect_tagged_abilities(self, ability_tags):
+        #ability_tags is a list of CVE IDs.
+        #This function will search the Data_svc for abiltities that have the CVE ID tagged.
         return [a for tag in ability_tags for a in await self.data_svc.search(tag, 'abilities') or []]
 
     async def collect_tagged_adversaries(self, adversary_tags):
@@ -143,12 +146,12 @@ class PathfinderService:
     def enrich_report(self, report):
         for key, host in report.hosts.items():
             if host.software:
-                cves = software_enrich(host.software)
-                if len(cves) != 0:
+                cves = self.software_enrich(host.software)
+                if cves:
                     host.cves.append(cves)
             if host.os:
-                cves = host_enrich(host.os)
-                if len(cves) != 0:
+                cves = self.host_enrich(host.os)
+                if cves:
                     host.cves.append(cves)
         report.hosts[key] = host
         return report
@@ -162,11 +165,11 @@ class PathfinderService:
                     self.log.error('exception when enriching: %s' % repr(e))
                     continue
                 ids = [cve.id for cve in cves]
-                if len(ids) != 0:
+                if ids:
                     exploits.append(ids)
         return exploits
 
-    def host_enrich(self,os):
+    def host_enrich(self, os):
         exploits = []
         try:
             cves = cve.keyword_cve(os.os_type)
@@ -174,11 +177,10 @@ class PathfinderService:
             self.log.error('exception when enriching: %s' % repr(e))
             return []
         ids = [cve.id for cve in cves]
-        if len(ids) != 0:
+        if ids:
             exploits.append(ids)
         return exploits
             
-
     @staticmethod
     def load_parsers():
         parsers = {}
