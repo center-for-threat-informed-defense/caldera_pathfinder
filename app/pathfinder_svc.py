@@ -120,8 +120,10 @@ class PathfinderService:
             return get_host_exploits(targetedhost)
 
     async def collect_tagged_abilities(self, ability_tags):
-        #ability_tags is a list of CVE IDs.
-        #This function will search the Data_svc for abiltities that have the CVE ID tagged.
+        """
+        Args:
+            ability_tags (list): CVE IDs
+        """
         return [a for tag in ability_tags for a in await self.data_svc.search(tag, 'abilities') or []]
 
     async def collect_tagged_adversaries(self, adversary_tags):
