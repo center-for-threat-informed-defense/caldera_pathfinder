@@ -13,6 +13,7 @@ function changeInputOptions(event, section) {
     if (section == 'graphSection') {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
+        reloadReports();
     } else {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'none')
@@ -54,6 +55,7 @@ function importScan(){
 
 function processScan(filename){
     function processResults(data){
+        data = JSON.parse(data);   //TODO: This shouldnt have to be done here, bc then it would need to be done for all. Use other REST request function?
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
