@@ -22,5 +22,3 @@ class OS(BaseObject):
         self.os_type = os_type
         self.subtype = subtype
         self.notes = notes
-
-
