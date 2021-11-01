@@ -72,7 +72,9 @@ class PathfinderGui(BaseWorld):
             data = dict(await request.json())
             index = data.pop('index')
             options = dict(
-                DELETE=dict(),
+                DELETE=dict(
+                    report=lambda d: self.delete_report(d)
+                ),
                 PUT=dict(),
                 POST=dict(
                     scan=lambda d: self.scan(d),
@@ -82,6 +84,9 @@ class PathfinderGui(BaseWorld):
                     create_adversary=lambda d: self.generate_adversary(d),
                     scanner_config=lambda d: self.return_scanner_configuration(d),
                     source_name=lambda d: self.get_source_name(d)
+                ),
+                PATCH=dict(
+                    report=lambda d: self.rename_report(d)
                 )
             )
             if index not in options[request.method]:
@@ -92,9 +97,10 @@ class PathfinderGui(BaseWorld):
 
     async def scan(self, data):
         scanner = data.pop('scanner', None)
-        filename = sanitize_filename('pathfinder_%s' % date.today().strftime("%b-%d-%Y"))
-        report_file = '%s/reports/%s.xml' % (settings.data_dir, filename)
         fields = data.pop('fields', None)
+        filename = fields.pop('filename') or sanitize_filename('pathfinder_%s' % date.today().strftime("%b-%d-%Y"))
+        filename = filename.replace(' ', '_') #TODO: Determine best practice for including this in sanitize_filename and EAFP vs LBYL
+        report_file = '%s/reports/%s.xml' % (settings.data_dir, filename)
         try:
             scan = self.load_scanner(scanner).Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
             self.running_scans[scan.id] = scan
@@ -111,6 +117,31 @@ class PathfinderGui(BaseWorld):
         if source:
             return dict(status='pass', output='source: %s' % source.name, source=source.id)
         return dict(status='fail', output='failure occurred during report importing, please check server logs')
+
+    async def rename_report(self, data):
+        print(f'{data}')
+        try:
+            report_id = data.get('id')
+            report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
+            report = report[0]
+            print(f'{report}')
+            report.name = data.get('rename')
+            await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
+            await self.data_svc.store(report)
+            return dict(status='success', output=f'report {report_id} patched')
+        except Exception as e:
+            self.log.error(repr(e), exc_info=True)
+            return dict(status='fail', output='exception occurred while patching report')
+
+    async def delete_report(self, data):
+        print(f'{data}')
+        try:
+            report_id = data.get('id')
+            await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
+            return dict(status='success', output=f'report {report_id} removed')
+        except Exception as e:
+            self.log.error(repr(e), exc_info=True)
+            return dict(status='fail', output='exception occurred while removing report')
 
     async def retrieve_reports(self):
         reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]

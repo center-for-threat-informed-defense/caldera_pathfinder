@@ -14,6 +14,10 @@ function changeInputOptions(event, section) {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
         reloadReports();
+    } else if (section == 'reportSection') {
+        $('#logView').css('display', 'block')
+        $('#graphView').css('display', 'block')
+        reloadReports();
     } else {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'none')
@@ -55,7 +59,7 @@ function importScan(){
 
 function processScan(filename){
     function processResults(data){
-        data = JSON.parse(data);   //TODO: This shouldnt have to be done here, bc then it would need to be done for all. Use other REST request function?
+        data = JSON.parse(data);
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
@@ -81,6 +85,7 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
     $.ajax({
         type: 'POST',
         url: endpoint,
+
         data: fd,
         processData: false,
         contentType: false,
@@ -96,13 +101,34 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
     });
 }
 
+function restDeleteFile(file, callback=null, endpoint='/plugin/pathfinder/upload'){
+    let fd = new FormData();
+    fd.append('file', file);
+    $.ajax({
+        type: 'DELETE',
+        url: endpoint,
+
+        data: fd,
+        processData: false,
+        contentType: false,
+        success: function(data, status, options) {
+            if(callback) {
+                callback(data);
+            }
+            stream("successfully removed " + file.name);
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            stream(thrownError);
+        }
+    });
+}
+
 $('#fileInput').on('change', function (event){
     if(event.currentTarget) {
         let filename = event.currentTarget.files[0].name;
             if(filename){
                 restPostFile(event.currentTarget.files[0], function (data) {processScan(filename);})
                 event.currentTarget.value = '';
-
             }
     }
 });
@@ -182,8 +208,17 @@ function loadGraph(element, address){
     restRequest('GET', null, display, address);
 }
 
+function renameVulnerabilityReport(){
+    current_report = $('#altVulnerabilityReport').val();
+    new_name = $('#newReportName').val();
+    console.log(current_report)
+    console.log(new_name)
+    apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
+    reloadReports();
+}
+
 function downloadVulnerabilityReport(){
-    current_report = $('#vulnerabilityReport').val();
+    current_report = $('#altVulnerabilityReport').val();
     stream('Downloading report: '+ current_report);
     uri = "/plugin/pathfinder/download?report_id=" + current_report;
     let downloadAnchorNode = document.createElement('a');
@@ -192,6 +227,13 @@ function downloadVulnerabilityReport(){
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+}
+
+function removeVulnerabilityReport(){
+    current_report = $('#altVulnerabilityReport').val();
+    console.log(current_report)
+    apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
+    reloadReports();
 }
 
 function setupScannerSection(){
