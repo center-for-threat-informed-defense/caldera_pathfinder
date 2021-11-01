@@ -210,7 +210,7 @@ function loadGraph(element, address){
 
 function renameVulnerabilityReport(){
     current_report = $('#altVulnerabilityReport').val();
-    new_name = $('#newReportName').val();
+    let new_name = $('#newReportName').val();
     console.log(current_report)
     console.log(new_name)
     apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
