@@ -52,7 +52,6 @@ class PathfinderGui(BaseWorld):
         visualization_data['nodes'].append(dict(id=scanner_node, label='scanner', group='scanners'))
         for ip, host in vr[0].hosts.items():
             visualization_data['nodes'].append(dict(id=ip, label=ip, group='hosts'))
-            visualization_data['links'].append(dict(source=scanner_node, target=ip, type='network'))
             #for pnum, port in {pn: p for pn, p in host.ports.items() if (p.state == 'open') & (p.product is not None)}.items():
             for pnum, port in {pn: p for pn, p in host.ports.items() if p.state == 'open'}.items():
                 id = '%s:%s' % (ip, pnum)
