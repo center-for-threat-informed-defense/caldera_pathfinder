@@ -13,11 +13,11 @@ function changeInputOptions(event, section) {
     if (section == 'graphSection') {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
-        reloadReports();
+        refreshReports();
     } else if (section == 'reportSection') {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'block')
-        reloadReports();
+        refreshReports();
     } else {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'none')
@@ -138,6 +138,23 @@ function reloadReports(){
     restRequest('POST', {'index':'reports'}, updateData, '/plugin/pathfinder/api');
 }
 
+function refreshReports(){
+    function updateData(data){
+        data.reports.forEach(function(r) {
+            let found = false;
+            $("#vulnerabilityReport > option").each(function() {
+                if($(this).val() === r.id) {
+                    found = true;
+                }
+            });
+            if(!found){
+                $('#vulnerabilityReport').append('<option value="'+r.id+'">'+r.name+'</option>');
+            }
+        });
+    }
+    restRequest('POST', {'index':'reports'}, updateData, '/plugin/pathfinder/api');
+}
+
 function openSource(source_id){
     viewSection('sources', '/advanced/sources');
     setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, source_id);
@@ -189,7 +206,7 @@ function renameVulnerabilityReport(){
     current_report = $('#altVulnerabilityReport').val();
     let new_name = $('#newReportName').val();
     apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
-    reloadReports();
+    refreshReports();
 }
 
 function downloadVulnerabilityReport(){
@@ -207,7 +224,7 @@ function downloadVulnerabilityReport(){
 function removeVulnerabilityReport(){
     current_report = $('#altVulnerabilityReport').val();
     apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
-    reloadReports();
+    refreshReports();
 }
 
 function setupScannerSection(){
