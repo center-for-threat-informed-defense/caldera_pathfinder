@@ -59,7 +59,7 @@ function importScan(){
 
 function processScan(filename){
     function processResults(data){
-        data = JSON.parse(data);
+        //data = JSON.parse(data);
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
@@ -85,7 +85,6 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
     $.ajax({
         type: 'POST',
         url: endpoint,
-
         data: fd,
         processData: false,
         contentType: false,
@@ -94,28 +93,6 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
                 callback(data);
             }
             stream("successfully uploaded " + file.name);
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            stream(thrownError);
-        }
-    });
-}
-
-function restDeleteFile(file, callback=null, endpoint='/plugin/pathfinder/upload'){
-    let fd = new FormData();
-    fd.append('file', file);
-    $.ajax({
-        type: 'DELETE',
-        url: endpoint,
-
-        data: fd,
-        processData: false,
-        contentType: false,
-        success: function(data, status, options) {
-            if(callback) {
-                callback(data);
-            }
-            stream("successfully removed " + file.name);
         },
         error: function (xhr, ajaxOptions, thrownError) {
             stream(thrownError);
@@ -211,8 +188,6 @@ function loadGraph(element, address){
 function renameVulnerabilityReport(){
     current_report = $('#altVulnerabilityReport').val();
     let new_name = $('#newReportName').val();
-    console.log(current_report)
-    console.log(new_name)
     apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
     reloadReports();
 }
@@ -231,7 +206,6 @@ function downloadVulnerabilityReport(){
 
 function removeVulnerabilityReport(){
     current_report = $('#altVulnerabilityReport').val();
-    console.log(current_report)
     apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
     reloadReports();
 }
