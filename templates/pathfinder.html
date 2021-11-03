@@ -88,7 +88,7 @@
                     <br>
                     <label for="newReportName">New Report Name:</label>
                     <input id="newReportName" type="text" name="newReportName" value="" style="width:75%; margin:5px;"><br><br>
-                    <button id="renameReport" type="button" class="button-notready atomic-button" onclick="renameVulnerabilityReport(); #newReportName.value='';" style="margin-top:0">Rename Report</button>
+                    <button id="renameReport" type="button" class="button-notready atomic-button" onclick="renameVulnerabilityReport(); document.getElementById('newReportName').reset();" style="margin-top:0">Rename Report</button>
                     <button id="altDownloadReport" type="button" class="button-notready atomic-button" onclick="downloadVulnerabilityReport()" style="margin-top:0">Download Report</button>
                     <button id="removeReport" type="button" class="button-notready atomic-button" onclick="removeVulnerabilityReport()" style="margin-top:0">Remove Report</button>
                     <br>

@@ -127,7 +127,7 @@ class PathfinderGui(BaseWorld):
             report.name = data.get('rename')
             await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
             await self.data_svc.store(report)
-            return dict(status='success', output=f'report {report_id} patched')
+            return dict(status='success')
         except Exception as e:
             self.log.error(repr(e), exc_info=True)
             return dict(status='fail', output='exception occurred while patching report')

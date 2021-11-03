@@ -15,8 +15,8 @@ function changeInputOptions(event, section) {
         $('#graphView').css('display', 'block')
         reloadReports();
     } else if (section == 'reportSection') {
-        $('#logView').css('display', 'block')
-        $('#graphView').css('display', 'block')
+        $('#logView').css('display', 'none')
+        $('#graphView').css('display', 'none')
         reloadReports();
     } else {
         $('#logView').css('display', 'block')
@@ -59,7 +59,6 @@ function importScan(){
 
 function processScan(filename){
     function processResults(data){
-        //data = JSON.parse(data);
         if(data.status == 'pass'){
             displayOutput('report imported, new source created');
             displayOutput(data.output);
