@@ -120,7 +120,6 @@ class PathfinderGui(BaseWorld):
         return dict(status='fail', output='failure occurred during report importing, please check server logs')
 
     async def rename_report(self, data):
-        print(f'{data}')
         try:
             report_id = data.get('id')
             report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
