@@ -61,6 +61,9 @@ class PathfinderGui(BaseWorld):
                     dim = False if await self.pathfinder_svc.collect_tagged_abilities([cve]) != [] else True
                     visualization_data['nodes'].append(dict(id=id2, label=cve, group='cves', dim=dim))
                     visualization_data['links'].append(dict(source=id, target=id2, type='cve'))
+        for link in vr[0].network_map:
+            for to_node in vr[0].network_map[link]:
+                visualization_data['links'].append(dict(source=link, target=to_node, type='network'))
 
         return visualization_data
 
