@@ -61,6 +61,9 @@ class PathfinderGui(BaseWorld):
                     dim = False if await self.pathfinder_svc.collect_tagged_abilities([cve]) != [] else True
                     visualization_data['nodes'].append(dict(id=id2, label=cve, group='cves', dim=dim))
                     visualization_data['links'].append(dict(source=id, target=id2, type='cve'))
+        for link in vr[0].network_map:
+            for to_node in vr[0].network_map[link]:
+                visualization_data['links'].append(dict(source=link, target=to_node, type='network'))
 
         return visualization_data
 
@@ -97,8 +100,8 @@ class PathfinderGui(BaseWorld):
         scanner = data.pop('scanner', None)
         fields = data.pop('fields', None)
         filename = fields.pop('filename') or sanitize_filename('pathfinder_%s' % date.today().strftime("%b-%d-%Y"))
-        filename = filename.replace(' ', '_') #TODO: Determine best practice for including this in sanitize_filename and EAFP vs LBYL
-        report_file = '%s/reports/%s.xml' % (settings.data_dir, filename)
+        filename = filename.replace(' ', '_')
+        report_file = f'{settings.data_dir}/reports/{filename}.xml'
         try:
             scan = self.load_scanner(scanner).Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
             self.running_scans[scan.id] = scan
@@ -117,22 +120,19 @@ class PathfinderGui(BaseWorld):
         return dict(status='fail', output='failure occurred during report importing, please check server logs')
 
     async def rename_report(self, data):
-        print(f'{data}')
         try:
             report_id = data.get('id')
             report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
             report = report[0]
-            print(f'{report}')
             report.name = data.get('rename')
             await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
             await self.data_svc.store(report)
-            return dict(status='success', output=f'report {report_id} patched')
+            return dict(status='success')
         except Exception as e:
             self.log.error(repr(e), exc_info=True)
             return dict(status='fail', output='exception occurred while patching report')
 
     async def delete_report(self, data):
-        print(f'{data}')
         try:
             report_id = data.get('id')
             await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
@@ -157,7 +157,6 @@ class PathfinderGui(BaseWorld):
             else:
                 self.log.debug(scan.output['stderr'])
                 errors[scan.id] = dict(message=scan.output['stderr'])
-
         return dict(pending=pending, finished=finished, errors=errors)
 
     async def generate_adversary(self, data):

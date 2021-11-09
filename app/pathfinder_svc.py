@@ -13,6 +13,7 @@ from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
 from app.objects.c_adversary import Adversary
 import plugins.pathfinder.settings as settings
+import plugins.pathfinder.app.enrichment.cve as cve
 
 
 class PathfinderService:
@@ -115,11 +116,16 @@ class PathfinderService:
             return available_techniques
 
         if path:
+            # path[1:] because the first node is assumed to be under control already.
             return [t for h in path[1:] for t in await get_host_exploits(h)]
         else:
             return get_host_exploits(targetedhost)
 
     async def collect_tagged_abilities(self, ability_tags):
+        """
+        Args:
+            ability_tags (list): CVE IDs
+        """
         return [a for tag in ability_tags for a in await self.data_svc.search(tag, 'abilities') or []]
 
     async def collect_tagged_adversaries(self, adversary_tags):
@@ -141,6 +147,44 @@ class PathfinderService:
             [paths.append(next_path) for next_path in next_paths if next_path]
         return paths
 
+    def enrich_report(self, report):
+        for key, host in report.hosts.items():
+            if host.software:
+                cves = self.software_enrich(host.software)
+                if cves:
+                    host.cves.append(cves)
+            if host.os:
+                cves = self.host_enrich(host.os)
+                if cves:
+                    host.cves.append(cves)
+        report.hosts[key] = host
+        return report
+    
+    def software_enrich(self, software):
+        exploits = []
+        for soft in software:
+                try:
+                    cves = cve.keyword_cve(soft.subtype)
+                except Exception as e:
+                    self.log.error(f'exception when enriching: {repr(e)}')
+                    continue
+                ids = [cve.id for cve in cves]
+                if ids:
+                    exploits.append(ids)
+        return exploits
+
+    def host_enrich(self, os):
+        exploits = []
+        try:
+            cves = cve.keyword_cve(os.os_type)
+        except Exception as e:
+            self.log.error(f'exception when enriching: {repr(e)}')
+            return []
+        ids = [cve.id for cve in cves]
+        if ids:
+            exploits.append(ids)
+        return exploits
+            
     @staticmethod
     def load_parsers():
         parsers = {}
@@ -149,5 +193,3 @@ class PathfinderService:
             p = module.ReportParser()
             parsers[p.format] = p
         return parsers
-
-
