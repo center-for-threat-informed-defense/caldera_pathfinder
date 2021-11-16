@@ -14,10 +14,6 @@ function changeInputOptions(event, section) {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
         reloadReports();
-    } else if (section == 'reportSection') {
-        $('#logView').css('display', 'none')
-        $('#graphView').css('display', 'none')
-        reloadReports();
     } else {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'none')
@@ -70,7 +66,6 @@ function processScan(filename){
         }
         validateFormState(true, '#startImport');
     }
-    validateFormState(false, '#startImport');
     let data = {'index': 'import_scan',
                 'format': $('#scanInputFormat').val(),
                 'filename': filename
@@ -84,6 +79,7 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
     $.ajax({
         type: 'POST',
         url: endpoint,
+
         data: fd,
         processData: false,
         contentType: false,
@@ -92,6 +88,28 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
                 callback(data);
             }
             stream("successfully uploaded " + file.name);
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            stream(thrownError);
+        }
+    });
+}
+
+function restDeleteFile(file, callback=null, endpoint='/plugin/pathfinder/upload'){
+    let fd = new FormData();
+    fd.append('file', file);
+    $.ajax({
+        type: 'DELETE',
+        url: endpoint,
+
+        data: fd,
+        processData: false,
+        contentType: false,
+        success: function(data, status, options) {
+            if(callback) {
+                callback(data);
+            }
+            stream("successfully removed " + file.name);
         },
         error: function (xhr, ajaxOptions, thrownError) {
             stream(thrownError);
@@ -185,15 +203,17 @@ function loadGraph(element, address){
 }
 
 function renameVulnerabilityReport(){
-    current_report = $('#altVulnerabilityReport').val();
+    current_report = $('#vulnerabilityReport').val();
     let new_name = $('#newReportName').val();
+    stream('Renaming report: ' + current_report + ' to ' + new_name);
     apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
+    $('#vulnerabilityReport').empty();
     reloadReports();
 }
 
 function downloadVulnerabilityReport(){
-    current_report = $('#altVulnerabilityReport').val();
-    stream('Downloading report: '+ current_report);
+    current_report = $('#vulnerabilityReport').val();
+    stream('Downloading report: ' + current_report);
     uri = "/plugin/pathfinder/download?report_id=" + current_report;
     let downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", uri);
@@ -204,8 +224,10 @@ function downloadVulnerabilityReport(){
 }
 
 function removeVulnerabilityReport(){
-    current_report = $('#altVulnerabilityReport').val();
+    current_report = $('#vulnerabilityReport').val();
+    stream('Removing report: '+ current_report);
     apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
+    $('#vulnerabilityReport').empty();
     reloadReports();
 }
 
