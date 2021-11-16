@@ -66,7 +66,6 @@ function processScan(filename){
         }
         validateFormState(true, '#startImport');
     }
-    //validateFormState(false, '#startImport');
     let data = {'index': 'import_scan',
                 'format': $('#scanInputFormat').val(),
                 'filename': filename
@@ -206,16 +205,15 @@ function loadGraph(element, address){
 function renameVulnerabilityReport(){
     current_report = $('#vulnerabilityReport').val();
     let new_name = $('#newReportName').val();
-    console.log(current_report)
-    console.log(new_name)
+    stream('Renaming report: ' + current_report + ' to ' + new_name);
     apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
-    $('#newReportName').val() = '';
+    $('#vulnerabilityReport').empty();
     reloadReports();
 }
 
 function downloadVulnerabilityReport(){
     current_report = $('#vulnerabilityReport').val();
-    stream('Downloading report: '+ current_report);
+    stream('Downloading report: ' + current_report);
     uri = "/plugin/pathfinder/download?report_id=" + current_report;
     let downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", uri);
@@ -227,8 +225,9 @@ function downloadVulnerabilityReport(){
 
 function removeVulnerabilityReport(){
     current_report = $('#vulnerabilityReport').val();
-    console.log(current_report)
+    stream('Removing report: '+ current_report);
     apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
+    $('#vulnerabilityReport').empty();
     reloadReports();
 }
 
