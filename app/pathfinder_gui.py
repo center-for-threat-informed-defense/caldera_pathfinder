@@ -136,7 +136,7 @@ class PathfinderGui(BaseWorld):
         try:
             report_id = data.get('id')
             await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
-            return dict(status='success', output=f'report {report_id} removed')
+            return dict(status='success')
         except Exception as e:
             self.log.error(repr(e), exc_info=True)
             return dict(status='fail', output='exception occurred while removing report')
