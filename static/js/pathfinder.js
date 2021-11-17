@@ -7,6 +7,7 @@ var scanner_fields = []
 function changeInputOptions(event, section) {
     $('.pathfinderSection').css('display', 'none');
     $('.tab-bar button').removeClass('selected');
+
     $('#'+section).toggle();
     event.currentTarget.className = "selected";
     if (section == 'graphSection') {
@@ -78,6 +79,7 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
     $.ajax({
         type: 'POST',
         url: endpoint,
+
         data: fd,
         processData: false,
         contentType: false,
@@ -99,6 +101,7 @@ function restDeleteFile(file, callback=null, endpoint='/plugin/pathfinder/upload
     $.ajax({
         type: 'DELETE',
         url: endpoint,
+
         data: fd,
         processData: false,
         contentType: false,
@@ -204,10 +207,8 @@ function renameVulnerabilityReport(){
     let new_name = $('#newReportName').val();
     stream('Renaming report: ' + current_report + ' to ' + new_name);
     apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
-    //$('#vulnerabilityReport').empty();
-    //reloadReports();
-    rename_index = $('#vulnerabilityReport').findIndex((r => r.id == current_report));
-    $('#vulnerabilityReport')[rename_index] = new_name
+    $('#vulnerabilityReport').empty();
+    reloadReports();
 }
 
 function downloadVulnerabilityReport(){
@@ -226,9 +227,8 @@ function removeVulnerabilityReport(){
     current_report = $('#vulnerabilityReport').val();
     stream('Removing report: '+ current_report);
     apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
-    //remove_index = $('#vulnerabilityReport').findIndex((r => r.id == current_report));
-    $('#vulnerabilityReport').splice($.inArray(current_report, $('#vulnerabilityReport')), 1);
-    //reloadReports();
+    $('#vulnerabilityReport').empty();
+    reloadReports();
 }
 
 function setupScannerSection(){
