@@ -7,7 +7,6 @@ var scanner_fields = []
 function changeInputOptions(event, section) {
     $('.pathfinderSection').css('display', 'none');
     $('.tab-bar button').removeClass('selected');
-
     $('#'+section).toggle();
     event.currentTarget.className = "selected";
     if (section == 'graphSection') {
@@ -79,7 +78,6 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
     $.ajax({
         type: 'POST',
         url: endpoint,
-
         data: fd,
         processData: false,
         contentType: false,
@@ -101,7 +99,6 @@ function restDeleteFile(file, callback=null, endpoint='/plugin/pathfinder/upload
     $.ajax({
         type: 'DELETE',
         url: endpoint,
-
         data: fd,
         processData: false,
         contentType: false,
