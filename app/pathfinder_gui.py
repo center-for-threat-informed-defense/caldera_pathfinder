@@ -189,9 +189,9 @@ class PathfinderGui(BaseWorld):
         report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
         if report:
             try:
-                filename = '%s.yml' % report[0].id
+                filename = f'{report[0].name}.yml'
                 content = yaml.dump(report[0].display).encode('utf-8')
-                headers = dict([('CONTENT-DISPOSITION', 'attachment; filename="%s"' % filename),
+                headers = dict([('CONTENT-DISPOSITION', f'attachment; filename={filename}'),
                                 ('FILENAME', filename)])
                 return web.Response(body=content, headers=headers)
             except FileNotFoundError:
