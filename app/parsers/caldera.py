@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
@@ -11,10 +12,19 @@ class ReportParser(ParserInterface):
         self.format = 'caldera'
         self.log = logging.getLogger('caldera parser')
 
-    def parse(self, report):
+    def parse(self, report, name=None):
         try:
             caldera_report = VulnerabilityReport.load(BaseWorld.strip_yml(report)[0])
+            self.generate_network_map(caldera_report)
             return caldera_report
         except Exception as e:
             self.log.error('exception when loading caldera report: %s' % repr(e))
             return None
+
+    def generate_network_map(self, report):
+        network_map = defaultdict(list)
+        report_hosts = report.hosts.keys()
+        for host in report_hosts:
+            if report.hosts[host].ports:
+                [network_map[h2].append(host) for h2 in report_hosts if h2 != host]
+        report.network_map = dict(network_map)

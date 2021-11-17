@@ -207,8 +207,10 @@ function renameVulnerabilityReport(){
     let new_name = $('#newReportName').val();
     stream('Renaming report: ' + current_report + ' to ' + new_name);
     apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
-    $('#vulnerabilityReport').empty();
-    reloadReports();
+    //$('#vulnerabilityReport').empty();
+    //reloadReports();
+    rename_index = $('#vulnerabilityReport').findIndex((r => r.id == current_report));
+    $('#vulnerabilityReport')[rename_index] = new_name
 }
 
 function downloadVulnerabilityReport(){
@@ -227,8 +229,9 @@ function removeVulnerabilityReport(){
     current_report = $('#vulnerabilityReport').val();
     stream('Removing report: '+ current_report);
     apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
-    $('#vulnerabilityReport').empty();
-    reloadReports();
+    //remove_index = $('#vulnerabilityReport').findIndex((r => r.id == current_report));
+    $('#vulnerabilityReport').splice($.inArray(current_report, $('#vulnerabilityReport')), 1);
+    //reloadReports();
 }
 
 function setupScannerSection(){
