@@ -93,27 +93,6 @@ function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload')
     });
 }
 
-function restDeleteFile(file, callback=null, endpoint='/plugin/pathfinder/upload'){
-    let fd = new FormData();
-    fd.append('file', file);
-    $.ajax({
-        type: 'DELETE',
-        url: endpoint,
-        data: fd,
-        processData: false,
-        contentType: false,
-        success: function(data, status, options) {
-            if(callback) {
-                callback(data);
-            }
-            stream("successfully removed " + file.name);
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-            stream(thrownError);
-        }
-    });
-}
-
 $('#fileInput').on('change', function (event){
     if(event.currentTarget) {
         let filename = event.currentTarget.files[0].name;
