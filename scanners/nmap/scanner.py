@@ -27,7 +27,8 @@ class Scanner(ScannerInterface):
                        PulldownField('script', label='Scanner Script', values=self.list_available_scripts(), prompt='Select the nmap script to use'),
                        TextField('script_args', label='Script Arguments'),
                        TextField('ports', label='Ports'),
-                       CheckboxField('pingless', label='No Ping (-Pn)')]
+                       CheckboxField('pingless', label='No Ping (-Pn)'),
+                       TextField('filename', label='Report Name')]
 
     async def scan(self):
         try:

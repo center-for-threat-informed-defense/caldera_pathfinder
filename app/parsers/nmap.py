@@ -18,11 +18,11 @@ class ReportParser(ParserInterface):
         self.format = 'nmap'
         self.log = logging.getLogger('nmap parser')
 
-    def parse(self, report):
+    def parse(self, report, name=None):
         try:
             xml_report = ET.parse(report)
             root = xml_report.getroot()
-            caldera_report = self.parse_xml_report(root)
+            caldera_report = self.parse_xml_report(root, name)
             self.generate_network_map(caldera_report)
         except Exception as e:
             self.log.error('exception when parsing nmap results xml: %s' % repr(e))
@@ -30,9 +30,9 @@ class ReportParser(ParserInterface):
 
         return caldera_report
 
-    def parse_xml_report(self, root):
+    def parse_xml_report(self, root, name=None):
         cve_pattern = r'(CVE-\d{4}-\d{4,})'
-        report = VulnerabilityReport()
+        report = VulnerabilityReport(name=name)
 
         for host in root.findall('host'):
             host_exists = False
