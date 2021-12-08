@@ -59,11 +59,11 @@ function processScan(filename){
             displayOutput(data.output);
             latest_source = data.source;
             openSource(data.source);
-            reloadReports();
-        }else{
+        }else if(data.status == 'fail'){
             displayOutput('report import failed, please check server logs for issue');
         }
         validateFormState(true, '#startImport');
+        reloadReports();
     }
     let data = {'index': 'import_scan',
                 'format': $('#scanInputFormat').val(),
