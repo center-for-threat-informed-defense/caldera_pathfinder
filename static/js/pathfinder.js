@@ -7,12 +7,12 @@ var scanner_fields = []
 function changeInputOptions(event, section) {
     $('.pathfinderSection').css('display', 'none');
     $('.tab-bar button').removeClass('selected');
-
     $('#'+section).toggle();
     event.currentTarget.className = "selected";
     if (section == 'graphSection') {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
+        reloadReports();
     } else {
         $('#logView').css('display', 'block')
         $('#graphView').css('display', 'none')
@@ -65,7 +65,6 @@ function processScan(filename){
         }
         validateFormState(true, '#startImport');
     }
-    validateFormState(false, '#startImport');
     let data = {'index': 'import_scan',
                 'format': $('#scanInputFormat').val(),
                 'filename': filename
@@ -100,7 +99,6 @@ $('#fileInput').on('change', function (event){
             if(filename){
                 restPostFile(event.currentTarget.files[0], function (data) {processScan(filename);})
                 event.currentTarget.value = '';
-
             }
     }
 });
@@ -180,16 +178,33 @@ function loadGraph(element, address){
     restRequest('GET', null, display, address);
 }
 
+function renameVulnerabilityReport(){
+    current_report = $('#vulnerabilityReport').val();
+    let new_name = $('#newReportName').val();
+    stream('Renaming report: ' + current_report + ' to ' + new_name);
+    apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
+    $('#vulnerabilityReport').empty();
+    reloadReports();
+}
+
 function downloadVulnerabilityReport(){
     current_report = $('#vulnerabilityReport').val();
-    stream('Downloading report: '+ current_report);
+    current_report_name = $('#vulnerabilityReport option:selected').text()
+    stream('Downloading report: ' + current_report_name);
     uri = "/plugin/pathfinder/download?report_id=" + current_report;
     let downloadAnchorNode = document.createElement('a');
     downloadAnchorNode.setAttribute("href", uri);
-    downloadAnchorNode.setAttribute("download", current_report + ".yml");
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
+}
+
+function removeVulnerabilityReport(){
+    current_report = $('#vulnerabilityReport').val();
+    stream('Removing report: '+ current_report);
+    apiV2('DELETE', '/plugin/pathfinder/api', {'index':'report','id':current_report});
+    $('#vulnerabilityReport').empty();
+    reloadReports();
 }
 
 function setupScannerSection(){

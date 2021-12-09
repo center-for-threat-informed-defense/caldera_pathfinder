@@ -33,4 +33,3 @@ class Port(BaseObject):
         self.product = product
         self.state = state
         self.state_reason = state_reason
-

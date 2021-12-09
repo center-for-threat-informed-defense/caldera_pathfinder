@@ -52,7 +52,6 @@ class PathfinderGui(BaseWorld):
         visualization_data['nodes'].append(dict(id=scanner_node, label='scanner', group='scanners'))
         for ip, host in vr[0].hosts.items():
             visualization_data['nodes'].append(dict(id=ip, label=ip, group='hosts'))
-            visualization_data['links'].append(dict(source=scanner_node, target=ip, type='network'))
             for pnum, port in {pn: p for pn, p in host.ports.items() if p.state == 'open'}.items():
                 id = '%s:%s' % (ip, pnum)
                 visualization_data['nodes'].append(dict(id=id, label=pnum, group='ports'))
@@ -62,6 +61,9 @@ class PathfinderGui(BaseWorld):
                     dim = False if await self.pathfinder_svc.collect_tagged_abilities([cve]) != [] else True
                     visualization_data['nodes'].append(dict(id=id2, label=cve, group='cves', dim=dim))
                     visualization_data['links'].append(dict(source=id, target=id2, type='cve'))
+        for link in vr[0].network_map:
+            for to_node in vr[0].network_map[link]:
+                visualization_data['links'].append(dict(source=link, target=to_node, type='network'))
 
         return visualization_data
 
@@ -71,7 +73,9 @@ class PathfinderGui(BaseWorld):
             data = dict(await request.json())
             index = data.pop('index')
             options = dict(
-                DELETE=dict(),
+                DELETE=dict(
+                    report=lambda d: self.delete_report(d)
+                ),
                 PUT=dict(),
                 POST=dict(
                     scan=lambda d: self.scan(d),
@@ -81,6 +85,9 @@ class PathfinderGui(BaseWorld):
                     create_adversary=lambda d: self.generate_adversary(d),
                     scanner_config=lambda d: self.return_scanner_configuration(d),
                     source_name=lambda d: self.get_source_name(d)
+                ),
+                PATCH=dict(
+                    report=lambda d: self.rename_report(d)
                 )
             )
             if index not in options[request.method]:
@@ -91,9 +98,10 @@ class PathfinderGui(BaseWorld):
 
     async def scan(self, data):
         scanner = data.pop('scanner', None)
-        filename = sanitize_filename('pathfinder_%s' % date.today().strftime("%b-%d-%Y"))
-        report_file = '%s/reports/%s.xml' % (settings.data_dir, filename)
         fields = data.pop('fields', None)
+        filename = fields.pop('filename') or sanitize_filename(f'pathfinder_{date.today().strftime("%b-%d-%Y")}')
+        filename = filename.replace(' ', '_')
+        report_file = f'{settings.data_dir}/reports/{filename}.xml'
         try:
             scan = self.load_scanner(scanner).Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
             self.running_scans[scan.id] = scan
@@ -111,6 +119,28 @@ class PathfinderGui(BaseWorld):
             return dict(status='pass', output='source: %s' % source.name, source=source.id)
         return dict(status='fail', output='failure occurred during report importing, please check server logs')
 
+    async def rename_report(self, data):
+        try:
+            report_id = data.get('id')
+            report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
+            report = report[0]
+            report.name = data.get('rename')
+            await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
+            await self.data_svc.store(report)
+            return dict(status='success')
+        except Exception as e:
+            self.log.error(repr(e), exc_info=True)
+            return dict(status='fail', output='exception occurred while patching report')
+
+    async def delete_report(self, data):
+        try:
+            report_id = data.get('id')
+            await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
+            return dict(status='success')
+        except Exception as e:
+            self.log.error(repr(e), exc_info=True)
+            return dict(status='fail', output='exception occurred while removing report')
+
     async def retrieve_reports(self):
         reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]
         return dict(reports=reports)
@@ -127,7 +157,6 @@ class PathfinderGui(BaseWorld):
             else:
                 self.log.debug(scan.output['stderr'])
                 errors[scan.id] = dict(message=scan.output['stderr'])
-
         return dict(pending=pending, finished=finished, errors=errors)
 
     async def generate_adversary(self, data):
@@ -160,9 +189,9 @@ class PathfinderGui(BaseWorld):
         report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
         if report:
             try:
-                filename = '%s.yml' % report[0].id
+                filename = f'{report[0].name}.yml'
                 content = yaml.dump(report[0].display).encode('utf-8')
-                headers = dict([('CONTENT-DISPOSITION', 'attachment; filename="%s"' % filename),
+                headers = dict([('CONTENT-DISPOSITION', f'attachment; filename={filename}'),
                                 ('FILENAME', filename)])
                 return web.Response(body=content, headers=headers)
             except FileNotFoundError:

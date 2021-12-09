@@ -13,6 +13,7 @@ from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
 from app.objects.c_adversary import Adversary
 import plugins.pathfinder.settings as settings
+import plugins.pathfinder.app.enrichment.cve as cve
 
 
 class PathfinderService:
@@ -30,22 +31,8 @@ class PathfinderService:
             temp_file = '%s/_temp_report_file.tmp' % settings.data_dir
             with open(temp_file, 'wb') as f:
                 f.write(contents)
-            parsed_report = self.parsers[scan_format].parse(temp_file)
-            # enrich report with new CVEs using keyword_cve
-            for k in list(parsed_report.hosts.keys()):
-                v = parsed_report.hosts[k]  # get report host from host key
-                sw = v.software  # get list of software on host
-                c = []  # capture CVEs
-                p = {}  # store new port objects as proof-of-concept viz
-                for idx, s in enumerate(sw):  # iterate through installed software, creating new port objects for viz.
-                    try:
-                        c.extend(keyword_cve(s.service_type))
-                    except KeyError as e:
-                        print(e)  # In the case that no CVE's are returned (or the request chain breaks)
-                    p[idx] = Port(number=idx, cves=[cve.id for cve in c])  # create new port objects
-                v.cve = [c.id for c in c]  # append all CVE id's to the host
-                v.ports = p  # set the new ports for viz
-                parsed_report.hosts[k] = v  # modify the host in the parsed report
+            parsed_report = self.parsers[scan_format].parse(temp_file, report)
+            #parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -129,11 +116,16 @@ class PathfinderService:
             return available_techniques
 
         if path:
+            # path[1:] because the first node is assumed to be under control already.
             return [t for h in path[1:] for t in await get_host_exploits(h)]
         else:
             return get_host_exploits(targetedhost)
 
     async def collect_tagged_abilities(self, ability_tags):
+        """
+        Args:
+            ability_tags (list): CVE IDs
+        """
         return [a for tag in ability_tags for a in await self.data_svc.search(tag, 'abilities') or []]
 
     async def collect_tagged_adversaries(self, adversary_tags):
@@ -155,6 +147,44 @@ class PathfinderService:
             [paths.append(next_path) for next_path in next_paths if next_path]
         return paths
 
+    def enrich_report(self, report):
+        for key, host in report.hosts.items():
+            if host.software:
+                cves = self.software_enrich(host.software)
+                if cves:
+                    host.cves.append(cves)
+            if host.os:
+                cves = self.host_enrich(host.os)
+                if cves:
+                    host.cves.append(cves)
+        report.hosts[key] = host
+        return report
+    
+    def software_enrich(self, software):
+        exploits = []
+        for soft in software:
+                try:
+                    cves = cve.keyword_cve(soft.subtype)
+                except Exception as e:
+                    self.log.error(f'exception when enriching: {repr(e)}')
+                    continue
+                ids = [cve.id for cve in cves]
+                if ids:
+                    exploits.append(ids)
+        return exploits
+
+    def host_enrich(self, os):
+        exploits = []
+        try:
+            cves = cve.keyword_cve(os.os_type)
+        except Exception as e:
+            self.log.error(f'exception when enriching: {repr(e)}')
+            return []
+        ids = [cve.id for cve in cves]
+        if ids:
+            exploits.append(ids)
+        return exploits
+            
     @staticmethod
     def load_parsers():
         parsers = {}
@@ -163,5 +193,3 @@ class PathfinderService:
             p = module.ReportParser()
             parsers[p.format] = p
         return parsers
-
-

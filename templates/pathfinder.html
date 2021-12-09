@@ -44,7 +44,7 @@
                 </div>
                 <div class="pathfinderSection" id="graphSection" style="display:none;">
                     <label for="vulnerabilityReport">Vulnerability Report:</label>
-                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph'); validateFormState(true, '#downloadReport');">
+                    <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph'); validateFormState(true, '#downloadReport'); validateFormState(true, '#renameReport'); validateFormState(true, '#removeReport');">
                         <option value="" disabled selected>Select a report</option>
                         {% for r in vulnerability_reports %}
                             <option value="{{ r.id }}">{{ r.name }}</option>
@@ -70,9 +70,15 @@
                     </div>
                     <br>
                     <button id="showGraph" type="button" class="button-notready atomic-button" onclick="graphReport()" style="margin-top:0">Graph</button>
+                    <br>
+                    <label for="newReportName">New Report Name:</label>
+                    <input id="newReportName" type="text" name="newReportName" value="" style="width:75%; margin:5px;">
+                    <button id="renameReport" type="button" class="button-notready atomic-button" onclick="renameVulnerabilityReport()" style="margin-top:0">Rename Report</button>
                     <button id="downloadReport" type="button" class="button-notready atomic-button" onclick="downloadVulnerabilityReport()" style="margin-top:0">Download Report</button><br>
+                    <button id="removeReport" type="button" class="button-notready atomic-button" onclick="removeVulnerabilityReport()" style="margin-top:0">Remove Report</button>
+                    <br>
                     <label for="adversaryTags">Adversary Merging Tags:</label>
-                    <input id="adversaryTags" type="text" name="adversaryTags" value="" style="width:75%; margin:5px;"><br><br>
+                    <input id="adversaryTags" type="text" name="adversaryTags" value="" style="width:75%; margin:5px;">
                     <button id="createAdversary" type="button" class="button-notready atomic-button" onclick="createAdversary()" style="margin-top:0">Create Adversary</button>
                     <button id="setupOperation" type="button" class="button-notready atomic-button" onclick="setupOperation()" style="margin-top:0">Setup Operation</button>
                 </div>
