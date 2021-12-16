@@ -22,7 +22,7 @@ class HostSchema(ma.Schema):
     software = ma.fields.List(ma.fields.Nested(ServiceSchema()))
     os = ma.fields.Nested(OSSchema())
     mac = ma.fields.String()
-    freebie_abilities = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.List())
+    freebie_abilities = ma.fields.List(ma.fields.String())
     denied_abilities = ma.fields.List(ma.fields.String())
     access = ma.fields.Integer()
     access_prob = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.Float())
@@ -46,7 +46,7 @@ class Host(BaseObject):
         self.software = software or []
         self.os = os
         self.mac = mac
-        self.freebie_abilities = freebie_abilities or dict()
+        self.freebie_abilities = freebie_abilities or []
         self.denied_abilities = denied_abilities or []
         self.access = access or HostAccess.STANDARD
         self.access_prob = access_prob or dict()
