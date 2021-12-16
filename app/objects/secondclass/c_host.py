@@ -46,7 +46,7 @@ class Host(BaseObject):
         self.software = software or []
         self.os = os
         self.mac = mac
-        self.freebie_abilities = freebie_abilities or []
+        self.freebie_abilities = freebie_abilities or dict()
         self.denied_abilities = denied_abilities or []
         self.access = access or HostAccess.STANDARD
         self.access_prob = access_prob or dict()
