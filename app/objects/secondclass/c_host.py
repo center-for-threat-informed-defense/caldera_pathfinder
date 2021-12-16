@@ -8,9 +8,9 @@ from plugins.pathfinder.app.objects.secondclass.c_service import ServiceSchema
 
 
 class HostAccess(Enum):
-    deny = -1
-    standard = 0
-    allow = 1
+    DENY = -1
+    STANDARD = 0
+    ALLOW = 1
 
 
 class HostSchema(ma.Schema):
@@ -48,5 +48,5 @@ class Host(BaseObject):
         self.mac = mac
         self.freebie_abilities = freebie_abilities or []
         self.denied_abilities = denied_abilities or []
-        self.access = access or 0
+        self.access = access or HostAccess.STANDARD
         self.access_prob = access_prob or dict()
