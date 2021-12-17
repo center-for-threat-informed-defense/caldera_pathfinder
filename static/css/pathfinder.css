@@ -1,9 +1,9 @@
 .log-box {
     background-color: var(--primary-background);
-    padding: 10px;
+    padding: 5px;
     border-radius: 7px;
     width: 95%;
-    margin: 7px;
+    margin: 3px;
 }
 .tab-bar {
     overflow:hidden;
@@ -29,6 +29,23 @@
 }
 .tab-bar button:hover {
     color: red;
+}
+
+.row {
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    width: 100%;
+    display: flex;
+    position: relative;
+    border: 2px solid var(--navbar-color);
+}
+
+.column {
+    flex: 50%;
+    color: var(--font-color);
+    margin: 5px;
+    max-width: 100%;
 }
 
 #graphLegend {

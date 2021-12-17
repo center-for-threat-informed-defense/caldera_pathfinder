@@ -186,7 +186,7 @@ var menu = [
 function createAdversary(){
     function processResults(data){
         removeOldPaths();
-        //openAdversary(data.adversary_id);
+        openAdversary(data.adversary_id);
         addNewLinks(data.new_links);
         created_adversary = data.adversary_id;
         validateFormState(true, '#setupOperation');
