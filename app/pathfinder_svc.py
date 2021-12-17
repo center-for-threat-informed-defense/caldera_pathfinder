@@ -32,7 +32,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file, report)
-            #parsed_report = self.enrich_report(parsed_report)
+            # parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -52,7 +52,8 @@ class PathfinderService:
         for host in report.hosts.values():
             ip_fact = add_fact(facts, 'scan.host.ip', host.ip)
             if host.hostname:
-                relationships.append(Relationship(ip_fact, 'has_hostname', add_fact(facts, 'scan.host.hostname', host.hostname)))
+                relationships.append(
+                    Relationship(ip_fact, 'has_hostname', add_fact(facts, 'scan.host.hostname', host.hostname)))
             for num, port in host.ports.items():
                 port_fact = add_fact(facts, 'scan.host.port', num)
                 for cve in port.cves:
@@ -75,7 +76,8 @@ class PathfinderService:
         async def create_cve_adversary(techniques, tags):
             adv_id = uuid.uuid4()
             obj_default = (await self.data_svc.locate('objectives', match=dict(name='default')))[0]
-            return dict(id=str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder',
+            return dict(id=str(adv_id), name='pathfinder adversary',
+                        description='auto generated adversary for pathfinder',
                         atomic_ordering=techniques, tags=tags, objective=obj_default.id)
 
         def get_all_tags(objlist):
@@ -84,7 +86,8 @@ class PathfinderService:
         attack_paths = await self.find_paths(report, initial_host, target_host)
         shortest_path = retrieve_shortest_path(attack_paths)
         technique_list = await self.gather_techniques(report, path=shortest_path)
-        implemented_cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves if c in get_all_tags(technique_list)]
+        implemented_cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves if
+                            c in get_all_tags(technique_list)]
         adv = await create_cve_adversary([t.ability_id for t in technique_list], implemented_cves)
 
         if tags:
@@ -159,18 +162,18 @@ class PathfinderService:
                     host.cves.append(cves)
         report.hosts[key] = host
         return report
-    
+
     def software_enrich(self, software):
         exploits = []
         for soft in software:
-                try:
-                    cves = cve.keyword_cve(soft.subtype)
-                except Exception as e:
-                    self.log.error(f'exception when enriching: {repr(e)}')
-                    continue
-                ids = [cve.id for cve in cves]
-                if ids:
-                    exploits.append(ids)
+            try:
+                cves = cve.keyword_cve(soft.subtype)
+            except Exception as e:
+                self.log.error(f'exception when enriching: {repr(e)}')
+                continue
+            ids = [cve.id for cve in cves]
+            if ids:
+                exploits.append(ids)
         return exploits
 
     def host_enrich(self, os):
@@ -184,7 +187,7 @@ class PathfinderService:
         if ids:
             exploits.append(ids)
         return exploits
-            
+
     @staticmethod
     def load_parsers():
         parsers = {}
@@ -192,4 +195,5 @@ class PathfinderService:
             module = import_module(filepath.replace('/', '.').replace('\\', '.').replace('.py', ''))
             p = module.ReportParser()
             parsers[p.format] = p
+            print(f'PARSERS: {parsers}')
         return parsers

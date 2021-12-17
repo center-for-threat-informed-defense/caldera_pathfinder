@@ -1,9 +1,17 @@
+from enum import Enum
 import marshmallow as ma
 
 from app.utility.base_object import BaseObject
 from plugins.pathfinder.app.objects.secondclass.c_port import PortSchema
 from plugins.pathfinder.app.objects.secondclass.c_os import OSSchema
 from plugins.pathfinder.app.objects.secondclass.c_service import ServiceSchema
+
+
+class HostAccess(Enum):
+    DENY = -1
+    STANDARD = 0
+    ALLOW = 1
+
 
 class HostSchema(ma.Schema):
 
@@ -24,7 +32,8 @@ class Host(BaseObject):
 
     schema = HostSchema()
 
-    def __init__(self, ip, hostname=None, ports=None, cves=None, software=None, os=None, mac=None, match='.*'):
+    def __init__(self, ip, hostname=None, ports=None, cves=None, software=None, os=None, mac=None,
+                 freebie_abilities=None, denied_abilities=None, access=None, access_prob=None, match='.*'):
         super().__init__()
         self.hostname = hostname
         self.ip = ip

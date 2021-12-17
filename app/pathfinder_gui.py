@@ -8,32 +8,37 @@ from aiohttp_jinja2 import template
 from datetime import date
 from importlib import import_module
 
-from app.service.auth_svc import check_authorization
+from app.service.auth_svc import for_all_public_methods, check_authorization
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.pathfinder_svc import PathfinderService
 from plugins.pathfinder.app.pathfinder_util import sanitize_filename
 import plugins.pathfinder.settings as settings
 
 
-class PathfinderGui(BaseWorld):
+@for_all_public_methods(check_authorization)
+class PathfinderGUI(BaseWorld):
 
-    def __init__(self, services, installed_dependencies):
+    def __init__(self, services, name, description, installed_dependencies):
+        self.name = name
+        self.description = description
         self.services = services
+        self.installed_dependencies = installed_dependencies
+
         self.auth_svc = services.get('auth_svc')
+        self.log = logging.getLogger('pathfinder_gui')
         self.file_svc = services.get('file_svc')
         self.data_svc = services.get('data_svc')
-        self.installed_dependencies = installed_dependencies
-        self.pathfinder_svc = PathfinderService(services)
-        self.log = logging.getLogger('pathfinder_gui')
         self.loop = asyncio.get_event_loop()
         self.running_scans = dict()
-        self.scanners = self.load_scanners()
+        self.scanners = dict()
+        self.pathfinder_svc = PathfinderService(services)
 
-    @check_authorization
     @template('pathfinder.html')
     async def splash(self, request):
         reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]
-        return dict(scanners=list(self.scanners.keys()), input_parsers=self.pathfinder_svc.parsers.keys(), vulnerability_reports=reports)
+        loaded_scanners = await self.load_scanners()
+        return dict(name=self.name, description=self.description, scanners=list(loaded_scanners.keys()), input_parsers=list(self.pathfinder_svc.parsers.keys()), vulnerability_reports=reports)
+        #return dict(name=self.name, description=self.description, vulnerability_reports=reports)
 
     @check_authorization
     @template('graph.html')
@@ -206,7 +211,7 @@ class PathfinderGui(BaseWorld):
         else:
             return dict(name=scanner, error='scanner not able to be found')
 
-    def load_scanners(self):
+    async def load_scanners(self):
         scanners = {}
         for filepath in glob.iglob(os.path.join('plugins', 'pathfinder', 'scanners', '*', 'scanner.py')):
             module = import_module(filepath.replace('/', '.').replace('\\', '.').replace('.py', ''))
