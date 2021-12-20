@@ -2,7 +2,6 @@ import os
 
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.pathfinder_gui import PathfinderGUI
-from plugins.pathfinder.app.pathfinder_api import PathfinderAPI
 import plugins.pathfinder.settings as settings
 
 name = 'Pathfinder'
@@ -23,10 +22,6 @@ async def enable(services):
     await services.get('data_svc').apply('vulnerabilityreports')
     pathfinder_gui = PathfinderGUI(services=services, name=name, description=description,  installed_dependencies=dict(nmap=nmap_installed))
     app.router.add_static('/pathfinder', 'plugins/pathfinder/static/', append_version=True)
-
-    pathfinder_api = PathfinderAPI(services)
-    # Add API routes here
-    app.router.add_route('POST', '/plugin/pathfinder/mirror', pathfinder_api.mirror)
     app.router.add_route('GET', '/plugin/pathfinder/gui', pathfinder_gui.splash)
     app.router.add_route('GET', '/plugin/pathfinder/graph', pathfinder_gui.graph)
     app.router.add_route('GET', '/plugin/pathfinder/download', pathfinder_gui.download_report)

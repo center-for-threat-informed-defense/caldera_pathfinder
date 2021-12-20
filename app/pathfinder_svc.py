@@ -195,5 +195,4 @@ class PathfinderService:
             module = import_module(filepath.replace('/', '.').replace('\\', '.').replace('.py', ''))
             p = module.ReportParser()
             parsers[p.format] = p
-            print(f'PARSERS: {parsers}')
         return parsers
