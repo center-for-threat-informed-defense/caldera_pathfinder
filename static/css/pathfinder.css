@@ -41,7 +41,6 @@
 .tab-bar button:hover {
     color: red;
 }
-
 .row {
     text-align: center;
     padding: 10px;
@@ -51,14 +50,12 @@
     position: relative;
     border: 2px solid var(--navbar-color);
 }
-
 .column {
     flex: 50%;
     color: var(--font-color);
     margin: 5px;
     max-width: 100%;
 }
-
 .button-success {
     background-color: var(--primary-color);
     pointer-events: auto;
@@ -67,7 +64,6 @@
     border-radius: 2px;
     border: none;
 }
-
 .button-notready {
     background-color: darkgray;
     pointer-events: auto;
@@ -77,19 +73,16 @@
     border: none;
     color: black;
 }
-
 .section-profile input {
     height: 18px;
     width: 75%;
     margin: 5px;
 }
-
 .content ul {
     list-style: disc outside;
     margin-left: 0;
     margin-top: 1em;
 }
-
 #graphLegend {
     list-style:none;
     padding:5px;
@@ -98,7 +91,6 @@
     border: 1px solid white;
     width: 75%;
 }
-
 #graphLegend span {
     height: 25px;
     width: 25px;
@@ -106,7 +98,6 @@
     border-radius: 50%;
     display: inline-block;
 }
-
 select {
     background: white;
     font-size: 14px;
@@ -117,4 +108,3 @@ select {
     border-radius: 2px;
     border: none;
 }
-
