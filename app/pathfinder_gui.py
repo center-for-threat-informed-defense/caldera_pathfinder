@@ -23,7 +23,6 @@ class PathfinderGUI(BaseWorld):
         self.description = description
         self.services = services
         self.installed_dependencies = installed_dependencies
-
         self.auth_svc = services.get('auth_svc')
         self.log = logging.getLogger('pathfinder_gui')
         self.file_svc = services.get('file_svc')
@@ -33,9 +32,12 @@ class PathfinderGUI(BaseWorld):
         self.scanners = dict()
         self.pathfinder_svc = PathfinderService(services)
 
+    async def _get_access(self, request):
+        return dict(access=tuple(await self.auth_svc.get_permissions(request)))
+
     @template('pathfinder.html')
     async def splash(self, request):
-        reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]
+        reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports', match=await self._get_access(request))]
         loaded_scanners = await self.load_scanners()
         self.scanners = loaded_scanners
         return dict(name=self.name, description=self.description, scanners=list(loaded_scanners.keys()), input_parsers=list(self.pathfinder_svc.parsers.keys()), vulnerability_reports=reports)
@@ -108,7 +110,10 @@ class PathfinderGUI(BaseWorld):
         filename = filename.replace(' ', '_')
         report_file = f'{settings.data_dir}/reports/{filename}.xml'
         try:
-            scan = self.load_scanner(scanner).Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
+            scan = await self.load_scanner(scanner)
+            print(f'{scan}')
+            print(f'{scanner}')
+            scan = scan.Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
             self.running_scans[scan.id] = scan
             self.loop.create_task(scan.scan())
             return dict(status='pass', id=scan.id, output='scan initiated, depending on scope it may take a few minutes')
@@ -219,6 +224,6 @@ class PathfinderGUI(BaseWorld):
             scanners[scanner.name] = scanner
         return scanners
 
-    @staticmethod
-    def load_scanner(name):
+    async def load_scanner(selfl, name):
+        print(f'IMPORTMODULE: {name}')
         return import_module('plugins.pathfinder.scanners.%s.scanner' % name)

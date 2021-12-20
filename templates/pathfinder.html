@@ -141,24 +141,14 @@ function alpinePathfinder() {
         scanners: '{{ scanners }}',
         input_parsers: '{{ input_parsers }}',
         vulnerability_reports: '{{ vulnerability_reports }}',
-        //scanners: [],
-        //input_parsers: [],
 
         initPage() {
-            // Sample API request
             apiV2('GET', '/api/v2/health').then((response) => {
-                console.log('Woohoo, this page can talk to the API!');
             }).catch((error) => {
-                // Call toast from anywhere within CALDERA to notify users of events
-                // toast(message, isSuccess)
                 toast('Error loading page', false);
                 console.error(error);
             });
         },
-
-        sampleFunction() {
-            this.sampleVariable = 'You clicked the button!';
-        }
     };
 }
 
