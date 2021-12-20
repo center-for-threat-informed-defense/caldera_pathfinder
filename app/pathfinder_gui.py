@@ -110,10 +110,8 @@ class PathfinderGUI(BaseWorld):
         filename = filename.replace(' ', '_')
         report_file = f'{settings.data_dir}/reports/{filename}.xml'
         try:
-            scan = await self.load_scanner(scanner)
-            print(f'{scan}')
-            print(f'{scanner}')
-            scan = scan.Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
+            loaded_scanner = await self.load_scanner(scanner)
+            scan = loaded_scanner.Scanner(filename=report_file, dependencies=self.installed_dependencies, **fields)
             self.running_scans[scan.id] = scan
             self.loop.create_task(scan.scan())
             return dict(status='pass', id=scan.id, output='scan initiated, depending on scope it may take a few minutes')
@@ -224,6 +222,5 @@ class PathfinderGUI(BaseWorld):
             scanners[scanner.name] = scanner
         return scanners
 
-    async def load_scanner(selfl, name):
-        print(f'IMPORTMODULE: {name}')
+    async def load_scanner(self, name):
         return import_module('plugins.pathfinder.scanners.%s.scanner' % name)
