@@ -1,3 +1,13 @@
+.section-profile button {
+    height: 35px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 1;
+    border-radius: 2px;
+    border: none;
+}
 .log-box {
     background-color: var(--primary-background);
     padding: 5px;
@@ -23,7 +33,7 @@
     color: white;
 }
 .tab-bar button.selected {
-    background-color: #8B0000;
+    background-color: var(--primary-color);
     border: 1px solid darkgray;
     border-bottom: none;
 }
@@ -49,7 +59,7 @@
 }
 
 .button-success {
-    background-color: #8B0000;
+    background-color: var(--primary-color);
     pointer-events: auto;
     cursor: pointer;
     opacity: 1;
@@ -106,3 +116,4 @@ select {
     border-radius: 2px;
     border: none;
 }
+
