@@ -29,9 +29,9 @@
                         </div>
                         <br>
                         <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                onclick="startScan()">Scan</button>
+                                title="Start scan after configuring scanner" onclick="startScan()">Scan</button>
                         <button id="viewFacts" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                onclick="openFacts()">View Facts</button>
+                                title="View facts collected during a scan" onclick="openFacts()">View Facts</button>
                     </div>
                     <div class="pathfinderSection" id="importSection" style="display:none;">
                         <label for="scanInputFormat">Report Format:</label>
@@ -44,7 +44,7 @@
                         <input id="fileInput" type="file" name="name" style="display: none;" />
                         <br><br>
                         <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                onclick="importScan()">Import</button>
+                                title="Import using selected parser" onclick="importScan()">Import</button>
                     </div>
                     <div class="pathfinderSection" id="graphSection" style="display:none;">
                         <label for="vulnerabilityReport">Vulnerability Report:</label>

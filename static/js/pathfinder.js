@@ -28,7 +28,7 @@ function startScan(){
         if(data.status == 'pass'){
             displayOutput(data.output);
             refresher = setInterval(checkScanStatus, 10000);
-        }else{
+        }else if(data.status == 'fail'){
             displayOutput('scan issue, ' + data.output + ' please check server logs for more details');
             validateFormState(true, '#startScan')
         }

@@ -37,8 +37,8 @@ class PathfinderGUI(BaseWorld):
     async def splash(self, request):
         reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports')]
         loaded_scanners = await self.load_scanners()
+        self.scanners = loaded_scanners
         return dict(name=self.name, description=self.description, scanners=list(loaded_scanners.keys()), input_parsers=list(self.pathfinder_svc.parsers.keys()), vulnerability_reports=reports)
-        #return dict(name=self.name, description=self.description, vulnerability_reports=reports)
 
     @check_authorization
     @template('graph.html')
