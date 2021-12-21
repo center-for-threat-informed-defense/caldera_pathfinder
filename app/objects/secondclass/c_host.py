@@ -47,7 +47,7 @@ class Host(BaseObject):
         denied_abilities=None,
         access=None,
         access_prob=None,
-        match=".*",
+        match='.*',
     ):
         super().__init__()
         self.hostname = hostname

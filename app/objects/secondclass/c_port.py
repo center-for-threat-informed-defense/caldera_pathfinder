@@ -11,7 +11,7 @@ class PortSchema(ma.Schema):
     service = ma.fields.List(ma.fields.String())
     version = ma.fields.String(missing=None)
     product = ma.fields.String(missing=None)
-    state = ma.fields.String(missing="open")
+    state = ma.fields.String(missing='open')
     state_reason = ma.fields.String(missing=None)
 
     @ma.post_load()
@@ -26,14 +26,14 @@ class Port(BaseObject):
     def __init__(
         self,
         number,
-        protocol="TCP",
+        protocol='TCP',
         cves=None,
         service=None,
         version=None,
         product=None,
-        state="open",
+        state='open',
         state_reason=None,
-        match=".*",
+        match='.*',
     ):
         super().__init__()
         self.number = number

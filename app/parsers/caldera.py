@@ -8,8 +8,8 @@ from plugins.pathfinder.app.interfaces.i_parser import ParserInterface
 
 class ReportParser(ParserInterface):
     def __init__(self):
-        self.format = "caldera"
-        self.log = logging.getLogger("caldera parser")
+        self.format = 'caldera'
+        self.log = logging.getLogger('caldera parser')
 
     def parse(self, report, name=None):
         try:
@@ -17,7 +17,7 @@ class ReportParser(ParserInterface):
             self.generate_network_map(caldera_report)
             return caldera_report
         except Exception as e:
-            self.log.error("exception when loading caldera report: %s" % repr(e))
+            self.log.error('exception when loading caldera report: %s' % repr(e))
             return None
 
     def generate_network_map(self, report):
