@@ -182,7 +182,7 @@ function renameVulnerabilityReport(){
     current_report = $('#vulnerabilityReport').val();
     let new_name = $('#newReportName').val();
     stream('Renaming report: ' + current_report + ' to ' + new_name);
-    apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report','id':current_report, 'rename':new_name});
+    apiV2('PATCH', '/plugin/pathfinder/api', {'index':'report', 'id':current_report, 'rename':new_name});
     $('#vulnerabilityReport').empty();
     reloadReports();
 }
