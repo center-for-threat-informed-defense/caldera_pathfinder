@@ -13,6 +13,11 @@ class HostAccess(Enum):
     ALLOW = 1
 
 
+class AbilitySchema(ma.Schema):
+    uuid = ma.fields.String()
+    success_prob = ma.fields.Number()
+
+
 class HostSchema(ma.Schema):
 
     hostname = ma.fields.String()
@@ -23,7 +28,7 @@ class HostSchema(ma.Schema):
     os = ma.fields.Nested(OSSchema())
     mac = ma.fields.String()
     freebie_abilities = ma.fields.List(ma.fields.String())
-    possible_abilities = ma.fields.List(ma.fields.String())
+    possible_abilities = ma.fields.Nested(AbilitySchema())
     denied_abilities = ma.fields.List(ma.fields.String())
     access = ma.fields.Integer()
     access_prob = ma.fields.Number()
