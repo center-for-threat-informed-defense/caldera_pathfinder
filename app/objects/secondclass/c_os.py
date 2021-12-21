@@ -17,7 +17,7 @@ class OS(BaseObject):
 
     schema = OSSchema()
 
-    def __init__(self, os_type, subtype=None, notes=None, match='.*'):
+    def __init__(self, os_type, subtype=None, notes=None, match=".*"):
         super().__init__()
         self.os_type = os_type
         self.subtype = subtype
