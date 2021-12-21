@@ -20,7 +20,8 @@ async def enable(services):
                                                                                      command='nmap --version',
                                                                                      version='0.0.0'))
     await services.get('data_svc').apply('vulnerabilityreports')
-    pathfinder_gui = PathfinderGUI(services=services, name=name, description=description,  installed_dependencies=dict(nmap=nmap_installed))
+    pathfinder_gui = PathfinderGUI(services=services, name=name, description=description,
+                                   installed_dependencies=dict(nmap=nmap_installed))
     app.router.add_static('/pathfinder', 'plugins/pathfinder/static/', append_version=True)
     app.router.add_route('GET', '/plugin/pathfinder/gui', pathfinder_gui.splash)
     app.router.add_route('GET', '/plugin/pathfinder/graph', pathfinder_gui.graph)
@@ -30,5 +31,4 @@ async def enable(services):
     settings.init(dict(name=name, description=description, address=address, access=access, data_dir=data_dir))
     init_dirs([os.path.join(settings.data_dir, 'abilities'),
                os.path.join(settings.data_dir, 'adversaries'),
-               os.path.join(settings.data_dir, 'reports')
-               ])
+               os.path.join(settings.data_dir, 'reports')])

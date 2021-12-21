@@ -37,10 +37,12 @@ class PathfinderGUI(BaseWorld):
 
     @template('pathfinder.html')
     async def splash(self, request):
-        reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports', match=await self._get_access(request))]
+        reports = [vr.display for vr in await self.data_svc.locate('vulnerabilityreports',
+                                                                   match=await self._get_access(request))]
         loaded_scanners = await self.load_scanners()
         self.scanners = loaded_scanners
-        return dict(name=self.name, description=self.description, scanners=list(loaded_scanners.keys()), input_parsers=list(self.pathfinder_svc.parsers.keys()), vulnerability_reports=reports)
+        return dict(name=self.name, description=self.description, scanners=list(loaded_scanners.keys()),
+                    input_parsers=list(self.pathfinder_svc.parsers.keys()), vulnerability_reports=reports)
 
     @check_authorization
     @template('graph.html')
@@ -210,7 +212,8 @@ class PathfinderGUI(BaseWorld):
     async def return_scanner_configuration(self, data):
         scanner = data.pop('name')
         if scanner in self.scanners:
-            return dict(name=scanner, fields=[f.__dict__ for f in self.scanners[scanner].fields], enabled=self.scanners[scanner].enabled, error=False)
+            return dict(name=scanner, fields=[f.__dict__ for f in self.scanners[scanner].fields],
+                        enabled=self.scanners[scanner].enabled, error=False)
         else:
             return dict(name=scanner, error='scanner not able to be found')
 
