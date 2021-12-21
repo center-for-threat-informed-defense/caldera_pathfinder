@@ -29,9 +29,10 @@
                         </div>
                         <br>
                         <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                title="Start scan after configuring scanner" x-on:click="startScan()">Scan</button>
+                                title="Start scan after configuring scanner" onclick="startScan()">Scan</button>
                         <button id="viewFacts" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                title="View facts collected during a scan" x-on:click="addTab('fact sources', '/advanced/sources')">View Facts</button>
+                                title="View facts collected during a scan"
+                                x-on:click="addTab('fact sources', '/advanced/sources')">View Facts</button>
                     </div>
                     <div class="pathfinderSection" id="importSection" style="display:none;">
                         <label for="scanInputFormat">Report Format:</label>
