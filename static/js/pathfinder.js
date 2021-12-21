@@ -60,7 +60,7 @@ function processScan(filename){
         displayOutput(response.output);
         latest_source = response.source;
         reloadReports();
-        toast('Report created, view it in the "view" tab.', true);
+        toast('Report created, view it in the "View" tab.', true);
     }).catch((error) => {
         displayOutput('report import failed, please check server logs for issue');
         toast('Error importing report, please verify it matches the selected parser.', false);

@@ -135,7 +135,7 @@ class PathfinderGUI(BaseWorld):
         scanner = data.pop('scanner', None)
         fields = data.pop('fields', None)
         filename = fields.pop('filename') or sanitize_filename(
-            f'pathfinder_{date.today().strftime('%b-%d-%Y')}'
+            f'pathfinder_{date.today().strftime("%b-%d-%Y")}'
         )
         filename = filename.replace(' ', '_')
         report_file = f'{settings.data_dir}/reports/{filename}.xml'
