@@ -200,10 +200,10 @@ function createAdversary(){
         validateFormState(true, '#viewAdversaries');
         validateFormState(true, '#setupOperation');
         toast('Custom Pathfinder adversary created.', true);
-        }).catch((error) => {
-            toast('Error creating adversary, please ensure target node has a tagged CVE.', false);
-            console.error(error);
-        });
+    }).catch((error) => {
+        toast('Error creating adversary, please ensure target node has a tagged CVE.', false);
+        console.error(error);
+    });
 }
 
 function openAdversary(adversary_id){

@@ -53,23 +53,21 @@ function importScan(){
 }
 
 function processScan(filename){
-    function processResults(data){
-        if(data.status == 'pass'){
-            displayOutput('report imported, new source created');
-            displayOutput(data.output);
-            latest_source = data.source;
-            openSource(data.source);
-            reloadReports();
-        }else if(data.status == 'fail'){
-            displayOutput('report import failed, please check server logs for issue');
-        }
-        validateFormState(true, '#startImport');
-    }
     let data = {'index': 'import_scan',
                 'format': $('#scanInputFormat').val(),
                 'filename': filename
                 }
-    restRequest('POST', data, processResults, '/plugin/pathfinder/api');
+    apiV2('POST', '/plugin/pathfinder/api', data).then((response) => {
+        displayOutput('report imported, new source created');
+        displayOutput(response.output);
+        latest_source = response.source;
+        reloadReports();
+        toast('Report created, view it in the "view" tab.', true);
+    }).catch((error) => {
+        displayOutput('report import failed, please check server logs for issue');
+        toast('Error importing report, please verify it matches the selected parser.', false);
+        console.error(error);
+    });
 }
 
 function restPostFile(file, callback=null, endpoint='/plugin/pathfinder/upload'){
@@ -131,11 +129,6 @@ function reloadReports(){
     restRequest('POST', {'index':'reports'}, updateData, '/plugin/pathfinder/api');
 }
 
-function openSource(source_id){
-    viewSection('sources', '/advanced/sources');
-    setTimeout(function(s){ $('#profile-source-name').val(s).change(); }, 1000, source_id);
-}
-
 function checkScanStatus(){
     function updateData(data){
         number_finished = Object.keys(data.finished).length
@@ -163,10 +156,6 @@ function checkScanStatus(){
         }
     }
     restRequest('POST', {'index':'status'}, updateData, '/plugin/pathfinder/api');
-}
-
-function openFacts(){
-    openSource(latest_source);
 }
 
 function loadGraph(element, address){
