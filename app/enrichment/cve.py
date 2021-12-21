@@ -81,7 +81,7 @@ def keyword_cve(keyword, exact_match=False):
     cve = []
     for cve_ in cve_json['result']['CVE_Items']:
         r = sess.get(
-            url=f'{CVE_SEARCH_URL}/cve/{cve_['cve']['CVE_data_meta']['ID']}',
+            url=f'{CVE_SEARCH_URL}/cve/{cve_["cve"]["CVE_data_meta"]["ID"]}',
             verify=False,
             timeout=8,
         ).json()
@@ -111,14 +111,14 @@ def match_cve(
     Returns (list): of CVE objects
     """
     sess = _get_sess()
-    match_url = f'{CPE_MATCH_URL}cpe:2.3:a:*:{service}:{service_version or '*'}'
+    match_url = f'{CPE_MATCH_URL}cpe:2.3:a:*:{service}:{service_version or "*"}'
     if exact_match:
         match_url = f'{match_url}?isExactMatch=true'
     cve_json = sess.get(match_url, verify=False, timeout=8).json()
     cve = []
     for cve_ in cve_json['result']['CVE_Items']:
         r = sess.get(
-            url=(f'{CVE_SEARCH_URL}/cve/{cve_['cve']['CVE_data_meta']['ID']}'),
+            url=f'{CVE_SEARCH_URL}/cve/{cve_["cve"]["CVE_data_meta"]["ID"]}',
             verify=False,
             timeout=8,
         ).json()
@@ -364,7 +364,7 @@ def _get_os_from_cve(vulnerable_configs):
             # retrieved search endpoint, the key is a list of str's.
             vuln = vuln['id']
         if vuln.split(':')[2] == 'o':
-            os_ = f'os.{vuln.split(':')[3]}.{vuln.split(':')[4]}'
+            os_ = f'os.{vuln.split(":")[3]}.{vuln.split(":")[4]}'
             version = vuln.split(':')[5]
             if os_ in os:
                 os[os_].add(version)
