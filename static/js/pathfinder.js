@@ -24,15 +24,6 @@ function validateParser(){
 }
 
 function startScan(){
-    function processResults(data){
-        if(data.status == 'pass'){
-            displayOutput(data.output);
-            refresher = setInterval(checkScanStatus, 10000);
-        }else if(data.status == 'fail'){
-            displayOutput('scan issue, ' + data.output + ' please check server logs for more details');
-            validateFormState(true, '#startScan')
-        }
-    }
     validateFormState(false, '#startScan');
     validateFormState(false, '#viewFacts');
     scanner = $('#scannerSelection').val();
@@ -45,7 +36,14 @@ function startScan(){
                 'scanner': scanner,
                 'fields':fields
                 };
-    restRequest('POST', data, processResults, '/plugin/pathfinder/api');
+    apiV2('POST', '/plugin/pathfinder/api', data).then((response) => {
+        displayOutput(response.output);
+        refresher = setInterval(checkScanStatus, 10000);
+    }).catch((error) => {
+        validateFormState(true, '#startScan')
+        toast('scan issue, please check server logs for more details', false);
+        console.error(error);
+    });
 }
 
 function importScan(){
@@ -113,8 +111,8 @@ function graphReport() {
 }
 
 function reloadReports(){
-    function updateData(data){
-        data.reports.forEach(function(r) {
+    apiV2('POST', '/plugin/pathfinder/api', {'index':'reports'}).then((response) => {
+        response.reports.forEach(function(r) {
             let found = false;
             $("#vulnerabilityReport > option").each(function() {
                 if($(this).val() === r.id) {
@@ -125,15 +123,17 @@ function reloadReports(){
                 $('#vulnerabilityReport').append('<option value="'+r.id+'">'+r.name+'</option>');
             }
         });
-    }
-    restRequest('POST', {'index':'reports'}, updateData, '/plugin/pathfinder/api');
+    }).catch((error) => {
+        toast('Error reloading Pathfinder reports.', false);
+        console.error(error);
+    });
 }
 
 function checkScanStatus(){
-    function updateData(data){
-        number_finished = Object.keys(data.finished).length
-        number_failed = Object.keys(data.errors).length
-        if (data.pending.length == 0){
+    apiV2('POST', '/plugin/pathfinder/api', {'index':'status'}).then((response) => {
+        number_finished = Object.keys(response.finished).length
+        number_failed = Object.keys(response.errors).length
+        if (response.pending.length == 0){
             validateFormState(true, '#startScan');
             if(number_finished == 0 && number_failed == 0){
                 clearInterval(refresher);
@@ -141,30 +141,34 @@ function checkScanStatus(){
         }
         if (number_finished > 0){
             source_id = '';
-            for (var key in data.finished){
-                displayOutput('scan ID:'+key+' finished. new source created: '+data.finished[key].source);
-                source_id = data.finished[key].source_id;
+            for (var key in response.finished){
+                displayOutput('scan ID:'+key+' finished. new source created: '+response.finished[key].source);
+                source_id = response.finished[key].source_id;
             }
             latest_source = source_id;
             validateFormState(true, '#viewFacts');
             reloadReports();
         }
         if (number_failed > 0){
-            for (var key in data.errors){
-                displayOutput('scan ID:'+key+' failed. error output: '+data.errors[key].message);
+            for (var key in response.errors){
+                displayOutput('scan ID:'+key+' failed. error output: '+response.errors[key].message);
             }
         }
-    }
-    restRequest('POST', {'index':'status'}, updateData, '/plugin/pathfinder/api');
+    }).catch((error) => {
+        toast('Error creating adversary, please ensure target node has a tagged CVE.', false);
+        console.error(error);
+    });
 }
 
 function loadGraph(element, address){
-    function display(data) {
-        let content = $($.parseHTML(data, keepScripts=true));
+    apiV2('GET', address, null).then((response) => {
+        let content = $($.parseHTML(response, keepScripts=true));
         let elem = $('#'+element);
         elem.html(content);
-    }
-    restRequest('GET', null, display, address);
+    }).catch((error) => {
+        toast('Error loading attack graph.', false);
+        console.error(error);
+    });
 }
 
 function renameVulnerabilityReport(){
@@ -197,25 +201,26 @@ function removeVulnerabilityReport(){
 }
 
 function setupScannerSection(){
-    function setupScanner(data) {
+    selected_scanner = $('#scannerSelection').val();
+    apiV2('POST', '/plugin/pathfinder/api', {'index':'scanner_config', 'name':selected_scanner}).then((response) => {
         $('#dynamicScannerSection').empty();
-        validateFormState(data.enabled, '#startScan');
-        if(data.error){
-            displayOutput(data.name + ': ' + data.error);
+        validateFormState(response.enabled, '#startScan');
+        if(response.error){
+            displayOutput(response.name + ': ' + response.error);
             return;
         }
-        if(!data.enabled) {
-            displayOutput(data.name + ': Please install scanner dependencies before scanning, scanning disabled!');
+        if(!response.enabled) {
+            displayOutput(response.name + ': Please install scanner dependencies before scanning, scanning disabled!');
             return;
         }
         while(scanner_fields.length > 0) { scanner_fields.pop(); }
-        for (var field in data.fields) {
-            addScannerField($('#scannerSelection').val(), data.fields[field].type, data.fields[field]);
+        for (var field in response.fields) {
+            addScannerField($('#scannerSelection').val(), response.fields[field].type, response.fields[field]);
         }
-
-    }
-    selected_scanner = $('#scannerSelection').val();
-    restRequest('POST', {'index':'scanner_config', 'name':selected_scanner}, setupScanner, '/plugin/pathfinder/api');
+    }).catch((error) => {
+        toast('Error setting up scanner.', false);
+        console.error(error);
+    });
 }
 
 function addScannerField(scanner, type, field_data) {
