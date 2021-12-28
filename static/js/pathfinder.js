@@ -9,7 +9,7 @@ function changeInputOptions(event, section) {
     $('.tab-bar button').removeClass('selected');
     $('#'+section).toggle();
     event.currentTarget.className = "selected";
-    if (section == 'graphSection') {
+    if (section === 'graphSection') {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
         reloadReports();
@@ -31,7 +31,7 @@ function startScan(){
     for (var param in scanner_fields){
         fields[scanner_fields[param]] = $('#'+scanner_fields[param]).val();
     }
-    displayOutput(scanner + ' scan started with parameters:\n' + JSON.stringify(fields, null, 4));
+    displayOutput(`${scanner} scan started with parameters:\n ${JSON.stringify(fields, null, 4)}`);
     let data = {'index':'scan',
                 'scanner': scanner,
                 'fields':fields
@@ -101,7 +101,7 @@ $('#fileInput').on('change', function (event){
 
 
 function displayOutput(text){
-    document.getElementById("logWindow").value += text + '\n'
+    document.getElementById("logWindow").value += `${text} \n`;
 }
 
 function graphReport() {
@@ -133,9 +133,9 @@ function checkScanStatus(){
     apiV2('POST', '/plugin/pathfinder/api', {'index':'status'}).then((response) => {
         number_finished = Object.keys(response.finished).length
         number_failed = Object.keys(response.errors).length
-        if (response.pending.length == 0){
+        if (response.pending.length === 0){
             validateFormState(true, '#startScan');
-            if(number_finished == 0 && number_failed == 0){
+            if(number_finished === 0 && number_failed === 0){
                 clearInterval(refresher);
             }
         }
@@ -151,7 +151,7 @@ function checkScanStatus(){
         }
         if (number_failed > 0){
             for (var key in response.errors){
-                displayOutput('scan ID:'+key+' failed. error output: '+response.errors[key].message);
+                displayOutput(`scan ID:${key} failed. error output: ${response.errors[key].message}`);
             }
         }
     }).catch((error) => {
@@ -206,11 +206,11 @@ function setupScannerSection(){
         $('#dynamicScannerSection').empty();
         validateFormState(response.enabled, '#startScan');
         if(response.error){
-            displayOutput(response.name + ': ' + response.error);
+            displayOutput(`${response.name}: ${response.error}`);
             return;
         }
         if(!response.enabled) {
-            displayOutput(response.name + ': Please install scanner dependencies before scanning, scanning disabled!');
+            displayOutput(`${response.name}: Please install scanner dependencies before scanning, scanning disabled!`);
             return;
         }
         while(scanner_fields.length > 0) { scanner_fields.pop(); }

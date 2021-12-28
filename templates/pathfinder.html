@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="/pathfinder/css/pathfinder.css">
+<link rel="stylesheet" href="/pathfinder/css/pathfinder.css" xmlns="http://www.w3.org/1999/html">
 <script src="/pathfinder/js/pathfinder.js"></script>
 
 <div x-data="alpinePathfinder()" x-init="initPage()">
@@ -21,9 +21,9 @@
                         <label for="scannerSelection">Scanner:</label><br>
                         <select id="scannerSelection" onchange="setupScannerSection()">
                             <option value="" disabled selected>Select the scanner to use</option>
-                            {% for s in scanners %}
-                                <option value="{{ s }}">{{ s }}</option>
-                            {% endfor %}}
+                                {% for s in scanners %}
+                                    <option value="{{ s }}">{{ s }}</option>
+                                {% endfor %}}
                         </select>
                         <div id="dynamicScannerSection">
                         </div>
@@ -38,9 +38,9 @@
                         <label for="scanInputFormat">Report Format:</label>
                         <select id="scanInputFormat" onchange="validateParser()">
                             <option value="" disabled selected>Select the report format</option>
-                            {% for p in input_parsers %}
-                                <option value="{{ p }}">{{ p }}</option>
-                            {% endfor %}}
+                                {% for p in input_parsers %}
+                                    <option value="{{ p }}">{{ p }}</option>
+                                {% endfor %}}
                         </select>
                         <input id="fileInput" type="file" name="name" style="display: none;" />
                         <br><br>
@@ -155,6 +155,8 @@ function alpinePathfinder() {
 
         initPage() {
             apiV2('GET', '/api/v2/health').then((response) => {
+                console.log(this.scanners);
+                console.log(this.input_parsers);
             }).catch((error) => {
                 toast('Error loading page', false);
                 console.error(error);
