@@ -142,7 +142,7 @@ function checkScanStatus(){
         if (number_finished > 0){
             source_id = '';
             for (var key in response.finished){
-                displayOutput('scan ID:'+key+' finished. new source created: '+response.finished[key].source);
+                displayOutput(`scan ID:${key} finished. new source created: ${response.finished[key].source}`);
                 source_id = response.finished[key].source_id;
             }
             latest_source = source_id;
