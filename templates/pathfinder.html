@@ -155,8 +155,6 @@ function alpinePathfinder() {
 
         initPage() {
             apiV2('GET', '/api/v2/health').then((response) => {
-                console.log(this.scanners);
-                console.log(this.input_parsers);
             }).catch((error) => {
                 toast('Error loading page', false);
                 console.error(error);
