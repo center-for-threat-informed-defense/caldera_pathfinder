@@ -31,7 +31,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
-            # parsed_report = self.enrich_report(parsed_report)
+            parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -80,8 +80,6 @@ class PathfinderService:
         def get_all_tags(objlist):
             return [t for a in objlist for t in a.tags]
 
-        # attack_paths = await self.find_paths(report, initial_host, target_host)
-        # shortest_path = retrieve_shortest_path(attack_paths)
         shortest_path = nx.shortest_path(report.network_map, initial_host, target_host)
         technique_list = await self.gather_techniques(report, path=shortest_path)
         implemented_cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves if c in get_all_tags(technique_list)]
