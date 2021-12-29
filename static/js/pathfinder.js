@@ -9,7 +9,7 @@ function changeInputOptions(event, section) {
     $('.tab-bar button').removeClass('selected');
     $('#'+section).toggle();
     event.currentTarget.className = "selected";
-    if (section === 'graphSection') {
+    if (section == 'graphSection') {
         $('#logView').css('display', 'none')
         $('#graphView').css('display', 'block')
         reloadReports();
@@ -115,7 +115,7 @@ function reloadReports(){
         response.reports.forEach(function(r) {
             let found = false;
             $("#vulnerabilityReport > option").each(function() {
-                if($(this).val() === r.id) {
+                if($(this).val() == r.id) {
                     found = true;
                 }
             });
