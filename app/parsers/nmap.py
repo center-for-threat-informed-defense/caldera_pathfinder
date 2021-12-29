@@ -69,12 +69,14 @@ class ReportParser(ParserInterface):
         return report
 
     def generate_network_map(self, report):
-        network_map = defaultdict(list)
-        report_hosts = report.hosts.keys()
-        for host in report_hosts:
+        report_hosts_values = report.hosts.values()
+        network_map = nx.Graph()
+        for host in report_hosts_values:
+            network_map.add_node(host.hostname)
             if report.hosts[host].ports:
-                [network_map[h2].append(host) for h2 in report_hosts if h2 != host]
-        report.network_map = dict(network_map)
+                network_map.add_edge(host.hostname, h2.hostname) for h2 in report_hosts_values if h2 != host
+
+        report.network_map = network_map
 
 
 if __name__ == "__main__":

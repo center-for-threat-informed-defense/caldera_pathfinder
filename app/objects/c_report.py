@@ -16,7 +16,7 @@ class ReportSchema(ma.Schema):
     name = ma.fields.String()
     hosts = ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.Nested(HostSchema()))
     scope = ma.fields.String()
-    network_map_nodes = ma.fields.List(ma.fields.String()) #ma.fields.Dict(keys=ma.fields.String(), values=ma.fields.List(ma.fields.String()))
+    network_map_nodes = ma.fields.List(ma.fields.String())
     network_map_edges = ma.fields.List(ma.fields.String())
 
     @ma.post_load()
