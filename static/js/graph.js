@@ -184,13 +184,6 @@ var menu = [
 ];
 
 function createAdversary(){
-    function processResults(data){
-        removeOldPaths();
-        openAdversary(data.adversary_id);
-        addNewLinks(data.new_links);
-        created_adversary = data.adversary_id;
-        validateFormState(true, '#setupOperation');
-    }
     report = $('#vulnerabilityReport').val();
     tags = $('#adversaryTags').val();
     let data = {
@@ -200,7 +193,17 @@ function createAdversary(){
         'target': targetNode,
         'adversary_tags': tags
     }
-    restRequest('POST', data, processResults, '/plugin/pathfinder/api');
+    apiV2('POST', '/plugin/pathfinder/api', data).then((response) => {
+        removeOldPaths();
+        addNewLinks(response.new_links);
+        created_adversary = response.adversary_id;
+        validateFormState(true, '#viewAdversaries');
+        validateFormState(true, '#setupOperation');
+        toast('Custom Pathfinder adversary created.', true);
+    }).catch((error) => {
+        toast('Error creating adversary, please ensure target node has a tagged CVE.', false);
+        console.error(error);
+    });
 }
 
 function openAdversary(adversary_id){
@@ -228,19 +231,3 @@ function removeOldPaths() {
     simulation.alpha(1).restart();
 }
 
-function setupOperation(){
-    function finishSetup(data) {
-        viewSection('operations', '/campaign/operations');
-        setTimeout(function(s){ $('#togBtnOp').prop( "checked", true ).trigger('onchange'); }, 1000, 'NA');
-        setTimeout(function(s){ $("#optional").click(); }, 1000, 'NA');
-        setTimeout(function(s){ $("#autonomous").click(); }, 1000, 'NA');
-        setTimeout(function(s){ $('#queueName').val(s).change(); }, 1000, 'pathfinder op');
-        setTimeout(function(s){ $('#queueFlow').val(s).change(); }, 1000, created_adversary);
-        setTimeout(function(s){ $('#queueSource').val(s).change(); }, 1000, data.name);
-    }
-    let data = {
-        'index': 'source_name',
-        'source_id': latest_source
-    };
-    restRequest('POST', data, finishSetup, '/plugin/pathfinder/api');
-}

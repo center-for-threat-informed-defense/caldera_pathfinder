@@ -9,7 +9,6 @@ from plugins.pathfinder.app.interfaces.i_parser import ParserInterface
 
 
 class ReportParser(ParserInterface):
-
     def __init__(self):
         self.format = 'siesta'
         self.log = logging.getLogger('siesta parser')
@@ -35,8 +34,17 @@ class ReportParser(ParserInterface):
             host = Host(h['target'], hostname=h['host_name'])
             ports = [p for p in all_ports if p['target'] == host.ip]
             for p in ports:
-                port = Port(p['port_number'], protocol=p['protocol'], service=p['service'], state=p['port_state'])
-                vulnerabilities = [v for v in all_vulnerabilities if v['target'] == host.ip and v['port_number'] == port.number]
+                port = Port(
+                    p['port_number'],
+                    protocol=p['protocol'],
+                    service=p['service'],
+                    state=p['port_state'],
+                )
+                vulnerabilities = [
+                    v
+                    for v in all_vulnerabilities
+                    if v['target'] == host.ip and v['port_number'] == port.number
+                ]
                 for v in vulnerabilities:
                     if v['severity'] != '0 - info':
                         port.cves.append(v['check_id'])
@@ -46,9 +54,11 @@ class ReportParser(ParserInterface):
         return report
 
     def generate_network_map(self, report):
-        network_map = defaultdict(list)
-        report_hosts = report.hosts.keys()
-        for host in report_hosts:
+        report_hosts_values = report.hosts.values()
+        network_map = nx.Graph()
+        for host in report_hosts_values:
+            network_map.add_node(host.hostname)
             if report.hosts[host].ports:
-                [network_map[h2].append(host) for h2 in report_hosts if h2 != host]
-        report.network_map = dict(network_map)
+                network_map.add_edge(host.hostname, h2.hostname) for h2 in report_hosts_values if h2 != host
+
+        report.network_map = network_map

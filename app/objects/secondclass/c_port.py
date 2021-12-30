@@ -23,7 +23,18 @@ class Port(BaseObject):
 
     schema = PortSchema()
 
-    def __init__(self, number, protocol='TCP', cves=None, service=None, version=None, product=None, state='open', state_reason=None, match='.*'):
+    def __init__(
+        self,
+        number,
+        protocol='TCP',
+        cves=None,
+        service=None,
+        version=None,
+        product=None,
+        state='open',
+        state_reason=None,
+        match='.*',
+    ):
         super().__init__()
         self.number = number
         self.protocol = protocol
