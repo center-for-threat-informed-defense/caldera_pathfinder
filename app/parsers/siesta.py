@@ -9,7 +9,6 @@ from plugins.pathfinder.app.interfaces.i_parser import ParserInterface
 
 
 class ReportParser(ParserInterface):
-
     def __init__(self):
         self.format = 'siesta'
         self.log = logging.getLogger('siesta parser')
@@ -35,8 +34,17 @@ class ReportParser(ParserInterface):
             host = Host(h['target'], hostname=h['host_name'])
             ports = [p for p in all_ports if p['target'] == host.ip]
             for p in ports:
-                port = Port(p['port_number'], protocol=p['protocol'], service=p['service'], state=p['port_state'])
-                vulnerabilities = [v for v in all_vulnerabilities if v['target'] == host.ip and v['port_number'] == port.number]
+                port = Port(
+                    p['port_number'],
+                    protocol=p['protocol'],
+                    service=p['service'],
+                    state=p['port_state'],
+                )
+                vulnerabilities = [
+                    v
+                    for v in all_vulnerabilities
+                    if v['target'] == host.ip and v['port_number'] == port.number
+                ]
                 for v in vulnerabilities:
                     if v['severity'] != '0 - info':
                         port.cves.append(v['check_id'])
