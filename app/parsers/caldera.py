@@ -7,7 +7,6 @@ from plugins.pathfinder.app.interfaces.i_parser import ParserInterface
 
 
 class ReportParser(ParserInterface):
-
     def __init__(self):
         self.format = 'caldera'
         self.log = logging.getLogger('caldera parser')
