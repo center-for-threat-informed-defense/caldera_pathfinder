@@ -44,9 +44,13 @@ def search_cve(service, service_version=None, os=None, os_version=None, greedy=F
     Returns (list): of CVE objects
     """
     sess = _get_sess()
-    query = _get_service_query(service_name=service,
-                               service_version=service_version, os_name=os,
-                               os_version=os_version, greedy=greedy)
+    query = _get_service_query(
+        service_name=service,
+        service_version=service_version,
+        os_name=os,
+        os_version=os_version,
+        greedy=greedy,
+    )
     cve_json = _get_cve_from_api(sess=sess, query=query)
     cve = []
     for cve_ in cve_json['data']:
@@ -73,19 +77,26 @@ def keyword_cve(keyword, exact_match=False):
         raise NotImplementedError
     if exact_match:
         keyword_url = f'{keyword_url}?isExactMatch=true'
-    cve_json = sess.get(keyword_url, verify=False,
-                        timeout=8).json()
+    cve_json = sess.get(keyword_url, verify=False, timeout=8).json()
     cve = []
     for cve_ in cve_json['result']['CVE_Items']:
-        r = sess.get(url=f'{CVE_SEARCH_URL}/cve/{cve_["cve"]["CVE_data_meta"]["ID"]}',
-                     verify=False,
-                     timeout=8).json()
+        r = sess.get(
+            url=f'{CVE_SEARCH_URL}/cve/{cve_["cve"]["CVE_data_meta"]["ID"]}',
+            verify=False,
+            timeout=8,
+        ).json()
         cve.append(_create_pyd_cve(r))
     return cve
 
 
-def match_cve(service, service_version=None, os=None, os_version=None, greedy=False,
-  exact_match=False):
+def match_cve(
+    service,
+    service_version=None,
+    os=None,
+    os_version=None,
+    greedy=False,
+    exact_match=False,
+):
     """Find CVEs from CPE match strings using an API call to the NIST CVE database.
 
     Args:
@@ -103,13 +114,14 @@ def match_cve(service, service_version=None, os=None, os_version=None, greedy=Fa
     match_url = f'{CPE_MATCH_URL}cpe:2.3:a:*:{service}:{service_version or "*"}'
     if exact_match:
         match_url = f'{match_url}?isExactMatch=true'
-    cve_json = sess.get(match_url, verify=False,
-                        timeout=8).json()
+    cve_json = sess.get(match_url, verify=False, timeout=8).json()
     cve = []
     for cve_ in cve_json['result']['CVE_Items']:
-        r = sess.get(url=(f'{CVE_SEARCH_URL}/cve/{cve_["cve"]["CVE_data_meta"]["ID"]}'),
-                     verify=False,
-                     timeout=8).json()
+        r = sess.get(
+            url=f'{CVE_SEARCH_URL}/cve/{cve_["cve"]["CVE_data_meta"]["ID"]}',
+            verify=False,
+            timeout=8,
+        ).json()
         match = _create_pyd_cve(r)
         if greedy or (not os):
             cve.append(match)
@@ -178,7 +190,9 @@ def _search_to_regex(search):
     return f'.*{search}'
 
 
-def _get_search_filter(service_name, service_version=None, os_name=None, os_version=None):
+def _get_search_filter(
+    service_name, service_version=None, os_name=None, os_version=None
+):
     """Create a pymongo-style search filter using the system configuration,
     as described by software and OS on host.
 
@@ -190,15 +204,23 @@ def _get_search_filter(service_name, service_version=None, os_name=None, os_vers
 
     Returns (dict): pymongo-style search filter.
     """
-    return {'products': service_name,
-            'vendors': os_name or {'$regex': r'.*'},
-            'vulnerable_configuration': {'$regex': _search_to_regex(os_version or ''), '$options': "six"},
-            'vulnerable_product': {'$regex': _search_to_regex(service_version or ''), '$options': "six"}
-            }
+    return {
+        'products': service_name,
+        'vendors': os_name or {'$regex': r'.*'},
+        'vulnerable_configuration': {
+            '$regex': _search_to_regex(os_version or ''),
+            '$options': 'six',
+        },
+        'vulnerable_product': {
+            '$regex': _search_to_regex(service_version or ''),
+            '$options': 'six',
+        },
+    }
 
 
-def _get_service_query(service_name, service_version='', os_name='', os_version='',
-  greedy=False):
+def _get_service_query(
+    service_name, service_version='', os_name='', os_version='', greedy=False
+):
     """Create a query using the system configuration, as described by software and OS on host.
 
     Args:
@@ -212,14 +234,15 @@ def _get_service_query(service_name, service_version='', os_name='', os_version=
     Returns (dict): Complete search query for API call.
     """
     if greedy:
-        return _get_search_filter(service_name=service_name,
-                                  service_version='',
-                                  os_name='',
-                                  os_version='')
-    return _get_search_filter(service_name=service_name,
-                              service_version=service_version,
-                              os_name=os_name,
-                              os_version=os_version)
+        return _get_search_filter(
+            service_name=service_name, service_version='', os_name='', os_version=''
+        )
+    return _get_search_filter(
+        service_name=service_name,
+        service_version=service_version,
+        os_name=os_name,
+        os_version=os_version,
+    )
 
 
 def _get_cve_from_api(sess, query):
@@ -232,15 +255,19 @@ def _get_cve_from_api(sess, query):
     Returns (dict): JSON containing full CVE information for all CVEs
       matching the system described in query.
     """
-    return sess.post(url=(CVE_SEARCH_URL + '/query'),
-                     json={'retrieve': 'cves',
-                           'dict_filter': query,
-                           'limit': 10,
-                           'skip': 25,
-                           'sort': 'cvss',
-                           'sort_dir': 'ASC'},
-                     verify=False,
-                     timeout=8).json()
+    return sess.post(
+        url=(CVE_SEARCH_URL + '/query'),
+        json={
+            'retrieve': 'cves',
+            'dict_filter': query,
+            'limit': 10,
+            'skip': 25,
+            'sort': 'cvss',
+            'sort_dir': 'ASC',
+        },
+        verify=False,
+        timeout=8,
+    ).json()
 
 
 def _get_cve_info(sess, cve):
@@ -253,9 +280,9 @@ def _get_cve_info(sess, cve):
     Returns (dict): JSON containing full CVE information for all CVEs
       matching the system described in query.
     """
-    return sess.get(url=(CVE_SEARCH_URL + '/cve/' + cve),
-                    verify=False,
-                    timeout=8).json()
+    return sess.get(
+        url=(CVE_SEARCH_URL + '/cve/' + cve), verify=False, timeout=8
+    ).json()
 
 
 def _get_vuln_info_from_cve(full_cve):
@@ -338,7 +365,7 @@ def _get_os_from_cve(vulnerable_configs):
             vuln = vuln['id']
         if vuln.split(':')[2] == 'o':
             os_ = f'os.{vuln.split(":")[3]}.{vuln.split(":")[4]}'
-            version = vuln.split(":")[5]
+            version = vuln.split(':')[5]
             if os_ in os:
                 os[os_].add(version)
             else:

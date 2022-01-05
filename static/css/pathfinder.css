@@ -1,15 +1,26 @@
+.section-profile button {
+    height: 35px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 1;
+    border-radius: 2px;
+    border: none;
+}
 .log-box {
     background-color: var(--primary-background);
-    padding: 10px;
+    padding: 5px;
     border-radius: 7px;
     width: 95%;
-    margin: 7px;
+    min-height: 600px;
+    margin: 3px;
 }
 .tab-bar {
     overflow:hidden;
 }
 .tab-bar button {
-    background-color: darkgray;
+    background-color: transparent;
     float:left;
     width:25%;
     border: none;
@@ -19,18 +30,59 @@
     height:25px;
     margin-top: 0px;
     margin-bottom: 0px;
-    border-radius: 10px 10px 0 0;
+    border-radius: 2px 2px 0 0;
     color: white;
 }
 .tab-bar button.selected {
-    background-color: transparent;
+    background-color: var(--primary-color);
     border: 1px solid darkgray;
     border-bottom: none;
 }
 .tab-bar button:hover {
     color: red;
 }
-
+.row {
+    text-align: center;
+    padding: 10px;
+    border-radius: 10px;
+    width: 100%;
+    display: flex;
+    position: relative;
+    border: 2px solid var(--navbar-color);
+}
+.column {
+    flex: 50%;
+    color: var(--font-color);
+    margin: 5px;
+    max-width: 100%;
+}
+.button-success {
+    background-color: var(--primary-color);
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 1;
+    border-radius: 2px;
+    border: none;
+}
+.button-notready {
+    background-color: darkgray;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 1;
+    border-radius: 2px;
+    border: none;
+    color: black;
+}
+.section-profile input {
+    height: 18px;
+    width: 75%;
+    margin: 5px;
+}
+.content ul {
+    list-style: disc outside;
+    margin-left: 0;
+    margin-top: 1em;
+}
 #graphLegend {
     list-style:none;
     padding:5px;
@@ -39,11 +91,20 @@
     border: 1px solid white;
     width: 75%;
 }
-
 #graphLegend span {
     height: 25px;
     width: 25px;
     background-color: #bbb;
     border-radius: 50%;
     display: inline-block;
+}
+select {
+    background: white;
+    font-size: 14px;
+    height: 30px;
+    width: 100%;
+    padding: 5px 15px;
+    margin-top: 15px;
+    border-radius: 2px;
+    border: none;
 }
