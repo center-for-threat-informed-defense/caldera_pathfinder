@@ -32,6 +32,7 @@ class PathfinderService:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
             parsed_report = self.enrich_report(parsed_report)
+
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -51,13 +52,23 @@ class PathfinderService:
         for host in report.hosts.values():
             ip_fact = add_fact(facts, 'scan.host.ip', host.ip)
             if host.hostname:
-                relationships.append(Relationship(ip_fact, 'has_hostname', add_fact(facts, 'scan.host.hostname', host.hostname)))
+                relationships.append(
+                    Relationship(
+                        ip_fact,
+                        'has_hostname',
+                        add_fact(facts, 'scan.host.hostname', host.hostname),
+                    )
+                )
             for num, port in host.ports.items():
                 port_fact = add_fact(facts, 'scan.host.port', num)
                 for cve in port.cves:
                     cve_fact = add_fact(facts, 'scan.found.cve', cve)
-                    relationships.append(Relationship(ip_fact, 'has_vulnerability', cve_fact))
-                    relationships.append(Relationship(port_fact, 'has_vulnerability', cve_fact))
+                    relationships.append(
+                        Relationship(ip_fact, 'has_vulnerability', cve_fact)
+                    )
+                    relationships.append(
+                        Relationship(port_fact, 'has_vulnerability', cve_fact)
+                    )
         source = Source(report.id, report.name, facts, relationships)
         source.access = BaseWorld.Access.RED
         await self.data_svc.store(source)
@@ -66,22 +77,43 @@ class PathfinderService:
     async def generate_adversary(self, report, initial_host, target_host, tags=None):
         async def create_cve_adversary(techniques, tags):
             adv_id = uuid.uuid4()
-            obj_default = (await self.data_svc.locate('objectives', match=dict(name='default')))[0]
-            return dict(id=str(adv_id), name='pathfinder adversary', description='auto generated adversary for pathfinder',
-                        atomic_ordering=techniques, tags=tags, objective=obj_default.id)
+            obj_default = (
+                await self.data_svc.locate('objectives', match=dict(name='default'))
+            )[0]
+            return dict(
+                id=str(adv_id),
+                name='pathfinder adversary',
+                description='auto generated adversary for pathfinder',
+                atomic_ordering=techniques,
+                tags=tags,
+                objective=obj_default.id,
+            )
 
         def get_all_tags(objlist):
             return [t for a in objlist for t in a.tags]
 
         shortest_path = nx.shortest_path(report.network_map, initial_host, target_host)
         technique_list = await self.gather_techniques(report, path=shortest_path)
-        implemented_cves = [c for h in shortest_path[1:] for c in report.hosts[h].cves if c in get_all_tags(technique_list)]
-        adv = await create_cve_adversary([t.ability_id for t in technique_list], implemented_cves)
+        implemented_cves = [
+            c
+            for h in shortest_path[1:]
+            for c in report.hosts[h].cves
+            if c in get_all_tags(technique_list)
+        ]
+        adv = await create_cve_adversary(
+            [t.ability_id for t in technique_list], implemented_cves
+        )
 
         if tags:
-            tagged_adversaries = await self.collect_tagged_adversaries([t.strip() for t in tags.split(',')])
-            adv['atomic_ordering'] = await self.join_adversary_abilities(adv, *tagged_adversaries)
-            adv['tags'].extend([t for a in tagged_adversaries for t in a['tags'] if t in tags])
+            tagged_adversaries = await self.collect_tagged_adversaries(
+                [t.strip() for t in tags.split(',')]
+            )
+            adv['atomic_ordering'] = await self.join_adversary_abilities(
+                adv, *tagged_adversaries
+            )
+            adv['tags'].extend(
+                [t for a in tagged_adversaries for t in a['tags'] if t in tags]
+            )
         await self.save_adversary(adv)
         return shortest_path, adv['id']
 
@@ -103,7 +135,9 @@ class PathfinderService:
             if host not in report.hosts:
                 return []
             host_vulnerabilities = report.hosts[host].cves
-            available_techniques = await self.collect_tagged_abilities(host_vulnerabilities)
+            available_techniques = await self.collect_tagged_abilities(
+                host_vulnerabilities
+            )
             return available_techniques
 
         if path:
@@ -117,10 +151,19 @@ class PathfinderService:
         Args:
             ability_tags (list): CVE IDs
         """
-        return [a for tag in ability_tags for a in await self.data_svc.search(tag, 'abilities') or []]
+        return [
+            a
+            for tag in ability_tags
+            for a in await self.data_svc.search(tag, 'abilities') or []
+        ]
 
     async def collect_tagged_adversaries(self, adversary_tags):
-        return [a.display for tag in adversary_tags for a in await self.data_svc.search(tag, 'adversaries') or []]
+        return [
+            a.display
+            for tag in adversary_tags
+            for a in await self.data_svc.search(tag, 'adversaries') or []
+        ]
+
 
     def enrich_report(self, report):
         for key, host in report.hosts.items():
@@ -134,18 +177,18 @@ class PathfinderService:
                     host.cves.append(cves)
         report.hosts[key] = host
         return report
-    
+
     def software_enrich(self, software):
         exploits = []
         for soft in software:
-                try:
-                    cves = cve.keyword_cve(soft.subtype)
-                except Exception as e:
-                    self.log.error(f'exception when enriching: {repr(e)}')
-                    continue
-                ids = [cve.id for cve in cves]
-                if ids:
-                    exploits.append(ids)
+            try:
+                cves = cve.keyword_cve(soft.subtype)
+            except Exception as e:
+                self.log.error(f'exception when enriching: {repr(e)}')
+                continue
+            ids = [cve.id for cve in cves]
+            if ids:
+                exploits.append(ids)
         return exploits
 
     def host_enrich(self, os):
@@ -159,12 +202,14 @@ class PathfinderService:
         if ids:
             exploits.append(ids)
         return exploits
-            
+
     @staticmethod
     def load_parsers():
         parsers = {}
         for filepath in glob.iglob('plugins/pathfinder/app/parsers/*.py'):
-            module = import_module(filepath.replace('/', '.').replace('\\', '.').replace('.py', ''))
+            module = import_module(
+                filepath.replace('/', '.').replace('\\', '.').replace('.py', '')
+            )
             p = module.ReportParser()
             parsers[p.format] = p
         return parsers
