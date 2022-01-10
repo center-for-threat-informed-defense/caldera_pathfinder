@@ -3,6 +3,7 @@ import re
 import yaml
 import logging
 import argparse
+import networkx as nx
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 
@@ -73,10 +74,9 @@ class ReportParser(ParserInterface):
         network_map = nx.Graph()
         for host in report.hosts.values():
             network_map.add_node(host.hostname)
-            if report.hosts[host].ports:
-                for h2 in report.hosts.values():
-                    if h2 != host:
-                        network_map.add_edge(host.hostname, h2.hostname)  
+            for h2 in report.hosts.values():
+                if h2 != host:
+                    network_map.add_edge(host.hostname, h2.hostname)  
 
         report.network_map = network_map
 
