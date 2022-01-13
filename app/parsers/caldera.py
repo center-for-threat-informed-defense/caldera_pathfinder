@@ -17,19 +17,17 @@ class ReportParser(ParserInterface):
             caldera_report = VulnerabilityReport.load(BaseWorld.strip_yml(report)[0])
             self.generate_network_map(caldera_report)
             return caldera_report
-        except ValidationError as err:
-            print(err.messages)  
-            print(err.valid_data)
-            return None
         except Exception as e:
             self.log.error('exception when loading caldera report: %s' % repr(e))
             return None
 
     def generate_network_map(self, report):
+        if report.network_map_nodes and report.network_map_edges:
+            return
         network_map = nx.Graph()
         for key,value in report.hosts.items():
-            network_map.add_node(value.hostname)
+            network_map.add_node(value.ip)
             for h2 in report.hosts.values():
                 if h2 != value:
-                    network_map.add_edge(value.hostname, h2.hostname)
+                    network_map.add_edge(value.ip, h2.ip)
         report.network_map = network_map

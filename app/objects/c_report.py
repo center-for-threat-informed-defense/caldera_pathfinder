@@ -19,7 +19,7 @@ class ReportSchema(ma.Schema):
     )
     scope = ma.fields.String()
     network_map_nodes = ma.fields.List(ma.fields.String())
-    network_map_edges = ma.fields.List(ma.fields.String())
+    network_map_edges = ma.fields.List(ma.fields.Tuple((ma.fields.String(), ma.fields.String())))
 
 
     @ma.post_load()
@@ -35,7 +35,7 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
     def unique(self):
         return self.hash('%s' % self.id)
 
-    def __init__(self, id=None, name=None, hosts=None, scope=None, nodes=[], edges=[], **kwargs):
+    def __init__(self, id=None, name=None, hosts=None, scope=None, network_map_nodes=[], network_map_edges=[], **kwargs):
         super().__init__()
         self.id = id or str(uuid.uuid4())
         self.name = (
@@ -46,8 +46,10 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
         self.hosts = hosts or dict()
         self.scope = scope
         self.network_map = nx.Graph()
-        self.network_map.add_nodes_from(nodes)
-        self.network_map.add_edges_from(edges)
+        self.network_map_nodes = network_map_nodes
+        self.network_map_edges = network_map_edges
+        self.network_map.add_nodes_from(network_map_nodes)
+        self.network_map.add_edges_from(network_map_edges)
 
     def store(self, ram):
         existing = self.retrieve(ram['vulnerabilityreports'], self.unique)
