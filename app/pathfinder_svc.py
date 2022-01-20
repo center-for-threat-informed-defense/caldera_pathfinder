@@ -12,6 +12,7 @@ from app.objects.secondclass.c_relationship import Relationship
 from app.objects.c_adversary import Adversary
 import plugins.pathfinder.settings as settings
 import plugins.pathfinder.app.enrichment.cve as cve
+from plugins.pathfinder.app.objects.c_cve import CVE
 import networkx as nx
 
 
@@ -180,14 +181,15 @@ class PathfinderService:
     def software_enrich(self, software):
         exploits = []
         for soft in software:
-            try:
-                cves = cve.keyword_cve(soft.subtype)
-            except Exception as e:
-                self.log.error(f'exception when enriching: {repr(e)}')
-                continue
-            ids = [cve.id for cve in cves]
-            if ids:
-                exploits.append(ids)
+            if soft.subtype:
+                try:
+                    cves = cve.keyword_cve(soft.subtype)
+                except Exception as e:
+                    self.log.error(f'exception when enriching: {repr(e)}')
+                    continue
+                ids = [cve.id for cve in cves]
+                if ids:
+                    exploits.append(ids)
         return exploits
 
     def host_enrich(self, os):
@@ -197,7 +199,7 @@ class PathfinderService:
         except Exception as e:
             self.log.error(f'exception when enriching: {repr(e)}')
             return []
-        ids = [cve.id for cve in cves]
+        ids = [cve.id for cve in cves if isinstance(cve, CVE)]
         if ids:
             exploits.append(ids)
         return exploits

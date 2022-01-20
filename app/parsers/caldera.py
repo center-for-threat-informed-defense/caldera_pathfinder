@@ -25,9 +25,9 @@ class ReportParser(ParserInterface):
         if report.network_map_nodes and report.network_map_edges:
             return
         network_map = nx.Graph()
-        for key,value in report.hosts.items():
-            network_map.add_node(value.ip)
-            for h2 in report.hosts.values():
-                if h2 != value:
-                    network_map.add_edge(value.ip, h2.ip)
+        for host1 in report.hosts.values():
+            network_map.add_node(host1.ip)
+            for host2 in report.hosts.values():
+                if host2 != host1:
+                    network_map.add_edge(host1.ip, host2.ip)
         report.network_map = network_map
