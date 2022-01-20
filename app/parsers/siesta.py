@@ -1,5 +1,6 @@
 import json
 import logging
+import networkx as nx
 from collections import defaultdict
 
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
@@ -54,9 +55,11 @@ class ReportParser(ParserInterface):
         return report
 
     def generate_network_map(self, report):
-        network_map = defaultdict(list)
-        report_hosts = report.hosts.keys()
-        for host in report_hosts:
-            if report.hosts[host].ports:
-                [network_map[h2].append(host) for h2 in report_hosts if h2 != host]
-        report.network_map = dict(network_map)
+        network_map = nx.Graph()
+        for host in report.hosts.values():
+            network_map.add_node(host.hostname)
+            for h2 in report.hosts.values():
+                if h2 != host:
+                    network_map.add_edge(host.hostname, h2.hostname) 
+
+        report.network_map = network_map

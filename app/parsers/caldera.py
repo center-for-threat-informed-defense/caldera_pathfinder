@@ -1,4 +1,5 @@
 import logging
+import networkx as nx
 from collections import defaultdict
 
 from app.utility.base_world import BaseWorld
@@ -21,9 +22,12 @@ class ReportParser(ParserInterface):
             return None
 
     def generate_network_map(self, report):
-        network_map = defaultdict(list)
-        report_hosts = report.hosts.keys()
-        for host in report_hosts:
-            if report.hosts[host].ports:
-                [network_map[h2].append(host) for h2 in report_hosts if h2 != host]
-        report.network_map = dict(network_map)
+        if report.network_map_nodes and report.network_map_edges:
+            return
+        network_map = nx.Graph()
+        for host1 in report.hosts.values():
+            network_map.add_node(host1.ip)
+            for host2 in report.hosts.values():
+                if host2 != host1:
+                    network_map.add_edge(host1.ip, host2.ip)
+        report.network_map = network_map

@@ -7,7 +7,7 @@ class ServiceSchema(ma.Schema):
 
     service_type = ma.fields.String()
     subtype = ma.fields.String()
-    notes = ma.fields.String()
+    notes = ma.fields.String(allow_none=True)
 
     @ma.post_load()
     def build_service(self, data, **_):
