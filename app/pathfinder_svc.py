@@ -12,6 +12,8 @@ from app.objects.secondclass.c_relationship import Relationship
 from app.objects.c_adversary import Adversary
 import plugins.pathfinder.settings as settings
 import plugins.pathfinder.app.enrichment.cve as cve
+from plugins.pathfinder.app.objects.c_cve import CVE
+
 import networkx as nx
 
 
@@ -75,13 +77,6 @@ class PathfinderService:
         return source
 
     async def generate_adversary(self, report, initial_host, target_host, tags=None):
-        def retrieve_shortest_path(paths):
-            shortest = paths[0]
-            for path in paths:
-                if len(path) < len(shortest):
-                    shortest = path
-            return shortest
-
         async def create_cve_adversary(techniques, tags):
             adv_id = uuid.uuid4()
             obj_default = (
@@ -172,25 +167,6 @@ class PathfinderService:
             for a in await self.data_svc.search(tag, 'adversaries') or []
         ]
 
-    async def find_paths(self, report, start, end, past=None, avoid=None):
-        past = past or []
-        path = list(past) + [start]
-        avoid = avoid or []
-        if start == end:
-            return [path]
-        if start not in report.network_map:
-            return []
-        paths = []
-        for next_host in report.network_map[start]:
-            if (
-                not report.hosts[next_host].cves
-                or next_host in path
-                or next_host in avoid
-            ):
-                continue
-            next_paths = await self.find_paths(report, next_host, end, path)
-            [paths.append(next_path) for next_path in next_paths if next_path]
-        return paths
 
     def enrich_report(self, report):
         for key, host in report.hosts.items():
@@ -208,14 +184,15 @@ class PathfinderService:
     def software_enrich(self, software):
         exploits = []
         for soft in software:
-            try:
-                cves = cve.keyword_cve(soft.subtype)
-            except Exception as e:
-                self.log.error(f'exception when enriching: {repr(e)}')
-                continue
-            ids = [cve.id for cve in cves]
-            if ids:
-                exploits.append(ids)
+            if soft.subtype:
+                try:
+                    cves = cve.keyword_cve(soft.subtype)
+                except Exception as e:
+                    self.log.error(f'exception when enriching: {repr(e)}')
+                    continue
+                ids = [cve.id for cve in cves]
+                if ids:
+                    exploits.append(ids)
         return exploits
 
     def host_enrich(self, os):
@@ -225,7 +202,7 @@ class PathfinderService:
         except Exception as e:
             self.log.error(f'exception when enriching: {repr(e)}')
             return []
-        ids = [cve.id for cve in cves]
+        ids = [cve.id for cve in cves if isinstance(cve, CVE)]
         if ids:
             exploits.append(ids)
         return exploits

@@ -74,7 +74,7 @@ def keyword_cve(keyword, exact_match=False):
         keyword_search = '+'.join(keyword)
         keyword_url = f'{CVE_KEYWORD_URL}{keyword_search}'
     else:
-        raise NotImplementedError
+        raise ValueError('Must supply string or list.')
     if exact_match:
         keyword_url = f'{keyword_url}?isExactMatch=true'
     cve_json = sess.get(keyword_url, verify=False, timeout=8).json()

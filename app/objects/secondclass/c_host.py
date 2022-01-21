@@ -26,7 +26,7 @@ class HostSchema(ma.Schema):
     cves = ma.fields.List(ma.fields.String())
     software = ma.fields.List(ma.fields.Nested(ServiceSchema()))
     os = ma.fields.Nested(OSSchema())
-    mac = ma.fields.String()
+    mac = ma.fields.String(allow_none=True)
     freebie_abilities = ma.fields.List(ma.fields.String())
     possible_abilities = ma.fields.Nested(AbilitySchema())
     denied_abilities = ma.fields.List(ma.fields.String())
