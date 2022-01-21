@@ -13,6 +13,7 @@ from app.objects.c_adversary import Adversary
 import plugins.pathfinder.settings as settings
 import plugins.pathfinder.app.enrichment.cve as cve
 from plugins.pathfinder.app.objects.c_cve import CVE
+
 import networkx as nx
 
 
@@ -33,6 +34,7 @@ class PathfinderService:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
             parsed_report = self.enrich_report(parsed_report)
+
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -91,6 +93,7 @@ class PathfinderService:
 
         def get_all_tags(objlist):
             return [t for a in objlist for t in a.tags]
+
 
         shortest_path = nx.shortest_path(report.network_map, initial_host, target_host)
         technique_list = await self.gather_techniques(report, path=shortest_path)

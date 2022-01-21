@@ -30,4 +30,5 @@ class ReportParser(ParserInterface):
             for host2 in report.hosts.values():
                 if host2 != host1:
                     network_map.add_edge(host1.ip, host2.ip)
+
         report.network_map = network_map

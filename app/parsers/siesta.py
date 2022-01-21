@@ -62,4 +62,5 @@ class ReportParser(ParserInterface):
                 if h2 != host:
                     network_map.add_edge(host.hostname, h2.hostname) 
 
+
         report.network_map = network_map
