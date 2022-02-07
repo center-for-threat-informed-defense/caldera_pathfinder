@@ -58,3 +58,10 @@ class Host(BaseObject):
         self.denied_abilities = denied_abilities or []
         self.access = access or 0
         self.access_prob = access_prob or 1.0
+
+    def is_denied(self):
+        return self.access == -1
+
+    def can_access(self):
+        return self.access_prob != 0.0
+            
