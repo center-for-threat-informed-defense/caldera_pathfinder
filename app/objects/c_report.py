@@ -60,3 +60,6 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
         existing.update('hosts', self.hosts)
         existing.update('network_map', self.network_map)
         return existing
+
+    def retrieve_host_by_id(self, id):
+        return self.hosts[id]

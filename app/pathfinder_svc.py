@@ -33,8 +33,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
-            parsed_report = self.enrich_report(parsed_report)
-
+            # parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -75,6 +74,109 @@ class PathfinderService:
         source.access = BaseWorld.Access.RED
         await self.data_svc.store(source)
         return source
+    
+    async def generate_path_analysis_report(self, vuln_report, start, target):  
+        """
+        """
+        r = dict()
+        r['exploitability_graph'] = await self.generate_exploitability_graph(vuln_report)
+        r['exploitability_paths'] = await self.generate_exploitable_paths(vuln_report, r['exploitability_graph'], start, target)
+        return r
+
+    async def generate_exploitability_graph(self, report):
+        """"""
+        def _is_edge_exploitable(owned, candidate):
+            """
+                Determines if candidate node is exploitable from current node. Exploitability on the
+                target node is defined as obtaining presence (either normal or privileged access) on the
+                candidate node.
+            Args:
+                owned (): source node to determine exploitability from
+                candidate (): target node to determine exploitability to
+            Returns: 
+                (bool)
+            """
+            # Steps:
+            # - Is candidate node/ability a freebie?
+            # - return True
+            # - Is candidate node/ability probabalistic?
+            # - return True
+            # - Is candidate node/ability blacklisted?
+            # - return False
+            # - Does current node have an ability to laterally move to the candidate node? Or does it have a probabilitic 
+            # - If lateral movement ability present, are pre conditions met to use it?
+            # - return True
+            if candidate.is_denied():
+                return False
+            if not candidate.can_access():
+                return False
+            if candidate.freebie_abilities:
+                return True
+            if candidate.cves:
+                return True
+            return False
+
+        exploit_map = nx.Graph()
+        for edge_ in report.network_map.edges:
+            source_node = report.retrieve_host_by_id(edge_[0])
+            target_node = report.retrieve_host_by_id(edge_[1])
+            if _is_edge_exploitable(source_node, target_node):
+                exploit_map.add_node(source_node)
+                exploit_map.add_node(target_node)
+                exploit_map.add_edge(source_node, target_node)
+        return exploit_map
+
+    async def generate_exploitable_paths(self, report, exploitability_graph, source, target):
+        """Find all paths from source to target for the given exploitability graph.
+        Args:
+            exploitability_graph (networkx.Graph)
+            source (node):
+            target (node):
+        Returns: 
+            (generator) list of paths
+        """
+        ret = list()
+        
+        if not source in exploitability_graph.nodes or not target in exploitability_graph.nodes:
+            return None
+        paths = nx.all_simple_paths(exploitability_graph, source, target)
+        # create adversaries for every path
+        for path in paths:
+            ret.append(dict(path=path, adversary=create_adversary_from_path(path)))
+        return ret
+
+    def create_adversary_from_path(path):
+        """Create an adversary prototype(list) based on the given path. If the path has
+        missing abilities, just mark requried steps as freebies. Thus this will create real
+        adversary if possible, if not it will create an incomplete prototype.
+        Design:
+            - The 'paths' that were created here should be just list of ability ID's, or
+            placeholder (probably use Python Enum) types for the special cases
+            (e.g. freebie node, freebie ability etc..)
+            - Should return list looking something to effect of:
+            [
+            "3aad5312-d48b-4206-9de4-39866c12e60f",
+            "3aad5312-d48b-4206-9de4-39866c12e60f",
+            (AbilityFreebie, "3aad5312-d48b-4206-9de4-39866c12e60f"),
+            "3aad5312-d48b-4206-9de4-39866c12e60f",
+            (NodeFreebie, ""),
+            (AbilityProbabilistic, "3aad5312-d48b-4206-9de4-39866c12e60f", .3)
+            ]
+        """
+        # Can translate logic from existing generate_adversary() but must take
+        # into account we are not dealing with if just CVEs are present, need to
+        # to know:
+        # - if abilities are present
+        # - if abilities are freebies
+        # - if abilities are probabilistic freebies (if the ability has % chance of success, for path planning here any % means ability is available)
+        # - if abilities are blacklisted
+        # - if nodes are freebies (getting to the node from current node is assumed true)
+        # - if nodes are probabilistic freebies (if the node has % chance of success, for path planning here any % means ability is available) 
+        # - if nodes are blacklisted
+        adversary = dict()
+        for node in path:
+            adversary[node] = gather_techniques(report, targeted_host=node)
+        return adversary
 
     async def generate_adversary(self, report, initial_host, target_host, tags=None):
         async def create_cve_adversary(techniques, tags):
@@ -133,7 +235,7 @@ class PathfinderService:
             f.truncate()
         await self.data_svc.reload_data()
 
-    async def gather_techniques(self, report, targetedhost=None, path=None):
+    async def gather_techniques(self, report, targeted_host=None, path=None):
         async def get_host_exploits(host):
             if host not in report.hosts:
                 return []
@@ -166,7 +268,6 @@ class PathfinderService:
             for tag in adversary_tags
             for a in await self.data_svc.search(tag, 'adversaries') or []
         ]
-
 
     def enrich_report(self, report):
         for key, host in report.hosts.items():
