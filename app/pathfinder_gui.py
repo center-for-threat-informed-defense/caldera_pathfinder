@@ -246,6 +246,7 @@ class PathfinderGUI(BaseWorld):
             attack_dict = await self.pathfinder_svc.generate_path_analysis_report(
                 report[0], start, target
             )
+            print(attack_dict)
             # 
             return dict(adversary_id=adversary_id, new_links=generate_links(path))
 

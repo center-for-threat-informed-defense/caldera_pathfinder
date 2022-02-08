@@ -80,6 +80,7 @@ class PathfinderService:
         """
         r = dict()
         r['exploitability_graph'] = await self.generate_exploitability_graph(vuln_report)
+        # print(r['exploitability_graph'].nodes,r['exploitability_graph'].edges)
         r['exploitability_paths'] = await self.generate_exploitable_paths(vuln_report, r['exploitability_graph'], start, target)
         return r
 
@@ -136,16 +137,16 @@ class PathfinderService:
             (generator) list of paths
         """
         ret = list()
-        
-        if not source in exploitability_graph.nodes or not target in exploitability_graph.nodes:
+        if (not report.retrieve_host_by_id(source) in exploitability_graph.nodes or 
+            not report.retrieve_host_by_id(target) in exploitability_graph.nodes):
             return None
-        paths = nx.all_simple_paths(exploitability_graph, source, target)
+        paths = nx.all_simple_paths(exploitability_graph, report.retrieve_host_by_id(source), report.retrieve_host_by_id(target))
         # create adversaries for every path
         for path in paths:
-            ret.append(dict(path=path, adversary=create_adversary_from_path(path)))
+            ret.append(dict(path=path, adversary=self.create_adversary_from_path(report, path)))
         return ret
 
-    def create_adversary_from_path(path):
+    def create_adversary_from_path(self, report, path):
         """Create an adversary prototype(list) based on the given path. If the path has
         missing abilities, just mark requried steps as freebies. Thus this will create real
         adversary if possible, if not it will create an incomplete prototype.
@@ -175,7 +176,7 @@ class PathfinderService:
         # - if nodes are blacklisted
         adversary = dict()
         for node in path:
-            adversary[node] = gather_techniques(report, targeted_host=node)
+            adversary[node] = self.gather_techniques(report, targeted_host=node)
         return adversary
 
     async def generate_adversary(self, report, initial_host, target_host, tags=None):
