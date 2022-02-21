@@ -1,0 +1,156 @@
+hosts:
+  1-1:
+    access: 0
+    access_prob: 0.56
+    cves: ["CVE-2014-0160"]
+    denied_abilities: []
+    freebie_abilities: ["Root password available"]
+    hostname: node1.local
+    ip: 10.0.0.1
+    mac: null
+    os:
+      notes: 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML,
+        like Gecko) Chrome/26.0.1410.63 Safari/537.31'
+      os_type: Linux
+      subtype: null
+    ports: {}
+    possible_abilities: {}
+    software:
+    - notes: null
+      service_type: Web Browser
+      subtype: Google Chrome
+  1-2:
+    access: 0
+    access_prob: 0.97
+    cves: ["CVE-2014-0160"]
+    denied_abilities: []
+    freebie_abilities: ["Root password available"]
+    hostname: node2.local
+    ip: 10.0.0.2
+    mac: null
+    os:
+      notes: 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML,
+        like Gecko) Chrome/26.0.1410.63 Safari/537.31'
+      os_type: Windows 10
+      subtype: null
+    ports: {}
+    possible_abilities: {}
+    software:
+    - notes: null
+      service_type: Web Browser
+      subtype: Thunderbird
+  1-3:
+    access: 0
+    access_prob: 0.0
+    cves: []
+    denied_abilities: []
+    freebie_abilities: []
+    hostname: node3.local
+    ip: 10.0.0.3
+    mac: null
+    os:
+      notes: 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML,
+        like Gecko) Chrome/26.0.1410.63 Safari/537.31'
+      os_type: Linux
+      subtype: null
+    ports: {}
+    possible_abilities: {}
+    software:
+    - notes: null
+      service_type: Web Browser
+      subtype: Visual Studio Code
+  2-1:
+    access: 0
+    access_prob: 0.35
+    cves: ["CVE-2014-0160"]
+    denied_abilities: []
+    freebie_abilities: []
+    hostname: node4.local
+    ip: 10.0.0.4
+    mac: null
+    os:
+      notes: 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML,
+        like Gecko) Chrome/26.0.1410.63 Safari/537.31'
+      os_type: Linux
+      subtype: null
+    ports: {}
+    possible_abilities: {}
+    software:
+    - notes: null
+      service_type: Web Browser
+      subtype: Visual Studio Code
+  2-2:
+    access: 0
+    access_prob: 0.35
+    cves: ["CVE-2014-0160"]
+    denied_abilities: []
+    freebie_abilities: []
+    hostname: node5.local
+    ip: 10.0.0.5
+    mac: null
+    os:
+      notes: 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML,
+        like Gecko) Chrome/26.0.1410.63 Safari/537.31'
+      os_type: Linux
+      subtype: null
+    ports: {}
+    possible_abilities: {}
+    software:
+    - notes: null
+      service_type: Web Browser
+      subtype: Visual Studio Code
+  2-3:
+    access: 0
+    access_prob: 0.35
+    cves: ["CVE-2014-0160"]
+    denied_abilities: []
+    freebie_abilities: []
+    hostname: node6.local
+    ip: 10.0.0.6
+    mac: null
+    os:
+      notes: 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML,
+        like Gecko) Chrome/26.0.1410.63 Safari/537.31'
+      os_type: Linux
+      subtype: null
+    ports: {}
+    possible_abilities: {}
+    software:
+    - notes: null
+      service_type: Web Browser
+      subtype: Visual Studio Code
+id: deadbeef-6a18-4dcf-b659-79b8dd0d8d89
+name: v2 Testing Report
+network_map_edges:
+- !!python/tuple
+  - 1-1
+  - 1-2
+- !!python/tuple
+  - 1-2
+  - 1-3
+- !!python/tuple
+  - 1-2
+  - 2-1
+- !!python/tuple
+  - 1-3
+  - 2-1
+- !!python/tuple
+  - 1-3
+  - 2-2
+- !!python/tuple
+  - 1-3
+  - 2-3
+- !!python/tuple
+  - 2-1
+  - 2-2
+- !!python/tuple
+  - 2-2
+  - 2-3
+network_map_nodes:
+- 1-1
+- 1-2
+- 1-3
+- 2-1
+- 2-2
+- 2-3
+scope: ''
