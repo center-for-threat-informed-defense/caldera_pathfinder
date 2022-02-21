@@ -1,19 +1,28 @@
-import os, sys;
-
-os.chdir('../app')
-print(os.getcwd())
-
-from pathfinder_svc import PathfinderService as pfs
-from parsers import caldera
+import os, sys, pytest
 
 
-class V2TestClass:
-    v2_test_file = './v2_algo_testcase.yml'
-    v2_id = 'deadbeef-6a18-4dcf-b659-79b8dd0d8d89'
+from plugins.pathfinder.app.pathfinder_svc import PathfinderService
+from plugins.pathfinder.app.parsers import caldera
 
-    with open(v2_test_file, 'rb') as f:
-        vuln_report = caldera.ReportParser.parse(f.read())
 
+TEST_REPORT_PATH = os.path.join(os.path.dirname(__file__), 'data/v2_algo_testcase.yml')
+PATHFINDER_V2_ID = 'deadbeef-6a18-4dcf-b659-79b8dd0d8d89'
+
+
+@pytest.fixture
+def test_report():
+    with open(TEST_REPORT_PATH, 'rb') as fp:
+        vuln_report = caldera.ReportParser().parse(fp.read())
+    return vuln_report
+
+
+@pytest.fixture
+def pathfinder_svc():
+    return PathfinderService(services={})
+
+
+class TestV2:
+    
     # def test_generate_path_analysis(self):
     #     '''
     #         Tests the Pathfinder Service 'generate_path_analysis_report()'
@@ -50,13 +59,13 @@ class V2TestClass:
     #     }
     #     assert func(3) == 5
 
-    def test_gather_techniques(self):
+    def test_gather_techniques(self, test_report, pathfinder_svc):
         '''
             Tests the Pathfinder Service 'gather_techniques()'
         '''
         node_id = '1-2'
-        node = self.vuln_report.retrieve_host_by_id(node_id)
+        node = test_report.retrieve_host_by_id(node_id)
         expected_result = False
-        func_result = pfs.gather_techniques(self.vuln_report, targeted_host=node)
+        func_result = pathfinder_svc.gather_techniques(test_report, targeted_host=node)
         print(func_result)
         assert func_result == expected_result
