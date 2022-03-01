@@ -159,64 +159,10 @@ class PathfinderService:
             (AbilityProbabilistic, "3aad5312-d48b-4206-9de4-39866c12e60f", .3)
             ]
         """
-        # Can translate logic from existing generate_adversary() but must take
-        # into account we are not dealing with if just CVEs are present, need to
-        # to know:
-        # - if abilities are present
-        # - if abilities are freebies
-        # - if abilities are probabilistic freebies (if the ability has % chance of success, for path planning here any % means ability is available)
-        # - if abilities are blacklisted
-        # - if nodes are freebies (getting to the node from current node is assumed true)
-        # - if nodes are probabilistic freebies (if the node has % chance of success, for path planning here any % means ability is available) 
-        # - if nodes are blacklisted
         adversary = dict()
         for node in path:
             adversary[node] = await self.gather_techniques(report, targeted_host=node)
         return adversary
-
-    async def generate_adversary(self, report, initial_host, target_host, tags=None):
-        async def create_cve_adversary(techniques, tags):
-            adv_id = uuid.uuid4()
-            obj_default = (
-                await self.data_svc.locate('objectives', match=dict(name='default'))
-            )[0]
-            return dict(
-                id=str(adv_id),
-                name='pathfinder adversary',
-                description='auto generated adversary for pathfinder',
-                atomic_ordering=techniques,
-                tags=tags,
-                objective=obj_default.id,
-            )
-
-        def get_all_tags(objlist):
-            return [t for a in objlist for t in a.tags]
-
-
-        shortest_path = nx.shortest_path(report.network_map, initial_host, target_host)
-        technique_list = await self.gather_techniques(report, path=shortest_path)
-        implemented_cves = [
-            c
-            for h in shortest_path[1:]
-            for c in report.hosts[h].cves
-            if c in get_all_tags(technique_list)
-        ]
-        adv = await create_cve_adversary(
-            [t.ability_id for t in technique_list], implemented_cves
-        )
-
-        if tags:
-            tagged_adversaries = await self.collect_tagged_adversaries(
-                [t.strip() for t in tags.split(',')]
-            )
-            adv['atomic_ordering'] = await self.join_adversary_abilities(
-                adv, *tagged_adversaries
-            )
-            adv['tags'].extend(
-                [t for a in tagged_adversaries for t in a['tags'] if t in tags]
-            )
-        await self.save_adversary(adv)
-        return shortest_path, adv['id']
 
     @staticmethod
     async def join_adversary_abilities(*args):
