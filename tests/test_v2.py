@@ -10,9 +10,10 @@ PATHFINDER_V2_ID = 'deadbeef-6a18-4dcf-b659-79b8dd0d8d89'
 
 @pytest.fixture
 def test_report():
-    with open(TEST_REPORT_PATH, 'r') as fp:
-        vuln_report = caldera.ReportParser().parse(fp.read())
-    return vuln_report
+    # with open(TEST_REPORT_PATH, 'r') as fp:
+        # vuln_report = 
+    return caldera.ReportParser().parse(TEST_REPORT_PATH)
+    # return vuln_report
 
 
 @pytest.fixture

@@ -137,24 +137,19 @@ class PathfinderService:
             (generator) list of paths
         """
         ret = list()
-        if (not report.retrieve_host_by_id(source) in exploitability_graph.nodes or 
-            not report.retrieve_host_by_id(target) in exploitability_graph.nodes):
-            return None
+        for node in [source, target]:
+            if (report.retrieve_host_by_id(node) not in exploitability_graph.nodes):
+                return None
         paths = nx.all_simple_paths(exploitability_graph, report.retrieve_host_by_id(source), report.retrieve_host_by_id(target))
         # create adversaries for every path
         for path in paths:
-            ret.append(dict(path=path, adversary=self.create_adversary_from_path(report, path)))
+            ret.append(dict(path=path, adversary= await self.create_adversary_from_path(report, path)))
         return ret
 
-    def create_adversary_from_path(self, report, path):
+    async def create_adversary_from_path(self, report, path):
         """Create an adversary prototype(list) based on the given path. If the path has
         missing abilities, just mark requried steps as freebies. Thus this will create real
         adversary if possible, if not it will create an incomplete prototype.
-        Design:
-            - The 'paths' that were created here should be just list of ability ID's, or
-            placeholder (probably use Python Enum) types for the special cases
-            (e.g. freebie node, freebie ability etc..)
-            - Should return list looking something to effect of:
             [
             "3aad5312-d48b-4206-9de4-39866c12e60f",
             "3aad5312-d48b-4206-9de4-39866c12e60f",
@@ -176,7 +171,7 @@ class PathfinderService:
         # - if nodes are blacklisted
         adversary = dict()
         for node in path:
-            adversary[node] = self.gather_techniques(report, targeted_host=node)
+            adversary[node] = await self.gather_techniques(report, targeted_host=node)
         return adversary
 
     async def generate_adversary(self, report, initial_host, target_host, tags=None):
@@ -250,7 +245,7 @@ class PathfinderService:
             # path[1:] because the first node is assumed to be under control already.
             return [t for h in path[1:] for t in await get_host_exploits(h)]
         else:
-            return get_host_exploits(targetedhost)
+            return await get_host_exploits(targeted_host)
 
     async def collect_tagged_abilities(self, ability_tags):
         """

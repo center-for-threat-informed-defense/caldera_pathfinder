@@ -13,13 +13,13 @@ class ReportParser(ParserInterface):
         self.log = logging.getLogger('caldera parser')
 
     def parse(self, report, name=None):
-        try:
-            caldera_report = VulnerabilityReport.load(BaseWorld.strip_yml(report)[0])
-            self.generate_network_map(caldera_report)
-            return caldera_report
-        except Exception as e:
-            self.log.error('exception when loading caldera report: %s' % repr(e))
-            return None
+        # try:
+        caldera_report = VulnerabilityReport.load(BaseWorld.strip_yml(report)[0])
+        self.generate_network_map(caldera_report)
+        return caldera_report
+        # except Exception as e:
+            # self.log.error('exception when loading caldera report: %s' % repr(e))
+            # return None
 
     def generate_network_map(self, report):
         if report.network_map_nodes and report.network_map_edges:
