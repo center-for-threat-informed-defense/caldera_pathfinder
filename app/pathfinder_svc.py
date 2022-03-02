@@ -31,7 +31,7 @@ class PathfinderService:
             temp_file = '%s/_temp_report_file.tmp' % settings.data_dir
             with open(temp_file, 'wb') as f:
                 f.write(contents)
-            parsed_report = self.parsers[scan_format].parse(temp_file)
+            parsed_report = self.parsers[scan_format].parse(temp_file, name=report)
             parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
