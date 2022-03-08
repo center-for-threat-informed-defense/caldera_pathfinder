@@ -60,7 +60,7 @@ class Host(BaseObject):
         self.access_prob = access_prob or 1.0
 
     def is_denied(self):
-        return self.access == -1
+        return self.access == HostAccess.DENY
 
     def can_access(self):
         return self.access_prob != 0.0

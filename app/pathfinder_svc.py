@@ -80,7 +80,6 @@ class PathfinderService:
         """
         r = dict()
         r['exploitability_graph'] = await self.generate_exploitability_graph(vuln_report)
-        # print(r['exploitability_graph'].nodes,r['exploitability_graph'].edges)
         r['exploitability_paths'] = await self.generate_exploitable_paths(vuln_report, r['exploitability_graph'], start, target)
         return r
 
@@ -161,7 +160,11 @@ class PathfinderService:
         """
         adversary = dict()
         for node in path:
-            adversary[node] = await self.gather_techniques(report, targeted_host=node)
+            techniques = await self.gather_techniques(report, targeted_host=node)
+            if not techniques:
+                adversary[node] = ("NodeFreebie","")
+            else:
+                adversary[node] = techniques
         return adversary
 
     @staticmethod

@@ -62,4 +62,6 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
         return existing
 
     def retrieve_host_by_id(self, id):
-        return self.hosts[id]
+        if id in self.hosts:
+            return self.hosts[id]
+        return None
