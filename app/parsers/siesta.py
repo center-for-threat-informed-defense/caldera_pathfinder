@@ -14,11 +14,11 @@ class ReportParser(ParserInterface):
         self.format = 'siesta'
         self.log = logging.getLogger('siesta parser')
 
-    def parse(self, report):
+    def parse(self, report, name=None):
         try:
             with open(report, 'r') as f:
                 siesta_report = json.load(f)
-            caldera_report = self.parse_json_report(siesta_report)
+            caldera_report = self.parse_json_report(siesta_report, name)
             self.generate_network_map(caldera_report)
         except Exception as e:
             self.log.error('exception when parsing siesta report: %s' % repr(e))
@@ -26,8 +26,8 @@ class ReportParser(ParserInterface):
 
         return caldera_report
 
-    def parse_json_report(self, siesta_report):
-        report = VulnerabilityReport()
+    def parse_json_report(self, siesta_report, name):
+        report = VulnerabilityReport(name=name)
         hosts = siesta_report['facts']['components']
         all_ports = siesta_report['facts']['ports']
         all_vulnerabilities = siesta_report['facts']['vulnerabilities']
