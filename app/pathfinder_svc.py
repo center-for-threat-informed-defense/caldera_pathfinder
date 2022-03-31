@@ -33,7 +33,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
-            parsed_report = self.enrich_report(parsed_report)
+            # parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -75,55 +75,66 @@ class PathfinderService:
         await self.data_svc.store(source)
         return source
     
-    async def generate_path_analysis_report(self, vuln_report, start, target):  
+    async def generate_path_analysis_report(self, vuln_report, start, target, whitelist: list, blacklist: list):  
         """
         """
         r = dict()
-        r['exploitability_graph'] = await self.generate_exploitability_graph(vuln_report)
+        r['exploitability_graph'] = await self.generate_exploitability_graph(vuln_report, whitelist, blacklist)
         r['exploitability_paths'] = await self.generate_exploitable_paths(vuln_report, r['exploitability_graph'], start, target)
         return r
 
-    async def generate_exploitability_graph(self, report):
-        """"""
-        def _is_edge_exploitable(owned, candidate):
+    async def generate_exploitability_graph(self, report, whitelist, blacklist):
+        """
+            Explores and evaluates the nodes and edges of the report.network map. Removes any nodes that are on the blacklist or 
+            do not have any abilities that provide lateral movement.
+
+        Args:
+            report (): Caldera vulnerability report
+            whitelist (): list of nodes that are known owned or are considered freebies
+            blacklist (): list of nodes that should not be used during exploitability analysis
+        Returns
+            (NetworkX Graph)
+
+        """
+        def _is_edge_exploitable(start, candidate, whitelist, blacklist):
             """
-                Determines if candidate node is exploitable from current node. Exploitability on the
+                Determines if candidate node is exploitable. Exploitability on the
                 target node is defined as obtaining presence (either normal or privileged access) on the
                 candidate node.
             Args:
-                owned (): source node to determine exploitability from
                 candidate (): target node to determine exploitability to
             Returns: 
                 (bool)
             """
-            # Steps:
-            # - Is candidate node/ability a freebie?
-            # - return True
-            # - Is candidate node/ability probabalistic?
-            # - return True
-            # - Is candidate node/ability blacklisted?
-            # - return False
-            # - Does current node have an ability to laterally move to the candidate node? Or does it have a probabilitic 
-            # - If lateral movement ability present, are pre conditions met to use it?
-            # - return True
-            if candidate.is_denied():
-                return False
             if not candidate.can_access():
                 return False
-            if candidate.freebie_abilities:
+            if candidate.is_denied(): # or in blacklist:
+                return False
+            if candidate in blacklist:
+                return False
+            if candidate.freebie_abilities:# or in whitelist:
                 return True
-            if candidate.cves:
+            if candidate.cves and self.get_host_exploits(report, candidate):
                 return True
-            return False
+            if candidate in whitelist:
+                return True
+            # Defaults to true since we want to mark nodes that aren't offlimits as a freebie potentially (in generate_exp_paths)
+            return True 
 
-        exploit_map = nx.Graph()
+        exploit_map = nx.DiGraph()
         for edge_ in report.network_map.edges:
             source_node = report.retrieve_host_by_id(edge_[0])
             target_node = report.retrieve_host_by_id(edge_[1])
-            if _is_edge_exploitable(source_node, target_node):
+            if _is_edge_exploitable(source_node, target_node, whitelist, blacklist):
                 exploit_map.add_node(source_node)
                 exploit_map.add_node(target_node)
                 exploit_map.add_edge(source_node, target_node)
+                if _is_edge_exploitable(target_node, source_node, whitelist, blacklist):
+                    exploit_map.add_edge(source_node, target_node)
+            elif _is_edge_exploitable(target_node, source_node, whitelist, blacklist):
+                exploit_map.add_node(source_node)
+                exploit_map.add_node(target_node)
+                exploit_map.add_edge(target, target_node)
         return exploit_map
 
     async def generate_exploitable_paths(self, report, exploitability_graph, source, target):
@@ -140,7 +151,6 @@ class PathfinderService:
             if (report.retrieve_host_by_id(node) not in exploitability_graph.nodes):
                 return None
         paths = nx.all_simple_paths(exploitability_graph, report.retrieve_host_by_id(source), report.retrieve_host_by_id(target))
-        # create adversaries for every path
         for path in paths:
             ret.append(dict(path=path, adversary= await self.create_adversary_from_path(report, path)))
         return ret
@@ -149,6 +159,7 @@ class PathfinderService:
         """Create an adversary prototype(list) based on the given path. If the path has
         missing abilities, just mark requried steps as freebies. Thus this will create real
         adversary if possible, if not it will create an incomplete prototype.
+            Old plan:
             [
             "3aad5312-d48b-4206-9de4-39866c12e60f",
             "3aad5312-d48b-4206-9de4-39866c12e60f",
@@ -157,6 +168,13 @@ class PathfinderService:
             (NodeFreebie, ""),
             (AbilityProbabilistic, "3aad5312-d48b-4206-9de4-39866c12e60f", .3)
             ]
+            Kyle's plan:
+            {
+                "nodeA":['abilityA', 'abilityD'],
+                "nodeB":['abilityB'],
+                "nodeD":['abilityFreebie']
+                "nodeC":['abilityC', 'abilityE'],
+            }
         """
         adversary = dict()
         for node in path:
@@ -181,7 +199,13 @@ class PathfinderService:
         await self.data_svc.reload_data()
 
     async def gather_techniques(self, report, targeted_host=None, path=None):
-        async def get_host_exploits(host):
+        if path:
+            # path[1:] because the first node is assumed to be under control already.
+            return [t for h in path[1:] for t in await self.get_host_exploits(report, h)]
+        else:
+            return await self.get_host_exploits(report, targeted_host)
+    
+    async def get_host_exploits(self, report, host):
             if host not in report.hosts:
                 return []
             host_vulnerabilities = report.hosts[host].cves
@@ -189,12 +213,6 @@ class PathfinderService:
                 host_vulnerabilities
             )
             return available_techniques
-
-        if path:
-            # path[1:] because the first node is assumed to be under control already.
-            return [t for h in path[1:] for t in await get_host_exploits(h)]
-        else:
-            return await get_host_exploits(targeted_host)
 
     async def collect_tagged_abilities(self, ability_tags):
         """

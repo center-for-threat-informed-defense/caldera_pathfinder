@@ -238,12 +238,14 @@ class PathfinderGUI(BaseWorld):
             'vulnerabilityreports', match=dict(id=report_id)
         )
         tags = data.pop('adversary_tags')
+        whitelist = [] #data.pop('whitelist')
+        blacklist = [] #data.pop('blacklist')
         if report and start and target:
             attack_dict = await self.pathfinder_svc.generate_path_analysis_report(
-                report[0], start, target
+                report[0], start, target , whitelist, blacklist
             )
             print(attack_dict)
-            return dict(adversary_id=adversary_id, new_links=generate_links(path))
+            return attack_dict #dict(adversary_id=adversary_id, new_links=generate_links(path))
 
     async def get_source_name(self, data):
         source = await self.data_svc.locate('sources', dict(id=data['source_id']))
