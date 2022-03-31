@@ -96,7 +96,7 @@ class PathfinderService:
             (NetworkX Graph)
 
         """
-        def _is_edge_exploitable(start, candidate, whitelist, blacklist):
+        def _is_edge_exploitable(candidate, whitelist, blacklist):
             """
                 Determines if candidate node is exploitable. Exploitability on the
                 target node is defined as obtaining presence (either normal or privileged access) on the
@@ -108,11 +108,11 @@ class PathfinderService:
             """
             if not candidate.can_access():
                 return False
-            if candidate.is_denied(): # or in blacklist:
+            if candidate.is_denied():
                 return False
             if candidate in blacklist:
                 return False
-            if candidate.freebie_abilities:# or in whitelist:
+            if candidate.freebie_abilities:
                 return True
             if candidate.cves and self.get_host_exploits(report, candidate):
                 return True
@@ -125,13 +125,13 @@ class PathfinderService:
         for edge_ in report.network_map.edges:
             source_node = report.retrieve_host_by_id(edge_[0])
             target_node = report.retrieve_host_by_id(edge_[1])
-            if _is_edge_exploitable(source_node, target_node, whitelist, blacklist):
+            if _is_edge_exploitable(target_node, whitelist, blacklist):
                 exploit_map.add_node(source_node)
                 exploit_map.add_node(target_node)
                 exploit_map.add_edge(source_node, target_node)
-                if _is_edge_exploitable(target_node, source_node, whitelist, blacklist):
+                if _is_edge_exploitable(source_node, whitelist, blacklist):
                     exploit_map.add_edge(source_node, target_node)
-            elif _is_edge_exploitable(target_node, source_node, whitelist, blacklist):
+            elif _is_edge_exploitable(source_node, whitelist, blacklist):
                 exploit_map.add_node(source_node)
                 exploit_map.add_node(target_node)
                 exploit_map.add_edge(target, target_node)
@@ -172,7 +172,7 @@ class PathfinderService:
             {
                 "nodeA":['abilityA', 'abilityD'],
                 "nodeB":['abilityB'],
-                "nodeD":['abilityFreebie']
+                "nodeD":['nodeFreebie']
                 "nodeC":['abilityC', 'abilityE'],
             }
         """
@@ -180,7 +180,7 @@ class PathfinderService:
         for node in path:
             techniques = await self.gather_techniques(report, targeted_host=node)
             if not techniques:
-                adversary[node] = ("NodeFreebie","")
+                adversary[node] = ["nodeFreebie"]
             else:
                 adversary[node] = techniques
         return adversary

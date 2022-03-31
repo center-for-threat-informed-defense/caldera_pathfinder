@@ -34,42 +34,42 @@ class TestV2:
         func_result = await pathfinder_svc.generate_exploitability_graph(test_report)
         assert nx.is_isomorphic(expected_graph,func_result)
 
-    # async def test_generate_exploitable_paths(self, test_report, pathfinder_svc, expected_graph):
-    #     '''
-    #         Tests the Pathfinder Service 'generate_exploitable_paths()'
-    #     '''
-    #     start = '1-1'
-    #     end = '2-3'
-    #     start_node = test_report.retrieve_host_by_id(start)
-    #     end_node = test_report.retrieve_host_by_id(end)
-    #     vuln_graph = await pathfinder_svc.generate_exploitability_graph(test_report)
-    #     expected_result = nx.all_simple_paths(vuln_graph, start, end)
+    async def test_generate_exploitable_paths(self, test_report, pathfinder_svc, expected_graph):
+        '''
+            Tests the Pathfinder Service 'generate_exploitable_paths()'
+        '''
+        start = '1-1'
+        end = '2-3'
+        start_node = test_report.retrieve_host_by_id(start)
+        end_node = test_report.retrieve_host_by_id(end)
+        vuln_graph = await pathfinder_svc.generate_exploitability_graph(test_report)
+        expected_result = nx.all_simple_paths(vuln_graph, start, end)
         
-    #     func_result = await pathfinder_svc.generate_exploitable_paths(test_report, vuln_graph, start, end)
-    #     assert func_result == expected_result
+        func_result = await pathfinder_svc.generate_exploitable_paths(test_report, vuln_graph, start, end)
+        assert func_result == expected_result
 
-    # async def test_create_adversary_from_path(self, test_report, pathfinder_svc, mocker):
-    #     '''
-    #         Tests the Pathfinder Service 'create_adversary_from_path()'
-    #     '''
-    #     start = '1-1'
-    #     end = '2-3'
-    #     vuln_graph = await pathfinder_svc.generate_exploitability_graph(test_report)
-    #     print(vuln_graph)
-    #     vuln_path = nx.all_simple_paths(vuln_graph, test_report.retrieve_host_by_id(start), test_report.retrieve_host_by_id(end))
-    #     for path in vuln_path:
-    #         print(len(path))
+    async def test_create_adversary_from_path(self, test_report, pathfinder_svc, mocker):
+        '''
+            Tests the Pathfinder Service 'create_adversary_from_path()'
+        '''
+        start = '1-1'
+        end = '2-3'
+        vuln_graph = await pathfinder_svc.generate_exploitability_graph(test_report)
+        print(vuln_graph)
+        vuln_path = nx.all_simple_paths(vuln_graph, test_report.retrieve_host_by_id(start), test_report.retrieve_host_by_id(end))
+        for path in vuln_path:
+            print(len(path))
 
-    #     expected_id = '315f8fcc-c05a-4db0-9f9a-5daade661540'
-    #     future = asyncio.Future()
-    #     future.set_result(expected_id)
-    #     mocker.patch('plugins.pathfinder.app.pathfinder_svc.PathfinderService.get_host_exploits', return_value=future)
+        expected_id = '315f8fcc-c05a-4db0-9f9a-5daade661540'
+        future = asyncio.Future()
+        future.set_result(expected_id)
+        mocker.patch('plugins.pathfinder.app.pathfinder_svc.PathfinderService.get_host_exploits', return_value=future)
 
-    #     expected_result = {}
+        expected_result = {}
 
-    #     func_result = await pathfinder_svc.create_adversary_from_path(test_report, vuln_path)
-    #     print(len(func_result))
-    #     assert func_result == expected_result
+        func_result = await pathfinder_svc.create_adversary_from_path(test_report, vuln_path)
+        print(len(func_result))
+        assert func_result == expected_result
 
     async def test_gather_techniques(self, test_report, pathfinder_svc, mocker):
         '''
