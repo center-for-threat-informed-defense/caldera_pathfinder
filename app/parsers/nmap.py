@@ -3,9 +3,9 @@ import re
 import yaml
 import logging
 import argparse
-import networkx as nx
 import xml.etree.ElementTree as ET
-from collections import defaultdict
+
+import networkx as nx
 
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 from plugins.pathfinder.app.objects.secondclass.c_host import Host
