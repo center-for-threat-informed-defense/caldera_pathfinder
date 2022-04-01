@@ -245,7 +245,7 @@ class PathfinderGUI(BaseWorld):
                 report[0], start, target , whitelist, blacklist
             )
             print(attack_dict)
-            return attack_dict #dict(adversary_id=adversary_id, new_links=generate_links(path))
+            return attack_dict
 
     async def get_source_name(self, data):
         source = await self.data_svc.locate('sources', dict(id=data['source_id']))

@@ -124,7 +124,7 @@ class PathfinderService:
         exploit_map = nx.DiGraph()
         for node in report.network_map.nodes:
             report_node = report.retrieve_host_by_id(node)
-            if _is_edge_exploitable(report_node, whitelist, blacklist)
+            if await _is_edge_exploitable(report_node, whitelist, blacklist):
                 exploit_map.add_node(report_node)
             
         for edge_ in report.network_map.edges:
@@ -182,7 +182,7 @@ class PathfinderService:
                 adversary[node] = [("abilityFreebie", 1)]
             else:
                 for tech in techniques:
-                    adversary[node] = (tech, getattr(tech, probability, 1))
+                    adversary[node] = (tech, getattr(tech, probability, .9))
         return adversary
 
     @staticmethod
@@ -273,8 +273,10 @@ class PathfinderService:
     
     def calc_adversary_probability(self, adv):
         prob = 0.75
-        for ability in adv:
-            prob = prob * ability[1]
+        for node_ability in adv.values():
+            node_prob = 1.0
+            for ability in node_ability:
+                node_prob = node_prob * ability[1]
         return prob
 
     @staticmethod
