@@ -96,7 +96,7 @@ class PathfinderService:
             (NetworkX Graph)
 
         """
-        def _is_edge_exploitable(candidate, whitelist, blacklist):
+        async def _is_edge_exploitable(candidate, whitelist, blacklist):
             """
                 Determines if candidate node is exploitable. Exploitability on the
                 target node is defined as obtaining presence (either normal or privileged access) on the
@@ -114,7 +114,7 @@ class PathfinderService:
                 return False
             if candidate.freebie_abilities:
                 return True
-            if candidate.cves and self.get_host_exploits(report, candidate):
+            if candidate.cves and await self.get_host_exploits(report, candidate):
                 return True
             if candidate in whitelist:
                 return True
@@ -122,19 +122,17 @@ class PathfinderService:
             return True 
 
         exploit_map = nx.DiGraph()
+        for node in report.network_map.nodes:
+            report_node = report.retrieve_host_by_id(node)
+            if _is_edge_exploitable(report_node, whitelist, blacklist)
+                exploit_map.add_node(report_node)
+            
         for edge_ in report.network_map.edges:
             source_node = report.retrieve_host_by_id(edge_[0])
             target_node = report.retrieve_host_by_id(edge_[1])
-            if _is_edge_exploitable(target_node, whitelist, blacklist):
-                exploit_map.add_node(source_node)
-                exploit_map.add_node(target_node)
+            if source_node in exploit_map.nodes and target_node in exploit_map.nodes:
                 exploit_map.add_edge(source_node, target_node)
-                if _is_edge_exploitable(source_node, whitelist, blacklist):
-                    exploit_map.add_edge(source_node, target_node)
-            elif _is_edge_exploitable(source_node, whitelist, blacklist):
-                exploit_map.add_node(source_node)
-                exploit_map.add_node(target_node)
-                exploit_map.add_edge(target, target_node)
+                exploit_map.add_edge(target_node, source_node)
         return exploit_map
 
     async def generate_exploitable_paths(self, report, exploitability_graph, source, target):
@@ -152,7 +150,8 @@ class PathfinderService:
                 return None
         paths = nx.all_simple_paths(exploitability_graph, report.retrieve_host_by_id(source), report.retrieve_host_by_id(target))
         for path in paths:
-            ret.append(dict(path=path, adversary= await self.create_adversary_from_path(report, path)))
+            adv = await self.create_adversary_from_path(report, path)
+            ret.append(dict(path=path, adversary = adv, probability = self.calc_adversary_probability(adv)))
         return ret
 
     async def create_adversary_from_path(self, report, path):
@@ -180,9 +179,10 @@ class PathfinderService:
         for node in path:
             techniques = await self.gather_techniques(report, targeted_host=node)
             if not techniques:
-                adversary[node] = ["nodeFreebie"]
+                adversary[node] = [("abilityFreebie", 1)]
             else:
-                adversary[node] = techniques
+                for tech in techniques:
+                    adversary[node] = (tech, getattr(tech, probability, 1))
         return adversary
 
     @staticmethod
@@ -270,6 +270,12 @@ class PathfinderService:
         if ids:
             exploits.append(ids)
         return exploits
+    
+    def calc_adversary_probability(self, adv):
+        prob = 0.75
+        for ability in adv:
+            prob = prob * ability[1]
+        return prob
 
     @staticmethod
     def load_parsers():
