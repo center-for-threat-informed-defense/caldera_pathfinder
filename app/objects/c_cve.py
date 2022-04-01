@@ -1,13 +1,11 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
-import uuid
+from typing import Optional
 
-"""
-CVE data model for network report enrichment. 
-"""
+from pydantic import BaseModel
 
 
 class CVE(BaseModel):
+    """CVE data model for network report enrichment."""
+
     id: str
     modified: Optional[str]
     published: Optional[str]
