@@ -1,6 +1,6 @@
 import logging
+
 import networkx as nx
-from collections import defaultdict
 
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport

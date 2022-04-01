@@ -21,7 +21,6 @@ class ReportSchema(ma.Schema):
     network_map_edges = ma.fields.List(ma.fields.Tuple((ma.fields.String(),
                                                         ma.fields.String())))
 
-
     @ma.post_load()
     def build_report(self, data, **_):
         return VulnerabilityReport(**data)

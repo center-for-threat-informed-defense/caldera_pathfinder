@@ -1,7 +1,7 @@
 import json
 import logging
+
 import networkx as nx
-from collections import defaultdict
 
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 from plugins.pathfinder.app.objects.secondclass.c_host import Host
