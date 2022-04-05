@@ -33,7 +33,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file)
-            # parsed_report = self.enrich_report(parsed_report)
+            parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -151,6 +151,7 @@ class PathfinderService:
         paths = nx.all_simple_paths(exploitability_graph, report.retrieve_host_by_id(source), report.retrieve_host_by_id(target))
         for path in paths:
             adv = await self.create_adversary_from_path(report, path)
+            path = await self.jsonify_path(path)
             ret.append(dict(path=path, adversary = adv, probability = self.calc_adversary_probability(adv)))
         return ret
 
@@ -278,6 +279,10 @@ class PathfinderService:
             for ability in node_ability:
                 node_prob = node_prob * ability[1]
         return prob
+    
+    async def jsonify_path(self, path):
+        path = [node.__dict__ for node in path]
+        return path            
 
     @staticmethod
     def load_parsers():

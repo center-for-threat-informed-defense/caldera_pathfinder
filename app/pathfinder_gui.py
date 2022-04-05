@@ -244,6 +244,7 @@ class PathfinderGUI(BaseWorld):
             attack_dict = await self.pathfinder_svc.generate_path_analysis_report(
                 report[0], start, target , whitelist, blacklist
             )
+            await self.prep_nx_graph(attack_dict)
             print(attack_dict)
             return attack_dict
 
@@ -307,3 +308,9 @@ class PathfinderGUI(BaseWorld):
 
     async def load_scanner(self, name):
         return import_module('plugins.pathfinder.scanners.%s.scanner' % name)
+
+    async def prep_nx_graph(self, attack_dict):
+        graph = attack_dict['exploitability_graph']
+        attack_dict['exploit_nodes'] = graph.nodes
+        attack_dict['exploit_edges'] = graph.edges
+        del attack_dict['exploitability_graph']

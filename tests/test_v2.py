@@ -34,7 +34,7 @@ class TestV2:
         func_result = await pathfinder_svc.generate_exploitability_graph(test_report)
         assert nx.is_isomorphic(expected_graph,func_result)
 
-    async def test_generate_exploitable_paths(self, test_report, pathfinder_svc, expected_graph):
+    async def test_generate_exploitable_paths(self, test_report, pathfinder_svc):
         '''
             Tests the Pathfinder Service 'generate_exploitable_paths()'
         '''
