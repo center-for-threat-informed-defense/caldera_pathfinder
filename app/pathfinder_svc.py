@@ -95,8 +95,22 @@ class PathfinderService:
         Returns
             (NetworkX Graph)
 
-        """
-        async def _is_edge_exploitable(candidate, whitelist, blacklist):
+        """ 
+        exploit_map = nx.DiGraph()
+        for node in report.network_map.nodes:
+            report_node = report.retrieve_host_by_id(node)
+            if await self._is_edge_exploitable(report, report_node, whitelist, blacklist):
+                exploit_map.add_node(report_node)
+            
+        for edge_ in report.network_map.edges:
+            source_node = report.retrieve_host_by_id(edge_[0])
+            target_node = report.retrieve_host_by_id(edge_[1])
+            if source_node in exploit_map.nodes and target_node in exploit_map.nodes:
+                exploit_map.add_edge(source_node, target_node)
+                exploit_map.add_edge(target_node, source_node)
+        return exploit_map
+
+    async def _is_edge_exploitable(self, report, candidate, whitelist, blacklist):
             """
                 Determines if candidate node is exploitable. Exploitability on the
                 target node is defined as obtaining presence (either normal or privileged access) on the
@@ -119,21 +133,7 @@ class PathfinderService:
             if candidate in whitelist:
                 return True
             # Defaults to true since we want to mark nodes that aren't offlimits as a freebie potentially (in generate_exp_paths)
-            return True 
-
-        exploit_map = nx.DiGraph()
-        for node in report.network_map.nodes:
-            report_node = report.retrieve_host_by_id(node)
-            if await _is_edge_exploitable(report_node, whitelist, blacklist):
-                exploit_map.add_node(report_node)
-            
-        for edge_ in report.network_map.edges:
-            source_node = report.retrieve_host_by_id(edge_[0])
-            target_node = report.retrieve_host_by_id(edge_[1])
-            if source_node in exploit_map.nodes and target_node in exploit_map.nodes:
-                exploit_map.add_edge(source_node, target_node)
-                exploit_map.add_edge(target_node, source_node)
-        return exploit_map
+            return True
 
     async def generate_exploitable_paths(self, report, exploitability_graph, source, target):
         """Find all paths from source to target for the given exploitability graph.
@@ -281,8 +281,16 @@ class PathfinderService:
         return prob
     
     async def jsonify_path(self, path):
-        path = [node.__dict__ for node in path]
-        return path            
+        path = [await self.jsonify_host(node) for node in path]
+        return path
+    
+    async def jsonify_host(self, node):
+        temp = node.__dict__
+        if getattr(node, 'os'):
+            temp['os'] = node.os.__dict__
+        if getattr(node, 'software'):
+            temp['software'] = [soft.__dict__ for soft in node.software if not isinstance(soft, dict)]
+        return temp
 
     @staticmethod
     def load_parsers():

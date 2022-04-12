@@ -73,12 +73,13 @@ class ReportParser(ParserInterface):
     def generate_network_map(self, report):
         if report.network_map_nodes and report.network_map_edges:
             return
-        network_map = nx.Graph()
+        network_map = nx.DiGraph()
         for host_object in report.hosts.values():
             network_map.add_node(host_object.ip)
             for host2 in report.hosts.values():
                 if host2 != value:
                     network_map.add_edge(host_object.ip, host2.ip)
+                    network_map.add_edge(host2.ip, host_object.ip)
         report.network_map = network_map
 
 
