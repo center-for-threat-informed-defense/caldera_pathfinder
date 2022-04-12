@@ -19,6 +19,20 @@ class AbilitySchema(ma.Schema):
     uuid = ma.fields.String()
     success_prob = ma.fields.Number()
 
+    @ma.post_load()
+    def build_ability(self, data, **_):
+        return Ability(**data)
+
+
+class Ability(BaseObject):
+
+    schema = AbilitySchema()
+
+    def __init__(self, uuid, success_prob=1.0):
+        super().__init__()
+        self.uuid = uuid
+        self.success_prob = success_prob
+
 
 class HostSchema(ma.Schema):
 
@@ -60,3 +74,6 @@ class Host(BaseObject):
         self.denied_abilities = denied_abilities or []
         self.access = access or 0
         self.access_prob = access_prob or 1.0
+
+    def __repr__(self):
+        return str(self.__class__) + '\n' + '\n'.join(('{} = {}'.format(i, self.__dict__[i]) for i in self.__dict__))

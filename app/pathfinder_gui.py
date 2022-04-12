@@ -119,6 +119,7 @@ class PathfinderGUI(BaseWorld):
                     create_adversary=lambda d: self.generate_adversary(d),
                     scanner_config=lambda d: self.return_scanner_configuration(d),
                     source_name=lambda d: self.get_source_name(d),
+                    host_info=lambda d: self.retrieve_hosts_from_report(d),
                 ),
                 PATCH=dict(report=lambda d: self.rename_report(d)),
             )
@@ -201,6 +202,31 @@ class PathfinderGUI(BaseWorld):
             vr.display for vr in await self.data_svc.locate('vulnerabilityreports')
         ]
         return dict(reports=reports)
+
+    async def retrieve_hosts_from_report(self, data):
+        report_id = data.get('id')
+        response = dict(status='fail', hosts=[])
+
+        report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
+        if report:
+            response['status'] = 'success'
+        else:
+            return response
+        print(f'REPORT: {report}')
+        for host in report[0].hosts.values():
+            print(f'HOST OBJ: {host}')
+            print(f'HOST TYPE: {type(host)}')
+            host_info = dict(name=host.hostname)
+            host_info['ip'] = host.ip
+            host_info['ports'] = [p for p in host.ports.keys()]
+            host_info['os_type'] = host.os.os_type
+            host_info['access_prob'] = host.access_prob
+            host_info['accessed'] = host._access
+            host_info['abilities'] = [(a.uuid, a.success_prob) for a in host.possible_abilities]
+            host_info['freebie_abilities'] = host.freebie_abilities
+            host_info['denied_abilities'] = host.denied_abilities
+            response['hosts'].append(host_info)
+        return response
 
     async def check_scan_status(self):
         pending = [s.id for s in self.running_scans.values() if s.status != 'done']

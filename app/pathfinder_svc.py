@@ -1,5 +1,6 @@
 import os
 import glob
+from sre_constants import SUCCESS
 import uuid
 import yaml
 import logging
@@ -11,9 +12,20 @@ from app.utility.base_world import BaseWorld
 from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
+from plugins.pathfinder.app.objects.secondclass.c_host import Ability
 from plugins.pathfinder.app.objects.c_cve import CVE
 import plugins.pathfinder.settings as settings
 import plugins.pathfinder.app.enrichment.cve as cve
+
+
+DEFAULT_SUCCESS_PROB = 0.8
+DEFAULT_LATERAL_MOVEMENT_MATCH = {
+    'tactic': 'lateral-movement',
+    'technique_id': 'T1570',
+    }
+DEFAULT_FREEBIE_MATCH = {
+    'tactic': 'initial-access'
+}
 
 
 class PathfinderService:
@@ -32,7 +44,7 @@ class PathfinderService:
             with open(temp_file, 'wb') as f:
                 f.write(contents)
             parsed_report = self.parsers[scan_format].parse(temp_file, name=report)
-            parsed_report = self.enrich_report(parsed_report)
+            parsed_report = await self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -164,18 +176,39 @@ class PathfinderService:
             for a in await self.data_svc.search(tag, 'adversaries') or []
         ]
 
-    def enrich_report(self, report):
+    async def enrich_report(self, report):  # adapted for better vuln report
         for key, host in report.hosts.items():
-            if host.software:
-                cves = self.software_enrich(host.software)
-                if cves:
-                    host.cves.append(cves)
             if host.os:
-                cves = self.host_enrich(host.os)
-                if cves:
-                    host.cves.append(cves)
-        report.hosts[key] = host
+                os_type = host.os.os_type
+                os_type = os_type.lower()
+                if os_type in ['linux', 'windows', 'debian']:
+                    executor = os_type
+                    lm_abilities = await self.get_access_abilities(executor=executor) or self.get_freebie_abilities(executor=executor)
+                    lm_objs = [Ability(uuid=a.ability_id, success_prob=DEFAULT_SUCCESS_PROB) for a in lm_abilities]
+                    host.possible_abilities = lm_objs
+                else:
+                    continue
+            report.hosts[key] = host
         return report
+
+    def _has_executor(self, ability, executor):
+        if not ability.executors:
+            return False
+        else:
+            for potential_executor in ability.executors:
+                if potential_executor.platform == executor:
+                    return True
+            return False
+
+    async def get_access_abilities(self, executor: str = 'windows'):
+        lm_abilities = await self.data_svc.locate('abilities', match=DEFAULT_LATERAL_MOVEMENT_MATCH)
+        lm_abilities = [a for a in lm_abilities if self._has_executor(a, executor)]
+        return lm_abilities
+    
+    async def get_freebie_abilities(self, executor: str = 'windows'):
+        fb_abilities = await self.data_svc.locate('abilities', match=DEFAULT_FREEBIE_MATCH)
+        fb_abilities = [a for a in fb_abilities if self._has_executor(a, executor)]
+        return fb_abilities
 
     def software_enrich(self, software):
         exploits = []

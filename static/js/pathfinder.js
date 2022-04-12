@@ -200,6 +200,17 @@ function removeVulnerabilityReport(){
     reloadReports();
 }
 
+function testHostInfo(){
+    current_report = $('#vulnerabilityReport').val();
+    apiV2('POST', '/plugin/pathfinder/api', {'index':'host_info','id':current_report}).then((response) => {
+        console.log(response);
+        toast('Host info now in console!', true);
+    }).catch((error) => {
+        toast('Error reloading Pathfinder reports.', false);
+        console.error(error);
+    });
+}
+
 function setupScannerSection(){
     selected_scanner = $('#scannerSelection').val();
     apiV2('POST', '/plugin/pathfinder/api', {'index':'scanner_config', 'name':selected_scanner}).then((response) => {
