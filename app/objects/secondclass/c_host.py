@@ -44,7 +44,7 @@ class HostSchema(ma.Schema):
     os = ma.fields.Nested(OSSchema())
     mac = ma.fields.String(allow_none=True)
     freebie_abilities = ma.fields.List(ma.fields.String())
-    possible_abilities = ma.fields.Nested(AbilitySchema())
+    possible_abilities = ma.fields.List(ma.fields.Nested(AbilitySchema()))
     denied_abilities = ma.fields.List(ma.fields.String())
     access = ma.fields.Integer()
     access_prob = ma.fields.Number()

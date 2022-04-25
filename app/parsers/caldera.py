@@ -33,6 +33,6 @@ class ReportParser(ParserInterface):
 
     def parse_caldera_report(self, root, name):
         root['name'] = name
-        
-        return VulnerabilityReport.load(root)
-
+        report = VulnerabilityReport.load(root)
+        self.generate_network_map(report=report)
+        return report

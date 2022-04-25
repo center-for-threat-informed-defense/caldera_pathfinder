@@ -7,6 +7,31 @@
         <p x-text="description"></p>
     </div>
     <hr>
+    <p>Pathfinder interactive attack path planning [demo]</p>
+    <button class="button is-small is-primary" x-text="'Get hosts from selected report.'" @click="getHosts();"></button>
+    <div>
+        <table id="hosts" class="table is-striped" style="width:97%">
+            <thead>
+                <tr>
+                    <th>Host IP</th>
+                    <th>Modify Host</th>
+                    <th>Possible Abilities</th>
+                </tr>
+            </thead>
+            <tbody>
+                <template x-for="(host, index) of hostObjects" :key="index">
+                    <tr>
+                        <td x-text="host.ip"><td>
+                        <td>
+                            <button class="button is-small is-primary" x-text="host.name" @click="selectedHost=host; selectHost();"></button>
+                        </td>
+                        <td x-text="host.possible_abilities"></td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+    <hr>
     <div id="pathfinder-section" class="section-profile">
         <div class="row">
             <div class="column section-border" style="flex:25%;text-align:left;">
@@ -144,6 +169,108 @@
         </div>
     </div>
 
+    <!-- MODALS -->
+
+    <div class="modal" x-bind:class="{ 'is-active': showHostModal }">
+        <div class="modal-background" @click="showHostModal = false"></div>
+        <div class="modal-card wide">
+            <header class="modal-card-head">
+                <p class="modal-card-title"><span x-text="'Edit Existing'"></span> Host Object</p>
+            </header>
+            <section class="modal-card-body">
+                <template x-if="selectedHost">
+                    <div class="content">
+                        <form>
+                            <p class="has-text-left">Host Object Parameters</p>
+                            <div class="field is-horizontal">
+                                <div class="field-label is-small">
+                                    <label class="label">IP</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field has-addons">
+                                        <div class="control is-expanded">
+                                            <input class="input is-small" x-model="selectedHost.ip" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field is-horizontal">
+                                <div class="field-label is-small">
+                                    <label class="label">Name</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <input class="input is-small" x-model="selectedHost.name">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <br>
+                        <p class="has-text-left">Possible Abilities</p>
+                            <template x-for="(uuid, index) of selectedHost.possible_abilities" :key="index">
+                                <div class="field is-horizontal">
+                                    <div class="field-body">
+                                        <div class="field has-addons">
+                                            <div class="control">
+                                                <a class="control is-small has-tooltip-left has-tooltip-arrow" data-tooltip="Success Probability">
+                                                    <input class="input is-small" size="1" x-model="selectedHost.possible_abilities_success_prob[index]"></input>
+                                                </a>
+                                            </div>
+                                            <div class="control is-expanded">
+                                                <input class="input is-small" x-model="selectedHost.possible_abilities[index]"></input>
+                                            </div>
+                                            <div class="control">
+                                                <a class="button is-small has-tooltip-left has-tooltip-arrow" data-tooltip="Remove Possible Ability" @click="selectedHost.possible_abilities.splice(index, 1); selectedHost.possible_abilities_success_prob.splice(index, 1)">
+                                                    <span class="icon is-small"><i class="fas fa-minus-square"></i></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="field is-horizontal">
+                                <div class="field-label is-small" x-show="!selectedHost.possible_abilities.length">
+                                    <label class="label">Possible Abilities</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control has-text-right">
+                                            <button class="button is-small is-primary" @click.stop="selectedHost.possible_abilities.push(''); selectedHost.possible_abilities_success_prob.push(0)">+ Add Possible Ability</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <br>
+                    </div>
+                </template>
+            </section>
+            <footer class="modal-card-foot">
+                <nav class="level">
+                    <div class="level-left">
+                        <div class="level-item">
+                            <button class="button is-primary is-small" @click="" x-show="!isCreating">
+                                <span class="icon"><i class="fas fa-trash"></i></span>
+                                <span>Delete Host</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="level-item">
+                            <button class="button is-small" @click="showHostModal = false">Close</button>
+                        </div>
+                        <div class="level-item">
+                            <button class="button is-primary is-small" @click="saveHost();">
+                                <span class="icon"><i class="fas fa-save"></i></span>
+                                <span>Save</span>
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+            </footer>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -155,6 +282,19 @@ function alpinePathfinder() {
         scanners: '{{ scanners }}',
         input_parsers: '{{ input_parsers }}',
         vulnerability_reports: '{{ vulnerability_reports }}',
+        hostObjects: [],
+        selectedHost: {
+            ip: '',
+            name: '',
+            possible_abilities: [],
+            possible_abilities_success_prob: [],
+            freebie_abilities: [],
+            denied_abilities: [],
+        },
+        
+        showHostModal: false,
+        isEditing: false,
+        isCreating: false,
 
         initPage() {
             apiV2('GET', '/api/v2/health').then((response) => {
@@ -162,6 +302,32 @@ function alpinePathfinder() {
                 toast('Error loading page', false);
                 console.error(error);
             });
+        },
+
+        getHosts() {
+            current_report = $('#vulnerabilityReport').val();
+            apiV2('POST', '/plugin/pathfinder/api', {'index':'host_info', 'id':current_report}).then((response) => {
+                this.hostObjects = response.hosts;
+                console.log(this.hostObjects);
+                toast('Added Host Objects to Table', true);
+            }).catch((error) => {
+                toast('Error loading page', false);
+                console.error(error);
+            });
+        },
+
+        selectHost() {
+            this.showHostModal = true;
+            console.log(this.selectedHost);
+        },
+
+        saveHost(host) {
+            apiV2('POST', '/plugin/pathfinder/api', {'index':'reports', 'data': host}).then((response) => {
+                toast('Updated host object in report.', true)
+            }).catch((error) => {
+                toast('Error updating report.', false)
+                console.error(error)
+            })
         },
     };
 }

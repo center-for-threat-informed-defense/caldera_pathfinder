@@ -12,6 +12,7 @@ from app.service.auth_svc import for_all_public_methods, check_authorization
 from app.utility.base_world import BaseWorld
 from plugins.pathfinder.app.pathfinder_svc import PathfinderService
 from plugins.pathfinder.app.pathfinder_util import sanitize_filename
+from plugins.pathfinder.app.objects.secondclass.c_host import Ability
 import plugins.pathfinder.settings as settings
 
 
@@ -120,6 +121,7 @@ class PathfinderGUI(BaseWorld):
                     scanner_config=lambda d: self.return_scanner_configuration(d),
                     source_name=lambda d: self.get_source_name(d),
                     host_info=lambda d: self.retrieve_hosts_from_report(d),
+                    update_host=lambda d: self.update_host_in_report(d),
                 ),
                 PATCH=dict(report=lambda d: self.rename_report(d)),
             )
@@ -213,19 +215,54 @@ class PathfinderGUI(BaseWorld):
         else:
             return response
         print(f'REPORT: {report}')
-        for host in report[0].hosts.values():
+        for k, host in report[0].hosts.items():
+            print(f'HOST KEY: {k}')
             print(f'HOST OBJ: {host}')
             print(f'HOST TYPE: {type(host)}')
             host_info = dict(name=host.hostname)
+            host_info['report_id'] = report[0].id
             host_info['ip'] = host.ip
             host_info['ports'] = [p for p in host.ports.keys()]
             host_info['os_type'] = host.os.os_type
             host_info['access_prob'] = host.access_prob
             host_info['accessed'] = host._access
-            host_info['abilities'] = [(a.uuid, a.success_prob) for a in host.possible_abilities]
+            host_info['possible_abilities'] = [a.uuid for a in host.possible_abilities]
+            host_info['possible_abilities_success_prob'] = [a.success_prob for a in host.possible_abilities]
             host_info['freebie_abilities'] = host.freebie_abilities
             host_info['denied_abilities'] = host.denied_abilities
             response['hosts'].append(host_info)
+        return response
+
+    async def update_host_in_report(self, data):
+        patch_data = data.get('host')
+        report_id = patch_data.get('report_id')
+        report = await self.data_svc.locate(
+                'vulnerabilityreports', match=dict(id=report_id)
+            )
+        report = report[0]
+        for host_id in report.hosts.keys():
+            if host_id == patch_data.get('ip'):
+                print(f'FOUND {patch_data}')
+                host = report.hosts[host_id]
+                print(f'OLD ABILITIES LEN: {len(host.possible_abilities)}')
+                host.name = patch_data.name
+                host.freebie_abilities = patch_data.freebie_abilities
+                host.denied_abilities = patch_data.denied_abilities
+                new_possible_abilities = zip(
+                    patch_data.get('possible_abilities'),
+                    patch_data.get('possible_abilities_success_prob')
+                )
+                new_abilities = []
+                for a in new_possible_abilities:
+                    new_abilities.append(Ability(uuid=a[0], success_prob=a[1]))
+                
+                report.hosts[host_id] = host
+                break
+
+        await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
+        await self.data_svc.store(report)
+        print(f'NEW ABILITIES LEN: {len(host.possible_abilities)}')
+        response = dict(status='success')
         return response
 
     async def check_scan_status(self):
