@@ -183,25 +183,49 @@
                         <form>
                             <p class="has-text-left">Host Object Parameters</p>
                             <div class="field is-horizontal">
-                                <div class="field-label is-small">
+                                <div class="field-label">
                                     <label class="label">IP</label>
                                 </div>
                                 <div class="field-body">
                                     <div class="field has-addons">
                                         <div class="control is-expanded">
-                                            <input class="input is-small" x-model="selectedHost.ip" disabled>
+                                            <input class="input" x-model="selectedHost.ip" disabled>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="field is-horizontal">
-                                <div class="field-label is-small">
+                                <div class="field-label">
                                     <label class="label">Name</label>
                                 </div>
                                 <div class="field-body">
                                     <div class="field">
                                         <div class="control">
-                                            <input class="input is-small" x-model="selectedHost.name">
+                                            <input class="input" x-model="selectedHost.name">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field is-horizontal">
+                                <div class="field-label">
+                                    <label class="label">OS Type</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <input class="input" x-model="selectedHost.os_type" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field is-horizontal">
+                                <div class="field-label">
+                                    <label class="label">Access Probability</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <input class="input" x-model="selectedHost.access_prob">
                                         </div>
                                     </div>
                                 </div>
@@ -214,16 +238,16 @@
                                     <div class="field-body">
                                         <div class="field has-addons">
                                             <div class="control">
-                                                <a class="control is-small has-tooltip-left has-tooltip-arrow" data-tooltip="Success Probability">
-                                                    <input class="input is-small" size="1" x-model="selectedHost.possible_abilities_success_prob[index]"></input>
+                                                <a class="control has-tooltip-bottom has-tooltip-arrow" data-tooltip="Success Probability">
+                                                    <input class="input" size="3" x-model="selectedHost.possible_abilities_success_prob[index]"></input>
                                                 </a>
                                             </div>
                                             <div class="control is-expanded">
-                                                <input class="input is-small" x-model="selectedHost.possible_abilities[index]"></input>
+                                                <input class="input" x-model="selectedHost.possible_abilities[index]"></input>
                                             </div>
                                             <div class="control">
-                                                <a class="button is-small has-tooltip-left has-tooltip-arrow" data-tooltip="Remove Possible Ability" @click="selectedHost.possible_abilities.splice(index, 1); selectedHost.possible_abilities_success_prob.splice(index, 1)">
-                                                    <span class="icon is-small"><i class="fas fa-minus-square"></i></span>
+                                                <a class="button has-tooltip-left has-tooltip-arrow" data-tooltip="Remove Possible Ability" @click="selectedHost.possible_abilities.splice(index, 1); selectedHost.possible_abilities_success_prob.splice(index, 1)">
+                                                    <span class="icon"><i class="fas fa-minus-square"></i></span>
                                                 </a>
                                             </div>
                                         </div>
@@ -231,7 +255,7 @@
                                 </div>
                             </template>
                             <div class="field is-horizontal">
-                                <div class="field-label is-small" x-show="!selectedHost.possible_abilities.length">
+                                <div class="field-label" x-show="!selectedHost.possible_abilities.length">
                                     <label class="label">Possible Abilities</label>
                                 </div>
                                 <div class="field-body">
