@@ -37,7 +37,7 @@ class ReportParser(ParserInterface):
         for host in root.findall('host'):
             host_exists = False
             cves = []
-            report_host = Host(host.find('address').get('addr'))
+            report_host = Host(host.find('address').get('addr'))  # we loose the mac here
             if host.find('hostnames') is not None:
                 if host.find('hostnames').find('hostname') is not None:
                     report_host.hostname = (
@@ -53,7 +53,7 @@ class ReportParser(ParserInterface):
                         continue
                     report_port.state = state
                 host_exists = True
-                port_service = port.find('service')
+                port_service = port.find('service')  # TODO Software obj
                 if port_service is not None:
                     report_port.service = port_service.get('name')
                     report_port.product = port_service.get('product')

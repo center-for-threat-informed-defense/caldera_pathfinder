@@ -14,9 +14,8 @@ class ReportParser(ParserInterface):
 
     def parse(self, report, name=None):
         try:
-            caldera_report = VulnerabilityReport.load(BaseWorld.strip_yml(report)[0])
-            self.generate_network_map(caldera_report)
-            return caldera_report
+            caldera_report = BaseWorld.strip_yml(report)[0]
+            return self.parse_caldera_report(root=caldera_report, name=name)
         except Exception as e:
             self.log.error('exception when loading caldera report: %s' % repr(e))
             return None
@@ -31,3 +30,9 @@ class ReportParser(ParserInterface):
                 if host2 != host1:
                     network_map.add_edge(host1.ip, host2.ip)
         report.network_map = network_map
+
+    def parse_caldera_report(self, root, name):
+        root['name'] = name
+        
+        return VulnerabilityReport.load(root)
+
