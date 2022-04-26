@@ -122,6 +122,7 @@ class PathfinderGUI(BaseWorld):
                     source_name=lambda d: self.get_source_name(d),
                     host_info=lambda d: self.retrieve_hosts_from_report(d),
                     update_host=lambda d: self.update_host_in_report(d),
+                    paths=lambda d: self.get_paths(d),
                 ),
                 PATCH=dict(report=lambda d: self.rename_report(d)),
             )
@@ -215,12 +216,15 @@ class PathfinderGUI(BaseWorld):
         else:
             return response
         print(f'REPORT: {report}')
-        for k, host in report[0].hosts.items():
+        if not report:
+            return response
+        report = report[0]
+        for k, host in report.hosts.items():
             print(f'HOST KEY: {k}')
             print(f'HOST OBJ: {host}')
             print(f'HOST TYPE: {type(host)}')
             host_info = dict(name=host.hostname)
-            host_info['report_id'] = report[0].id
+            host_info['report_id'] = report.id
             host_info['ip'] = host.ip
             host_info['ports'] = [p for p in host.ports.keys()]
             host_info['os_type'] = host.os.os_type
@@ -239,15 +243,18 @@ class PathfinderGUI(BaseWorld):
         report = await self.data_svc.locate(
                 'vulnerabilityreports', match=dict(id=report_id)
             )
+        print(f'report: {report}')
+        if not report:
+            return dict(status='fail')
         report = report[0]
         for host_id in report.hosts.keys():
             if host_id == patch_data.get('ip'):
                 print(f'FOUND {patch_data}')
                 host = report.hosts[host_id]
                 print(f'OLD ABILITIES LEN: {len(host.possible_abilities)}')
-                host.name = patch_data.name
-                host.freebie_abilities = patch_data.freebie_abilities
-                host.denied_abilities = patch_data.denied_abilities
+                host.name = patch_data.get('name') or host.name
+                host.freebie_abilities = patch_data.get('freebie_abilities')
+                host.denied_abilities = patch_data.get('denied_abilities')
                 new_possible_abilities = zip(
                     patch_data.get('possible_abilities'),
                     patch_data.get('possible_abilities_success_prob')
@@ -255,7 +262,7 @@ class PathfinderGUI(BaseWorld):
                 new_abilities = []
                 for a in new_possible_abilities:
                     new_abilities.append(Ability(uuid=a[0], success_prob=a[1]))
-                
+                host.possible_abilities = new_abilities
                 report.hosts[host_id] = host
                 break
 
@@ -263,6 +270,31 @@ class PathfinderGUI(BaseWorld):
         await self.data_svc.store(report)
         print(f'NEW ABILITIES LEN: {len(host.possible_abilities)}')
         response = dict(status='success')
+        return response
+
+    async def get_paths(self, data):
+        source_ip = data.get('source')
+        target_ip = data.get('target')
+        report_id = data.get('id')
+        response = dict(status='success', paths=[])
+
+        report = await self.data_svc.locate(
+                'vulnerabilityreports', match=dict(id=report_id)
+            )
+        prob = 0
+        for host_id in report.hosts.keys():
+            if host_id == target_ip:
+                target = report.hosts[host_id]
+                possible_abilities = target.possible_abilities
+                for ability in possible_abilities:
+                    prob = max(prob, ability.success_prob)
+
+        test_path = {
+            'source': source_ip,
+            'target': target_ip,
+            'success_prob': prob,
+        }
+        response.paths.append(test_path)
         return response
 
     async def check_scan_status(self):

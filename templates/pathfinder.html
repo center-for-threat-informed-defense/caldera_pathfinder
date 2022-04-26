@@ -285,7 +285,7 @@
                             <button class="button is-small" @click="showHostModal = false">Close</button>
                         </div>
                         <div class="level-item">
-                            <button class="button is-primary is-small" @click="saveHost();">
+                            <button class="button is-primary is-small" @click="saveHost(selectedHost);">
                                 <span class="icon"><i class="fas fa-save"></i></span>
                                 <span>Save</span>
                             </button>
@@ -315,7 +315,11 @@ function alpinePathfinder() {
             freebie_abilities: [],
             denied_abilities: [],
         },
-        
+        selectedSource: '',
+        selectedTarget: '',
+        selectedReport: '',
+        paths: [],
+
         showHostModal: false,
         isEditing: false,
         isCreating: false,
@@ -330,6 +334,7 @@ function alpinePathfinder() {
 
         getHosts() {
             current_report = $('#vulnerabilityReport').val();
+            console.log(current_report);
             apiV2('POST', '/plugin/pathfinder/api', {'index':'host_info', 'id':current_report}).then((response) => {
                 this.hostObjects = response.hosts;
                 console.log(this.hostObjects);
@@ -345,12 +350,35 @@ function alpinePathfinder() {
             console.log(this.selectedHost);
         },
 
-        saveHost(host) {
-            apiV2('POST', '/plugin/pathfinder/api', {'index':'reports', 'data': host}).then((response) => {
-                toast('Updated host object in report.', true)
+        selectSource(host) {
+            this.selectedSource = host.ip;
+            console.log(this.selectedSource);
+        },
+
+        selectTarget(host) {
+            this.selectedTarget = host.ip;
+            console.log(this.selectedTarget);
+        },
+
+        getPaths() {
+            current_report = $('#vulnerabilityReport').val();
+            apiV2('POST', '/plugin/pathfinder/api', {'index':'paths', 'id':current_report, 'source': this.selectedSource, 'target': this.selectedTarget}).then((response) => {
+                toast('Returned possible attack paths.', true);
+                this.paths = response.paths;
+                console.log(paths);
             }).catch((error) => {
-                toast('Error updating report.', false)
-                console.error(error)
+                toast('Error obtaining attack paths.', false);
+                console.error(error);
+            })
+        },
+
+        saveHost(host) {
+            console.log(host);
+            apiV2('POST', '/plugin/pathfinder/api', {'index':'update_host', 'host': host}).then((response) => {
+                toast('Updated host object in report.', true);
+            }).catch((error) => {
+                toast('Error updating report.', false);
+                console.error(error);
             })
         },
     };
