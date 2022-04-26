@@ -34,22 +34,6 @@ class TestV2:
         func_result = await pathfinder_svc.generate_exploitability_graph(test_report, [], [])
         assert nx.is_isomorphic(expected_graph,func_result)
 
-    # async def test_generate_exploitable_paths(self, test_report, pathfinder_svc):
-    #     '''
-    #         Tests the Pathfinder Service 'generate_exploitable_paths()'
-    #     '''
-    #     start = '1-1'
-    #     end = '2-3'
-    #     start_node = test_report.retrieve_host_by_id(start)
-    #     end_node = test_report.retrieve_host_by_id(end)
-    #     vuln_graph = await pathfinder_svc.generate_exploitability_graph(test_report, [], [])
-    #     expected_result = nx.all_simple_paths(vuln_graph, start_node, end_node)
-        
-    #     func_result = await pathfinder_svc.generate_exploitable_paths(test_report, vuln_graph, start, end)
-    #     print(expected_graph)
-    #     print(func_result)
-    #     assert func_result == expected_result
-
     async def test_create_adversary_from_path(self, test_report, pathfinder_svc, mocker):
         '''
             Tests the Pathfinder Service 'create_adversary_from_path()'
