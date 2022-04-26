@@ -10,12 +10,13 @@
     <p>Pathfinder interactive attack path planning [demo]</p>
     <button class="button is-small is-primary" x-text="'Get hosts from selected report.'" @click="getHosts();"></button>
     <div>
-        <table id="hosts" class="table is-striped">
+        <table id="hosts" class="table is-striped is-fullwidth">
             <thead>
                 <tr>
                     <th>Host IP</th>
                     <th>Modify Host</th>
                     <th>Possible Abilities</th>
+                    <th>Freebie Abilities</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,6 +27,7 @@
                             <button class="button is-small is-primary" x-text="host.name" @click="selectedHost=host; selectHost();"></button>
                         </td>
                         <td x-text="host.possible_abilities"></td>
+                        <td x-text="host.freebie_abilities"></td>
                     </tr>
                 </template>
             </tbody>
@@ -241,6 +243,18 @@
                             </div>
                             <div class="field is-horizontal">
                                 <div class="field-label">
+                                    <label class="label">Access Established</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <input class="input" x-model="selectedHost.accessed" disabled>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="field is-horizontal">
+                                <div class="field-label">
                                     <label class="label">Access Probability</label>
                                 </div>
                                 <div class="field-body">
@@ -283,6 +297,66 @@
                                     <div class="field">
                                         <div class="control has-text-right">
                                             <button class="button is-small is-primary" @click.stop="selectedHost.possible_abilities.push(''); selectedHost.possible_abilities_success_prob.push(0)">+ Add Possible Ability</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <br>
+                        <p class="has-text-left">Freebie Abilities</p>
+                            <template x-for="(uuid, index) of selectedHost.freebie_abilities" :key="index">
+                                <div class="field is-horizontal">
+                                    <div class="field-body">
+                                        <div class="field has-addons">
+                                            <div class="control is-expanded">
+                                                <input class="input" x-model="selectedHost.freebie_abilities[index]"></input>
+                                            </div>
+                                            <div class="control">
+                                                <a class="button has-tooltip-left has-tooltip-arrow" data-tooltip="Remove Freebie Ability" @click="selectedHost.freebie_abilities.splice(index, 1);">
+                                                    <span class="icon"><i class="fas fa-minus-square"></i></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="field is-horizontal">
+                                <div class="field-label" x-show="!selectedHost.freebie_abilities.length">
+                                    <label class="label">Freebie Abilities</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control has-text-right">
+                                            <button class="button is-small is-primary" @click.stop="selectedHost.freebie_abilities.push('');">+ Add Freebie Ability</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <br>
+                        <p class="has-text-left">Denied Abilities</p>
+                            <template x-for="(uuid, index) of selectedHost.denied_abilities" :key="index">
+                                <div class="field is-horizontal">
+                                    <div class="field-body">
+                                        <div class="field has-addons">
+                                            <div class="control is-expanded">
+                                                <input class="input" x-model="selectedHost.denied_abilities[index]"></input>
+                                            </div>
+                                            <div class="control">
+                                                <a class="button has-tooltip-left has-tooltip-arrow" data-tooltip="Remove Denied Ability" @click="selectedHost.denied_abilities.splice(index, 1);">
+                                                    <span class="icon"><i class="fas fa-minus-square"></i></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <div class="field is-horizontal">
+                                <div class="field-label" x-show="!selectedHost.denied_abilities.length">
+                                    <label class="label">Denied Abilities</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control has-text-right">
+                                            <button class="button is-small is-primary" @click.stop="selectedHost.denied_abilities.push('');">+ Add Denied Ability</button>
                                         </div>
                                     </div>
                                 </div>
