@@ -1,0 +1,9 @@
+id: f8e42c16-79ee-41a2-abfd-6150f6ed9859
+name: Freebie adversary for path planning
+description: 'This adversary executes a one minute sleep if executed in a CALDERA oprtation.
+    For path-planning purposes, it can be used to simulate achieving access on a host by some means not-yet know to the attacker.
+    '
+atomic_ordering:
+  - 36eecb80-ede3-442b-8774-956e906aff02 # 1-min sleep
+tags:
+- freebie

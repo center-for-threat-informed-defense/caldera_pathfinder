@@ -1,0 +1,13 @@
+id: 60f50338-beb5-4a43-92fb-1ebccce81eb2
+name: Pathfinder Atomic Initial Access
+description: 'This atomic test downloads a macro enabled document from the Atomic
+    Red Team GitHub repository, simulating an end user clicking a phishing link to
+    download the file.
+
+    The file "PhishingAttachment.xlsm" is downloaded to the %temp% directory.
+
+    '
+atomic_ordering:
+  - 1afaec09315ab71fdfb167175e8a019a # Download Macro-Enabled Phishing Attachment
+tags:
+- initial-access

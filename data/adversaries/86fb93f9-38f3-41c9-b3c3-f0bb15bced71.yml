@@ -1,0 +1,12 @@
+id: 86fb93f9-38f3-41c9-b3c3-f0bb15bced71
+name: Pathfinder Atomic Command Shell
+description: 'Word spawning a command prompt then running a command with an IP address
+    in the command line is an indiciator of malicious activity.
+
+    Upon execution, CMD will be lauchned and ping 8.8.8.8
+
+    '
+atomic_ordering:
+  - 31f1b4e545d620d521b7f731699dce2c # Word spawned a command shell and used an IP address in the command line
+tags:
+- initial-access
