@@ -62,6 +62,38 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
         return existing
 
     def retrieve_host_by_id(self, id):
+        return self.hosts[id]
+
+    def get_host_freebies(self, id):
         if id in self.hosts:
-            return self.hosts[id]
+            return self.hosts[id].freebie_abilities
         return None
+
+    def set_host_freebies(self, id, abilites):
+        if id in self.hosts:
+            self.hosts[id].freebie_abilities = abilites
+            return True
+        return False
+
+    def get_host_acces(self, id):
+        if id in self.hosts:
+            return self.hosts[id].access
+        return None
+    
+    def set_host_access(self, id, access):
+        if id in self.hosts:
+            self.hosts[id].access = access
+            return True
+        return False
+
+    def get_host_denied(self, id):
+        if id in self.hosts:
+            return self.hosts[id].freebie_abilities
+        return None
+
+    def set_host_denied(self, id, denied):
+        if id in self.hosts:
+            self.hosts[id].denied_abilities = denied
+            return True
+        return False
+
