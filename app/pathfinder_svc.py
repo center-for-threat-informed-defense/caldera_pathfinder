@@ -190,20 +190,10 @@ class PathfinderService:
                     ia_adv = await self.get_freebie_adversaries(executor=executor) or []
                     ia_objs = [a['adversary_id'] for a in ia_adv]
                     host.freebie_abilities = ia_objs
-                    print(f'host after adversary assignment: {[a.uuid for a in host.possible_abilities]}\n{host.freebie_abilities}')
                 else:
                     continue
             report.hosts[key] = host
         return report
-
-    def _has_executor(self, ability, executor):
-        if not ability.executors:
-            return False
-        else:
-            for potential_executor in ability.executors:
-                if potential_executor.platform == executor:
-                    return True
-            return False
 
     async def get_access_abilities(self, executor: str = 'windows'):
         lm_abilities = await self.data_svc.locate('abilities', match=DEFAULT_LATERAL_MOVEMENT_MATCH)
@@ -218,9 +208,8 @@ class PathfinderService:
     async def get_access_adversaries(self, executor: str = 'windows'):
         found_adversaries = []
         lm_adversaries = await self.collect_tagged_adversaries(adversary_tags=DEFAULT_POSSIBLE_ADVERSARY_TAGS)
-        print(f'possible adversaries: {lm_adversaries}')
+
         for adv in lm_adversaries:
-            print(f'checking adversary: {adv}')
             for a in set(adv['atomic_ordering']):
                 ability = await self.data_svc.locate('abilities', match=dict(ability_id=a))
                 if not ability:
@@ -229,22 +218,24 @@ class PathfinderService:
                 if self._has_executor(ability, executor):
                     found_adversaries.append(adv)
                     break
-        print(f'found_adversaries: {found_adversaries}')
         return found_adversaries
 
     async def get_freebie_adversaries(self, executor: str = 'windows'):
-        fb_abilities = await self.get_freebie_abilities(executor=executor)
-        fb_abilities_uuid = set([a.ability_id for a in fb_abilities])
-
         found_adversaries = []
         fb_adversaries = await self.collect_tagged_adversaries(adversary_tags=DEFAULT_FREEBIE_ADVERSARY_TAGS)
+
         for adv in fb_adversaries:
             if 'freebie' in adv['tags']:
                 found_adversaries.append(adv)
             else:
-                if set(adv['atomic_ordering']) & fb_abilities_uuid:
-                    found_adversaries.append(adv)
-        print(f'found_adversaries: {found_adversaries}')
+                for a in set(adv['atomic_ordering']):
+                    ability = await self.data_svc.locate('abilities', match=dict(ability_id=a))
+                    if not ability:
+                        pass
+                    ability = ability[0]
+                    if self._has_executor(ability, executor):
+                        found_adversaries.append(adv)
+                        break
         return found_adversaries
 
     def software_enrich(self, software):
@@ -283,3 +274,12 @@ class PathfinderService:
             p = module.ReportParser()
             parsers[p.format] = p
         return parsers
+
+    def _has_executor(self, ability, executor):
+        if not ability.executors:
+            return False
+        else:
+            for potential_executor in ability.executors:
+                if potential_executor.platform == executor:
+                    return True
+            return False
