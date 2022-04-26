@@ -180,10 +180,10 @@ class PathfinderService:
         for node in path:
             techniques = await self.gather_techniques(report, targeted_host=node)
             if not techniques:
-                adversary[node] = [("abilityFreebie", 1)]
+                adversary[node.hostname] = [("abilityFreebie", 1)]
             else:
                 for tech in techniques:
-                    adversary[node] = (tech, getattr(tech, probability, .9))
+                    adversary[node.hostname] = [(tech, .9)] #getattr(tech, 'probability', .9)
         return adversary
 
     @staticmethod
@@ -286,8 +286,11 @@ class PathfinderService:
     
     async def jsonify_host(self, node):
         temp = node.__dict__
-        if getattr(node, 'os'):
+        if getattr(node, '_access') and not isinstance(temp['_access'],int):
+            temp['_access'] = node._access.__dict__
+        if getattr(node, 'os') and not isinstance(temp['os'], dict):
             temp['os'] = node.os.__dict__
+            temp['os']['_access'] = temp['os']['_access'].__dict__
         if getattr(node, 'software'):
             temp['software'] = [soft.__dict__ for soft in node.software if not isinstance(soft, dict)]
         return temp
