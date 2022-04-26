@@ -1,6 +1,5 @@
 import os
 import glob
-from sre_constants import SUCCESS
 import uuid
 import yaml
 import logging
@@ -26,6 +25,8 @@ DEFAULT_LATERAL_MOVEMENT_MATCH = {
 DEFAULT_FREEBIE_MATCH = {
     'tactic': 'initial-access'
 }
+DEFAULT_POSSIBLE_ADVERSARY_TAGS = ['lateral-movement']
+DEFAULT_FREEBIE_ADVERSARY_TAGS = ['initial-access', 'freebie']
 
 
 class PathfinderService:
@@ -181,11 +182,15 @@ class PathfinderService:
             if host.os:
                 os_type = host.os.os_type
                 os_type = os_type.lower()
-                if os_type in ['linux', 'windows', 'debian']:
+                if os_type in ['linux', 'windows', 'darwin']:
                     executor = os_type
-                    lm_abilities = await self.get_access_abilities(executor=executor) or self.get_freebie_abilities(executor=executor)
-                    lm_objs = [Ability(uuid=a.ability_id, success_prob=DEFAULT_SUCCESS_PROB) for a in lm_abilities]
+                    lm_adv = await self.get_access_adversaries(executor=executor) or []
+                    lm_objs = [Ability(uuid=a['adversary_id'], success_prob=DEFAULT_SUCCESS_PROB) for a in lm_adv]
                     host.possible_abilities = lm_objs
+                    ia_adv = await self.get_freebie_adversaries(executor=executor) or []
+                    ia_objs = [a['adversary_id'] for a in ia_adv]
+                    host.freebie_abilities = ia_objs
+                    print(f'host after adversary assignment: {[a.uuid for a in host.possible_abilities]}\n{host.freebie_abilities}')
                 else:
                     continue
             report.hosts[key] = host
@@ -204,11 +209,43 @@ class PathfinderService:
         lm_abilities = await self.data_svc.locate('abilities', match=DEFAULT_LATERAL_MOVEMENT_MATCH)
         lm_abilities = [a for a in lm_abilities if self._has_executor(a, executor)]
         return lm_abilities
-    
+
     async def get_freebie_abilities(self, executor: str = 'windows'):
         fb_abilities = await self.data_svc.locate('abilities', match=DEFAULT_FREEBIE_MATCH)
         fb_abilities = [a for a in fb_abilities if self._has_executor(a, executor)]
         return fb_abilities
+
+    async def get_access_adversaries(self, executor: str = 'windows'):
+        found_adversaries = []
+        lm_adversaries = await self.collect_tagged_adversaries(adversary_tags=DEFAULT_POSSIBLE_ADVERSARY_TAGS)
+        print(f'possible adversaries: {lm_adversaries}')
+        for adv in lm_adversaries:
+            print(f'checking adversary: {adv}')
+            for a in set(adv['atomic_ordering']):
+                ability = await self.data_svc.locate('abilities', match=dict(ability_id=a))
+                if not ability:
+                    pass
+                ability = ability[0]
+                if self._has_executor(ability, executor):
+                    found_adversaries.append(adv)
+                    break
+        print(f'found_adversaries: {found_adversaries}')
+        return found_adversaries
+
+    async def get_freebie_adversaries(self, executor: str = 'windows'):
+        fb_abilities = await self.get_freebie_abilities(executor=executor)
+        fb_abilities_uuid = set([a.ability_id for a in fb_abilities])
+
+        found_adversaries = []
+        fb_adversaries = await self.collect_tagged_adversaries(adversary_tags=DEFAULT_FREEBIE_ADVERSARY_TAGS)
+        for adv in fb_adversaries:
+            if 'freebie' in adv['tags']:
+                found_adversaries.append(adv)
+            else:
+                if set(adv['atomic_ordering']) & fb_abilities_uuid:
+                    found_adversaries.append(adv)
+        print(f'found_adversaries: {found_adversaries}')
+        return found_adversaries
 
     def software_enrich(self, software):
         exploits = []
