@@ -31,6 +31,27 @@
             </tbody>
         </table>
     </div>
+    <div>
+        <select x-model="selectedSource">
+            <template x-for="(host, index) of hostObjects" :key="index">
+                <option x-text="host.ip"></option>
+            </template>
+        </select>
+         
+        Source: <span x-text="selectedSource"></span>
+    </div>
+    <div>
+        <select x-model="selectedTarget">
+            <template x-for="(host, index) of hostObjects" :key="index">
+                <option x-text="host.ip"></option>
+            </template>
+        </select>
+         
+        Target: <span x-text="selectedTarget"></span>
+    </div>
+    <div>
+        <button class="button is-small is-primary" x-text="'Test get paths'" @click="getPaths();"></button>
+    </div>
     <hr>
     <div id="pathfinder-section" class="section-profile">
         <div class="row">
@@ -365,7 +386,7 @@ function alpinePathfinder() {
             apiV2('POST', '/plugin/pathfinder/api', {'index':'paths', 'id':current_report, 'source': this.selectedSource, 'target': this.selectedTarget}).then((response) => {
                 toast('Returned possible attack paths.', true);
                 this.paths = response.paths;
-                console.log(paths);
+                console.log(this.paths);
             }).catch((error) => {
                 toast('Error obtaining attack paths.', false);
                 console.error(error);

@@ -276,25 +276,32 @@ class PathfinderGUI(BaseWorld):
         source_ip = data.get('source')
         target_ip = data.get('target')
         report_id = data.get('id')
-        response = dict(status='success', paths=[])
+        response = dict(status='fail', paths=[])
 
         report = await self.data_svc.locate(
                 'vulnerabilityreports', match=dict(id=report_id)
             )
+        if report:
+            report = report[0]
+            response['status'] = 'success'
+        else:
+            return response
         prob = 0
         for host_id in report.hosts.keys():
             if host_id == target_ip:
                 target = report.hosts[host_id]
+                print(f'TARGET: {target}')
                 possible_abilities = target.possible_abilities
                 for ability in possible_abilities:
-                    prob = max(prob, ability.success_prob)
+                    print(f'SUCCESS_PROB: {ability.success_prob}')
+                    prob = max(prob, float(ability.success_prob))
 
         test_path = {
             'source': source_ip,
             'target': target_ip,
             'success_prob': prob,
         }
-        response.paths.append(test_path)
+        response['paths'].append(test_path)
         return response
 
     async def check_scan_status(self):
