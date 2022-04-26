@@ -215,14 +215,9 @@ class PathfinderGUI(BaseWorld):
             response['status'] = 'success'
         else:
             return response
-        print(f'REPORT: {report}')
-        if not report:
-            return response
+
         report = report[0]
         for k, host in report.hosts.items():
-            print(f'HOST KEY: {k}')
-            print(f'HOST OBJ: {host}')
-            print(f'HOST TYPE: {type(host)}')
             host_info = dict(name=host.hostname)
             host_info['report_id'] = report.id
             host_info['ip'] = host.ip
@@ -240,18 +235,20 @@ class PathfinderGUI(BaseWorld):
     async def update_host_in_report(self, data):
         patch_data = data.get('host')
         report_id = patch_data.get('report_id')
+        response = dict(status='fail')
+
         report = await self.data_svc.locate(
                 'vulnerabilityreports', match=dict(id=report_id)
             )
-        print(f'report: {report}')
-        if not report:
-            return dict(status='fail')
-        report = report[0]
+        if report:
+            report = report[0]
+            response['status'] = 'success'
+        else:
+            return response
+
         for host_id in report.hosts.keys():
             if host_id == patch_data.get('ip'):
-                print(f'FOUND {patch_data}')
                 host = report.hosts[host_id]
-                print(f'OLD ABILITIES LEN: {len(host.possible_abilities)}')
                 host.name = patch_data.get('name') or host.name
                 host.freebie_abilities = patch_data.get('freebie_abilities')
                 host.denied_abilities = patch_data.get('denied_abilities')
@@ -259,17 +256,17 @@ class PathfinderGUI(BaseWorld):
                     patch_data.get('possible_abilities'),
                     patch_data.get('possible_abilities_success_prob')
                 )
+
                 new_abilities = []
                 for a in new_possible_abilities:
                     new_abilities.append(Ability(uuid=a[0], success_prob=a[1]))
+
                 host.possible_abilities = new_abilities
                 report.hosts[host_id] = host
                 break
 
         await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
         await self.data_svc.store(report)
-        print(f'NEW ABILITIES LEN: {len(host.possible_abilities)}')
-        response = dict(status='success')
         return response
 
     async def get_paths(self, data):
@@ -290,10 +287,8 @@ class PathfinderGUI(BaseWorld):
         for host_id in report.hosts.keys():
             if host_id == target_ip:
                 target = report.hosts[host_id]
-                print(f'TARGET: {target}')
                 possible_abilities = target.possible_abilities
                 for ability in possible_abilities:
-                    print(f'SUCCESS_PROB: {ability.success_prob}')
                     prob = max(prob, float(ability.success_prob))
 
         test_path = {
