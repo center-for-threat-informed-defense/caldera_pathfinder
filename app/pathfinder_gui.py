@@ -206,18 +206,29 @@ class PathfinderGUI(BaseWorld):
         ]
         return dict(reports=reports)
 
-    async def retrieve_hosts_from_report(self, data):
+    async def retrieve_hosts_from_report(self, data: dict) -> dict:
+        """Use id provided by the request, return info on hosts in the report.
+
+        Args:
+            data: The HTTP request data, assumed to contain an `id` which maps
+                  to a vulnerability report in the data service.
+
+        Returns:
+            The response status (`'success'` or `'fail'`) as well as a list of
+            dictionaries describing each host for the matching vulnerability
+            report.
+        """
         report_id = data.get('id')
         response = dict(status='fail', hosts=[])
-
-        report = await self.data_svc.locate('vulnerabilityreports', match=dict(id=report_id))
+        report = await self.data_svc.locate('vulnerabilityreports',
+                                            match=dict(id=report_id))
         if report:
+            report = report[0]
             response['status'] = 'success'
         else:
             return response
 
-        report = report[0]
-        for k, host in report.hosts.items():
+        for host in report.hosts.values():
             host_info = dict(name=host.hostname)
             host_info['report_id'] = report.id
             host_info['ip'] = host.ip
@@ -232,7 +243,21 @@ class PathfinderGUI(BaseWorld):
             response['hosts'].append(host_info)
         return response
 
-    async def update_host_in_report(self, data):
+    async def update_host_in_report(self, data: dict) -> dict:
+        """Update a host using the content of the HTTP request body.
+
+        Args:
+            data: The HTTP request data, assumed to contain a `host` which has
+                  a `report_id` that maps to a vulnerability report in the data
+                  service, as well as new entries for the host's name, freebie
+                  abilities, possible abilities, or denied abilities.  The host
+                  is indexed in its vulnerability report by its ip address.
+
+        Returns:
+            The status generated in handling the response, `'fail'` if the
+            specified vulnerability report is not found in the data service and
+            `'success'` if it is found and the host successfully updated.
+        """
         patch_data = data.get('host')
         report_id = patch_data.get('report_id')
         response = dict(status='fail')
@@ -265,11 +290,22 @@ class PathfinderGUI(BaseWorld):
                 report.hosts[host_id] = host
                 break
 
-        await self.data_svc.remove('vulnerabilityreports', match=dict(id=report_id))
+        await self.data_svc.remove('vulnerabilityreports',
+                                   match=dict(id=report_id))
         await self.data_svc.store(report)
         return response
 
-    async def get_paths(self, data):
+    async def get_paths(self, data: dict) -> dict:  # TODO: stub
+        """Compute attack paths from a source to a target.
+
+        Args:
+            data: The HTTP request data, assumed to contain an `id` which maps
+                  to a vulnerability report in the data  service, as well as a
+                  target node's ip address and a source node's ip address.
+
+        Returns:
+            The path with highest success between the source and target.
+        """
         source_ip = data.get('source')
         target_ip = data.get('target')
         report_id = data.get('id')

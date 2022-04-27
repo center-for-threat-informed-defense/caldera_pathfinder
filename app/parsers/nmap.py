@@ -37,7 +37,7 @@ class ReportParser(ParserInterface):
         for host in root.findall('host'):
             host_exists = False
             cves = []
-            report_host = Host(host.find('address').get('addr'))  # we loose the mac here
+            report_host = Host(host.find('address').get('addr'))  # TODO mac
             if host.find('hostnames') is not None:
                 if host.find('hostnames').find('hostname') is not None:
                     report_host.hostname = (
