@@ -4,7 +4,7 @@
   platforms:
     linux:
       sh:
-        command: 'python heartbleed.py #{scan.host.ip}'
+        command: 'python2 heartbleed.py #{scan.host.ip}'
         payloads:
         - heartbleed.py
   tactic: initial-access

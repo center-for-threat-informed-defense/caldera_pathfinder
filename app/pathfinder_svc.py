@@ -237,7 +237,7 @@ class PathfinderService:
             the host's `freebie_abilities` attribute.
         """
         fb_abilities = await self.data_svc.locate('abilities',
-            match=DEFAULT_FREEBIE_MATCH)
+                                                  match=DEFAULT_FREEBIE_MATCH)
         fb_abilities = [a for a in fb_abilities if self._has_executor(a, executor)]
         return fb_abilities
 
@@ -259,7 +259,8 @@ class PathfinderService:
 
         for adv in lm_adversaries:
             _match = await self._adversary_executor_match(adv, executor)
-            if _match: found_adversaries.append(_match)
+            if _match:
+                found_adversaries.append(_match)
 
         return found_adversaries
 
@@ -284,7 +285,8 @@ class PathfinderService:
                 found_adversaries.append(adv)
             else:
                 _match = await self._adversary_executor_match(adv, executor)
-                if _match: found_adversaries.append(_match)
+                if _match:
+                    found_adversaries.append(_match)
 
         return found_adversaries
 
