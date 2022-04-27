@@ -3,9 +3,9 @@ import re
 import yaml
 import logging
 import argparse
-import networkx as nx
 import xml.etree.ElementTree as ET
-from collections import defaultdict
+
+import networkx as nx
 
 from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 from plugins.pathfinder.app.objects.secondclass.c_host import Host
@@ -77,7 +77,7 @@ class ReportParser(ParserInterface):
         for host_object in report.hosts.values():
             network_map.add_node(host_object.ip)
             for host2 in report.hosts.values():
-                if host2 != value:
+                if host2 != host_object:
                     network_map.add_edge(host_object.ip, host2.ip)
         report.network_map = network_map
 
