@@ -70,7 +70,7 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
     def set_host_freebie_abilities(self, id, abilities: list):
         self.hosts[id].freebie_abilities = abilities
             
-    def get_host_acces(self, id):
+    def get_host_access(self, id):
         return self.hosts[id].access
         
     def set_host_access(self, id, access):
