@@ -8,6 +8,7 @@ import networkx as nx
 from app.utility.base_object import BaseObject
 from app.objects.interfaces.i_object import FirstClassObjectInterface
 from plugins.pathfinder.app.objects.secondclass.c_host import HostSchema
+from plugins.pathfinder.app.objects.secondclass.c_os import OS
 
 
 class ReportSchema(ma.Schema):
@@ -109,7 +110,7 @@ class VulnerabilityReport(FirstClassObjectInterface, BaseObject):
     def get_host_os(self, id):
         return self.hosts[id].os
         
-    def set_host_os(self, id, os):
+    def set_host_os(self, id, os: OS):
         self.hosts[id].os = os
 
     def get_host_hostname(self, id):
