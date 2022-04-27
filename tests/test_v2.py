@@ -1,9 +1,11 @@
-import os, sys, pytest
+import os
+import sys 
 import asyncio
+import networkx as nx
 
+import pytest
 from plugins.pathfinder.app.pathfinder_svc import PathfinderService
 from plugins.pathfinder.app.parsers import caldera
-import networkx as nx
 
 TEST_REPORT_PATH = os.path.join(os.path.dirname(__file__), 'data/v2_algo_testcase.yml')
 PATHFINDER_V2_ID = 'deadbeef-6a18-4dcf-b659-79b8dd0d8d89'
@@ -16,6 +18,7 @@ def test_report():
 @pytest.fixture
 def pathfinder_svc():
     return PathfinderService(services={})
+
 
 @pytest.fixture
 def expected_graph(test_report):
@@ -55,7 +58,7 @@ class TestV2:
             'node4.local': [('315f8fcc-c05a-4db0-9f9a-5daade661540', 0.9)],
             'node5.local': [('315f8fcc-c05a-4db0-9f9a-5daade661540', 0.9)],
             'node6.local': [('315f8fcc-c05a-4db0-9f9a-5daade661540', 0.9)]
-            }
+        }
 
         func_result = await pathfinder_svc.create_adversary_from_path(test_report, next(vuln_path))
         assert func_result == expected_result
@@ -83,12 +86,12 @@ class TestV2:
         start_node = test_report.retrieve_host_by_id(start)
 
         expected_result = {'_access': 0, '_created': '2022-04-26T15:14:43Z', 
-                'hostname': 'node1.local', 'ip': '10.0.0.1', 'ports': {}, 'cves': ['CVE-2014-0160'], 
-                'software': [{'_access': <Access.APP: 0>, '_created': '2022-04-26T15:14:43Z', 'service_type': 'Web Browser', 'subtype': 'Google Chrome', 'notes': None}], 
-                'os': {'_access': {'_value_': 0, '_name_': 'APP', '__objclass__': <enum 'Access'>}, '_created': '2022-04-26T15:14:43Z', 'os_type': 'Linux', 'subtype': None, 
-                'notes': 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.63 Safari/537.31'}, 
-                'mac': None, 'freebie_abilities': ['Root password available'], 'possible_abilities': {}, 'denied_abilities': [], 'access_prob': 0.56
-            }
+            'hostname': 'node1.local', 'ip': '10.0.0.1', 'ports': {}, 'cves': ['CVE-2014-0160'], 
+            'software': [{'_access': <Access.APP: 0>, '_created': '2022-04-26T15:14:43Z', 'service_type': 'Web Browser', 'subtype': 'Google Chrome', 'notes': None}], 
+            'os': {'_access': {'_value_': 0, '_name_': 'APP', '__objclass__': <enum 'Access'>}, '_created': '2022-04-26T15:14:43Z', 'os_type': 'Linux', 'subtype': None, 
+            'notes': 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.63 Safari/537.31'}, 
+            'mac': None, 'freebie_abilities': ['Root password available'], 'possible_abilities': {}, 'denied_abilities': [], 'access_prob': 0.56
+        }
 
         result = await pathfinder_svc.jsonify_host(start_node)
         assert expected_result == result
