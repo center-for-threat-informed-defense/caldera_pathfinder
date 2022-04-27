@@ -94,7 +94,6 @@ class PathfinderService:
         def get_all_tags(objlist):
             return [t for a in objlist for t in a.tags]
 
-
         shortest_path = nx.shortest_path(report.network_map, initial_host, target_host)
         technique_list = await self.gather_techniques(report, path=shortest_path)
         implemented_cves = [
