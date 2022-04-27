@@ -5,6 +5,7 @@ import yaml
 import logging
 from importlib import import_module
 
+import networkx as nx
 from app.utility.base_world import BaseWorld
 from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
@@ -13,8 +14,6 @@ from app.objects.c_adversary import Adversary
 import plugins.pathfinder.settings as settings
 import plugins.pathfinder.app.enrichment.cve as cve
 from plugins.pathfinder.app.objects.c_cve import CVE
-
-import networkx as nx
 
 
 class PathfinderService:
