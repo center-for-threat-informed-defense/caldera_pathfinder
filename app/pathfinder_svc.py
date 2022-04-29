@@ -9,8 +9,10 @@ import networkx as nx
 
 from app.utility.base_world import BaseWorld
 from app.objects.c_source import Source
+from app.objects.c_ability import Ability as CoreAbility
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
+from plugins.pathfinder.app.objects.c_report import VulnerabilityReport
 from plugins.pathfinder.app.objects.secondclass.c_host import Ability
 from plugins.pathfinder.app.objects.c_cve import CVE
 import plugins.pathfinder.settings as settings
@@ -177,7 +179,7 @@ class PathfinderService:
             for a in await self.data_svc.search(tag, 'adversaries') or []
         ]
 
-    async def enrich_report(self, report):
+    async def enrich_report(self, report: 'VulnerabilityReport'):
         """Identify possible adversary profiles to compromise hosts in report.
 
         Args:
@@ -327,7 +329,7 @@ class PathfinderService:
             parsers[p.format] = p
         return parsers
 
-    def _has_executor(self, ability, executor: str) -> bool:
+    def _has_executor(self, ability: 'CoreAbility', executor: str) -> bool:
         """Determine if the Ability object has a platform matching executor.
 
         Args:
