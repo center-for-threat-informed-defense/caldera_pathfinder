@@ -87,8 +87,8 @@ class TestV2:
 
         expected_result = {'_access': 0, '_created': '2022-04-26T15:14:43Z', 
             'hostname': 'node1.local', 'ip': '10.0.0.1', 'ports': {}, 'cves': ['CVE-2014-0160'], 
-            'software': [{'_access': <Access.APP: 0>, '_created': '2022-04-26T15:14:43Z', 'service_type': 'Web Browser', 'subtype': 'Google Chrome', 'notes': None}], 
-            'os': {'_access': {'_value_': 0, '_name_': 'APP', '__objclass__': <enum 'Access'>}, '_created': '2022-04-26T15:14:43Z', 'os_type': 'Linux', 'subtype': None, 
+            'software': [{'_access': 0, '_created': '2022-04-29T04:50:19Z', 'service_type': 'Web Browser', 'subtype': 'Google Chrome', 'notes': None}], 
+            'os': {'_access': 0, '_created': '2022-04-29T04:50:19Z', 'os_type': 'Linux', 'subtype': None, 
             'notes': 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.63 Safari/537.31'}, 
             'mac': None, 'freebie_abilities': ['Root password available'], 'possible_abilities': {}, 'denied_abilities': [], 'access_prob': 0.56
         }
