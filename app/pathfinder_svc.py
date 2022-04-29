@@ -179,7 +179,8 @@ class PathfinderService:
             for a in await self.data_svc.search(tag, 'adversaries') or []
         ]
 
-    async def enrich_report(self, report: 'VulnerabilityReport'):
+    async def enrich_report(self, report: 'VulnerabilityReport'
+                            ) -> 'VulnerabilityReport':
         """Identify possible adversary profiles to compromise hosts in report.
 
         Args:
