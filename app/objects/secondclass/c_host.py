@@ -154,3 +154,4 @@ class Host(BaseObject):
 	@access_prob.setter
 	def access_prob(self, access_prob):
 		this.access_prob = access_prob
+
