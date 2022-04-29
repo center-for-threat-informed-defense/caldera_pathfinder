@@ -290,9 +290,11 @@ class PathfinderService:
             temp['_access'] = node._access.__dict__
         if getattr(node, 'os') and not isinstance(temp['os'], dict):
             temp['os'] = node.os.__dict__
-            temp['os']['_access'] = temp['os']['_access'].__dict__
+            temp['os']['_access'] = temp['os']['_access'].__dict__['_value_']
         if getattr(node, 'software'):
             temp['software'] = [soft.__dict__ for soft in node.software if not isinstance(soft, dict)]
+            for software in temp['software']:
+                software['_access'] = software['_access']._value_
         return temp
 
     @staticmethod
