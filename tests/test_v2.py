@@ -85,13 +85,16 @@ class TestV2:
         start = '1-1'
         start_node = test_report.retrieve_host_by_id(start)
 
-        expected_result = {'_access': 0, '_created': '2022-04-26T15:14:43Z', 
+        expected_result = {'_access': 0,
             'hostname': 'node1.local', 'ip': '10.0.0.1', 'ports': {}, 'cves': ['CVE-2014-0160'], 
-            'software': [{'_access': 0, '_created': '2022-04-29T04:50:19Z', 'service_type': 'Web Browser', 'subtype': 'Google Chrome', 'notes': None}], 
-            'os': {'_access': 0, '_created': '2022-04-29T04:50:19Z', 'os_type': 'Linux', 'subtype': None, 
+            'software': [{'_access': 0, 'service_type': 'Web Browser', 'subtype': 'Google Chrome', 'notes': None}], 
+            'os': {'_access': 0, 'os_type': 'Linux', 'subtype': None, 
             'notes': 'User-Agent: Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.63 Safari/537.31'}, 
             'mac': None, 'freebie_abilities': ['Root password available'], 'possible_abilities': {}, 'denied_abilities': [], 'access_prob': 0.56
         }
 
         result = await pathfinder_svc.jsonify_host(start_node)
+        del result['_created']
+        del result['os']['_created']
+        del result['software'][0]['_created']
         assert expected_result == result
