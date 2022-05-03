@@ -5,13 +5,16 @@ import yaml
 import logging
 from importlib import import_module
 
+import networkx as nx
+
 from app.utility.base_world import BaseWorld
 from app.objects.c_source import Source
 from app.objects.secondclass.c_fact import Fact
 from app.objects.secondclass.c_relationship import Relationship
-from app.objects.c_adversary import Adversary
+from plugins.pathfinder.app.objects.c_cve import CVE
 import plugins.pathfinder.settings as settings
 import plugins.pathfinder.app.enrichment.cve as cve
+<<<<<<< HEAD
 from plugins.pathfinder.app.objects.c_cve import CVE
 
 import networkx as nx
@@ -32,8 +35,8 @@ class PathfinderService:
             temp_file = '%s/_temp_report_file.tmp' % settings.data_dir
             with open(temp_file, 'wb') as f:
                 f.write(contents)
-            parsed_report = self.parsers[scan_format].parse(temp_file)
-            # parsed_report = self.enrich_report(parsed_report)
+            parsed_report = self.parsers[scan_format].parse(temp_file, name=report)
+            parsed_report = self.enrich_report(parsed_report)
             if parsed_report:
                 await self.data_svc.store(parsed_report)
                 return await self.create_source(parsed_report)
@@ -62,8 +65,8 @@ class PathfinderService:
                 )
             for num, port in host.ports.items():
                 port_fact = add_fact(facts, 'scan.host.port', num)
-                for cve in port.cves:
-                    cve_fact = add_fact(facts, 'scan.found.cve', cve)
+                for cve_ in port.cves:
+                    cve_fact = add_fact(facts, 'scan.found.cve', cve_)
                     relationships.append(
                         Relationship(ip_fact, 'has_vulnerability', cve_fact)
                     )

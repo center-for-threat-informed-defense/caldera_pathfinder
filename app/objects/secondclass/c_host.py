@@ -8,12 +8,14 @@ from plugins.pathfinder.app.objects.secondclass.c_service import ServiceSchema
 
 
 class HostAccess(Enum):
+
     DENY = -1
     STANDARD = 0
     ALLOW = 1
 
 
 class AbilitySchema(ma.Schema):
+
     uuid = ma.fields.String()
     success_prob = ma.fields.Number()
 

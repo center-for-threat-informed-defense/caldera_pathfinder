@@ -4,6 +4,7 @@ from app.utility.base_object import BaseObject
 
 
 class OSSchema(ma.Schema):
+
     os_type = ma.fields.String(allow_none=True)
     subtype = ma.fields.String(missing=None)
     notes = ma.fields.String(missing=None)
