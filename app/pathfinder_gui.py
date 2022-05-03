@@ -242,6 +242,11 @@ class PathfinderGUI(BaseWorld):
             path, adversary_id = await self.pathfinder_svc.generate_adversary(
                 report[0], start, target, tags
             )
+            # Between the comments is the v2 implementation
+            attack_dict = await self.pathfinder_svc.generate_path_analysis_report(
+                report[0], start, target
+            )
+            # 
             return dict(adversary_id=adversary_id, new_links=generate_links(path))
 
     async def get_source_name(self, data):

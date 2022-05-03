@@ -2,7 +2,6 @@ import uuid
 from datetime import date
 
 import marshmallow as ma
-
 import networkx as nx
 
 from app.utility.base_object import BaseObject
@@ -20,8 +19,8 @@ class ReportSchema(ma.Schema):
     )
     scope = ma.fields.String()
     network_map_nodes = ma.fields.List(ma.fields.String())
-    network_map_edges = ma.fields.List(ma.fields.Tuple((ma.fields.String(), ma.fields.String())))
-
+    network_map_edges = ma.fields.List(ma.fields.Tuple((ma.fields.String(),
+                                                        ma.fields.String())))
 
     @ma.post_load()
     def build_report(self, data, **_):
