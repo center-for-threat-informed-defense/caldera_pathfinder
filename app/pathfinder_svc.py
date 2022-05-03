@@ -14,10 +14,7 @@ from app.objects.secondclass.c_relationship import Relationship
 from plugins.pathfinder.app.objects.c_cve import CVE
 import plugins.pathfinder.settings as settings
 import plugins.pathfinder.app.enrichment.cve as cve
-<<<<<<< HEAD
 from plugins.pathfinder.app.objects.c_cve import CVE
-
-import networkx as nx
 
 
 class PathfinderService:
