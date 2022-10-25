@@ -2,164 +2,433 @@
 <script src="/pathfinder/js/pathfinder.js"></script>
 
 <div x-data="alpinePathfinder()" x-init="initPage()">
-    <div>
-        <h2 x-text="name"></h2>
-        <p x-text="description"></p>
+    <div x-ref="headerPathfinder">
+        <h2>Pathfinder</h2>
+        <p>CALDERA Rapid Attack Grapher</p>
     </div>
     <hr>
-    <div id="pathfinder-section" class="section-profile">
-        <div class="row">
-            <div class="column section-border" style="flex:25%;text-align:left;">
-                <div class="tab-bar">
-                    <button class='selected' onclick="changeInputOptions(event, 'scanSection')">Scan</button>
-                    <button onclick="changeInputOptions(event, 'importSection')">Import</button>
-                    <button onclick="changeInputOptions(event, 'graphSection')">View</button>
-                </div>
-                <br>
-                <div>
-                    <div class="pathfinderSection" id="scanSection">
-                        <label for="scannerSelection">Scanner:</label><br>
-                        <select id="scannerSelection" onchange="setupScannerSection()">
-                            <option value="" disabled selected>Select the scanner to use</option>
-                                {% for s in scanners %}
-                                    <option value="{{ s }}">{{ s }}</option>
-                                {% endfor %}}
-                        </select>
-                        <div id="dynamicScannerSection">
-                        </div>
-                        <br>
-                        <button id="startScan" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                title="Start scan after configuring scanner" onclick="startScan()">Scan</button>
-                        <button id="viewFacts" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                title="View facts collected during a scan"
-                                x-on:click="addTab('fact sources', '/advanced/sources')">View Facts</button>
-                    </div>
-                    <div class="pathfinderSection" id="importSection" style="display:none;">
-                        <label for="scanInputFormat">Report Format:</label>
-                        <select id="scanInputFormat" onchange="validateParser()">
-                            <option value="" disabled selected>Select the report format</option>
-                                {% for p in input_parsers %}
-                                    <option value="{{ p }}">{{ p }}</option>
-                                {% endfor %}}
-                        </select>
-                        <input id="fileInput" type="file" name="name" style="display: none;" />
-                        <br><br>
-                        <button id="startImport" type="button" class="button-notready atomic-button" style="margin-top:0;"
-                                title="Import using selected parser" onclick="importScan()">Import</button>
-                    </div>
-                    <div class="pathfinderSection" id="graphSection" style="display:none;">
-                        <label for="vulnerabilityReport">Vulnerability Report:</label>
-                        <select id="vulnerabilityReport" onchange="validateFormState(true, '#showGraph');
-                        validateFormState(true, '#downloadReport'); validateFormState(true, '#renameReport');
-                        validateFormState(true, '#removeReport');">
-                            <option value="" disabled selected>Select a report</option>
-                            {% for r in vulnerability_reports %}
-                                <option value="{{ r.id }}">{{ r.name }}</option>
-                            {% endfor %}}
-                        </select>
-                        <div>
-                            <div class='controls'>
-                                <div class='setting'>
-                                    <label for='link-distance'>Size: <span id='link-distance-value'></span></label>
-                                    <br>
-                                    <input type='range' min='1' max='100' default='50' id='link-distance'>
-                                </div>
-                            </div>
-                            <div>
-                                <label for="graphLegend">Legend:</label>
-                                <ul id="graphLegend">
-                                    <li><span class="legend_dot" style="background-color:gray"></span>&nbsp&nbsp scanner</li>
-                                    <li><span class="legend_dot" style="background-color:deepskyblue"></span>&nbsp&nbsp network host</li>
-                                    <li><span class="legend_dot" style="background-color:orangered"></span>&nbsp&nbsp CVE</li>
-                                    <li><span class="legend_dot" style="background-color:blue"></span>&nbsp&nbsp open port</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <br>
-                        <button id="showGraph" type="button" class="button-notready atomic-button"
-                                onclick="graphReport()" style="margin-top:0">Graph</button>
-                        <br>
-                        <div x-data="{ reportMenuOpen: false }" x-on:click.outside="reportMenuOpen = false">
-                            <button x-on:click="reportMenuOpen = !reportMenuOpen">
-                                Report Options
-                            </button>
-                            <div x-show="reportMenuOpen">
-                                <p> Rename, download, and delete reports from Pathfinder.</p>
-                                <label for="newReportName">New Report Name:</label>
-                                <input id="newReportName" type="text" name="newReportName" value="" style="width:75%; margin:5px;">
-                                <button id="renameReport" type="button" class="button-notready atomic-button"
-                                        onclick="renameVulnerabilityReport()" style="margin-top:0">Rename Report</button>
-                                <button id="downloadReport" type="button" class="button-notready atomic-button"
-                                        onclick="downloadVulnerabilityReport()" style="margin-top:0">Download Report</button><br>
-                                <button id="removeReport" type="button" class="button-notready atomic-button"
-                                        onclick="removeVulnerabilityReport()" style="margin-top:0">Delete Report</button>
-                            </div>
-                        </div>
-                        <div x-data="{ adversaryMenuOpen: false }" x-on:click.outside="adversaryMenuOpen = false">
-                            <button x-on:click="adversaryMenuOpen = !adversaryMenuOpen">
-                                Adversary Options
-                            </button>
-                            <div x-show="adversaryMenuOpen">
-                                <p>Create a custom adversary using the source and target nodes specified in the attach graph.</p>
-                                <p>Once created, this adversary will appear in the "adversaries" tab.</p>
-                                <p>Existing Pathfinder adversaries can be merged by including their name in the "Adversary Merging Tags".</p>
-                                <label for="adversaryTags">Adversary Merging Tags:</label>
-                                <input id="adversaryTags" type="text" name="adversaryTags" value="" style="width:75%; margin:5px;">
-                                <button id="createAdversary" type="button" class="button-notready atomic-button"
-                                        x-on:click="createAdversary()" style="margin-top:0">Create Adversary</button>
-                                <button id="viewAdversaries" type="button" class="button-notready atomic-button"
-                                        x-on:click="addTab('adversaries', '/campaign/profiles')" style="margin-top:0">View Adversaries</button>
-                                <button id="setupOperation" type="button" class="button-notready atomic-button"
-                                        x-on:click="addTab('operations', '/campaign/operations')" style="margin-top:0">Setup Operation</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="columns">
+        <div class="column is-3">
+            <div class="tabs">
+                <ul>
+                    <li @click="activeTab = 'scan'" :class="{ 'is-active': activeTab === 'scan' }">
+                        <a>Scan</a>
+                    </li>
+                    <li @click="activeTab = 'import'" :class="{ 'is-active': activeTab === 'import' }">
+                        <a>Import</a>
+                    </li>
+                    <li @click="activeTab = 'view'" :class="{ 'is-active': activeTab === 'view' }">
+                        <a>View</a>
+                    </li>
+                </ul>
             </div>
-            <div class="column" style="flex:75%">
-                <div id="logView">
-                    <label for="logWindow">Output</label><br>
-                    <textarea id="logWindow" class="column log-box" rows="4" style="height:90%"></textarea>
-                </div>
-                <div id="graphView" style="display:none;">
-                </div>
-            </div>
-        </div>
 
-    <div id="templateSection" style="display:none">
-        <div id="textInputTemplate" style="display:none; margin:5px">
-            <label for="textInput">text field:</label><br>
-            <input id="textInput" type="text" name="txi1" value="" style="width:75%; margin:5px;">
+            <!-- Scan view -->
+            <div x-show="activeTab === 'scan'">
+                <form>
+                    <div class="field">
+                        <label class="label is-small">Scanner:</label>
+                        <div class="control">
+                            <div class="select is-small">
+                                <select x-model="selectedScanner" @change="selectScanner()">
+                                    <option default disabled value="">Select a scanner</option>
+                                    <template x-for="scanner in scanners" :key="scanner">
+                                        <option :value="scanner" x-text="scanner"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <template x-for="field in scannerFields">
+                        <div class="field">
+                            <label class="label is-small" x-text="field.name"></label>
+                            <div class="control">
+                                <template x-if="field.type === 'text'">
+                                    <input class="input is-small" type="text" x-model="field.value">
+                                </template>
+                                <template x-if="field.type === 'pulldown'">
+                                    <div class="select is-small">
+                                        <select x-model="field.value">
+                                            <template x-for="value in field.values">
+                                                <option :value="value" x-text="value"></option>
+                                            </template>
+                                        </select>
+                                    </div>
+                                </template>
+                                <template x-if="field.type === 'checkbox'">
+                                    <input type="checkbox" x-model="field.value">
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-small is-primary is-fullwidth" type="button" :disabled="!selectedScanner" @click="startScan()">
+                                Scan
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-small is-primary is-fullwidth" type="button" @click="addTab('fact sources', '/advanced/sources')">
+                                View Facts
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Import view -->
+            <div x-show="activeTab === 'import'">
+                <form>
+                    <div class="field">
+                        <label class="label is-small">Report Format</label>
+                        <div class="control">
+                            <div class="select is-small">
+                                <select x-model="selectedParser">
+                                    <option value="" disabled selected>Select the report format</option>
+                                    <template x-for="parser in inputParsers">
+                                        <option :value="parser" x-text="parser"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-small is-primary is-fullwidth" :disabled="!selectedParser" type="button" @click="$refs.importFile.click()">Import</button>
+                            <input x-ref="importFile" type="file" name="name" x-show="false" @change="uploadFile">
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- View view -->
+            <div x-show="activeTab === 'view'">
+                <form x-data="{ reportMenuOpen: false, adversaryMenuOpen: false }">
+                    <div class="field">
+                        <label class="label is-small">
+                            Vulnerability Report
+                        </label>
+                        <div class="control">
+                            <div class="select is-small">
+                                <select x-model="selectedReportId">
+                                    <option value="" disabled selected>Select a report</option>
+                                    <template x-for="report in reports">
+                                        <option :value="report.id" x-text="`${report.name} (${report.id})`"></option>
+                                    </template>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label is-small">
+                            Size
+                        </label>
+                        <div class="control">
+                            <input type="range" min="1" max="100" default="50" x-model="reportSize" style="width: 100%">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-small is-primary is-fullwidth" type="button" @click="graphReport()">Graph</button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-small is-fullwidth" type="button" @click="reportMenuOpen = !reportMenuOpen">
+                                <span x-text="reportMenuOpen ? 'Hide ' : 'Show '"></span>
+                                &nbsp;Report Options
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field" x-show="reportMenuOpen">
+                        <label class="label is-small">Report Name</label>
+                        <div class="control">
+                            <input class="input is-small" placeholder="Enter a name for the report">
+                        </div>
+                    </div>
+                    <div class="field" x-show="reportMenuOpen">
+                        <div class="control">
+                            <button class="button is-small is-fullwidth" type="button" @click="downloadReport()">
+                                <span class="icon">
+                                    <em class="fas fa-download"></em>
+                                </span>
+                                <span>Download Report</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field" x-show="reportMenuOpen">
+                        <div class="control">
+                            <button class="button is-small is-danger is-outlined is-fullwidth" type="button" @click="deleteReport()">
+                                <span class="icon">
+                                    <em class="fas fa-trash"></em>
+                                </span>
+                                <span>Delete Report</span>
+                            </button>
+                        </div>
+                    </div>
+                    <hr x-show="reportMenuOpen">
+
+                    <div class="field">
+                        <div class="control">
+                            <button class="button is-small is-fullwidth" type="button" @click="adversaryMenuOpen = !adversaryMenuOpen">
+                                <span x-text="adversaryMenuOpen ? 'Hide ' : 'Show '"></span>
+                                &nbsp;Adversary Options
+                            </button>
+                        </div>
+                    </div>
+                    <div class="field" x-show="adversaryMenuOpen">
+                        <div class="control">
+                            <p class="help">
+                                Create a custom adversary using the source and target nodes specified in the attach graph.
+                                <br><br>
+                                Once created, this adversary will appear in the "adversaries" tab.
+                                <br><br>
+                                Existing Pathfinder adversaries can be merged by including their name in the "Adversary Merging Tags".
+                            </p>
+                        </div>
+                    </div>
+                    <div class="field" x-show="reportMenuOpen">
+                        <label class="label is-small">Adversary Merging Tags</label>
+                        <div class="control">
+                            <input class="input is-small" placeholder="Enter merging tags">
+                        </div>
+                    </div>
+                    <div class="field" x-show="adversaryMenuOpen">
+                        <div class="control">
+                            <button class="button is-small is-fullwidth" type="button" @click="createAdversary()">Create Adversary</button>
+                        </div>
+                    </div>
+                    <div class="field" x-show="adversaryMenuOpen">
+                        <div class="control">
+                            <button class="button is-small is-fullwidth" type="button" @click="addTab('adversaries', '/campaign/adversaries')">View Adversaries</button>
+                        </div>
+                    </div>
+                    <div class="field" x-show="adversaryMenuOpen">
+                        <div class="control">
+                            <button class="button is-small is-fullwidth" type="button" @click="addTab('operations', '/campaign/operations')">Setup Operation</button>
+                        </div>
+                    </div>
+                    <hr x-show="adversaryMenuOpen">
+                </form>
+                <div>
+                    <label for="graphLegend">Legend:</label>
+                    <ul id="graphLegend">
+                        <li><span class="legend_dot" style="background-color:gray"></span>&nbsp&nbsp scanner</li>
+                        <li><span class="legend_dot" style="background-color:deepskyblue"></span>&nbsp&nbsp network host</li>
+                        <li><span class="legend_dot" style="background-color:orangered"></span>&nbsp&nbsp CVE</li>
+                        <li><span class="legend_dot" style="background-color:blue"></span>&nbsp&nbsp open port</li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <div id="pulldownInputTemplate" style="display:none; margin:5px">
-            <label for="pulldownInput">pulldown:</label>
-            <select id="pulldownInput">
-            </select>
-        </div>
-        <div id="checkboxInputTemplate" style="display:none; margin:5px">
-            <input type="checkbox" value="0" onchange="$(this).val(this.checked ? 1 : 0)"><span>checkbox title</span>
+        <div class="column is-9">
+            <div class="box" x-html="graphHtml">
+
+            </div>
+            <div class="box">
+                <template x-for="log in logs">
+                    <pre x-text="log"></pre>
+                </template>
+            </div>
         </div>
     </div>
-
 </div>
 
 <script>
 
 function alpinePathfinder() {
     return {
-        name: '{{ name }}',
-        description: '{{ description }}',
-        scanners: '{{ scanners }}',
-        input_parsers: '{{ input_parsers }}',
-        vulnerability_reports: '{{ vulnerability_reports }}',
+        activeTab: 'scan',
+        logs: [],
+        doRefresh: false,
+        latestSource: '',
+
+        scanners: JSON.parse('{{ scanners | tojson }}'),
+        selectedScanner: "",
+        scannerFields: [],
+
+        inputParsers: JSON.parse('{{ input_parsers | tojson }}'),
+        selectedParser: "",
+
+        reports: [],
+        selectedReportId: "",
+        reportSize: 50,
+
+        graphHtml: "",
 
         initPage() {
-            apiV2('GET', '/api/v2/health').then((response) => {
-            }).catch((error) => {
-                toast('Error loading page', false);
-                console.error(error);
-            });
+            this.reloadReports();
         },
+
+        logOutput(text) {
+            this.logs.push(`${text}\n`);
+        },
+
+        async selectScanner() {
+            if (!this.selectScanner) return;
+            try {
+                const response = await apiV2('POST', '/plugin/pathfinder/api', {
+                    index: 'scanner_config',
+                    name: this.selectedScanner
+                });
+
+                if (response.error) {
+                    this.logOutput(`${response.name}: ${response.error}`);
+                    return;
+                }
+                if (!response.enabled) {
+                    this.logOutput(`${response.name}: Please install scanner dependencies before scanning, scanning disabled!`);
+                    return;
+                }
+
+                this.scannerFields = [];
+                response.fields.forEach((field) => {
+                    this.scannerFields.push({
+                        ...field,
+                        value: field.default || ''
+                    })
+                });
+            } catch(error) {
+                console.error("Error selecting scanner", error);
+            }
+        },
+
+        async startScan() {
+            let fields = {};
+            this.scannerFields.forEach((field) => fields[field.param] = field.value);
+
+            this.logOutput(`${this.selectedScanner} scan started with parameters:\n ${JSON.stringify(fields, null, 4)}`);
+            try {
+                await apiV2('POST', '/plugin/pathfinder/api', {
+                    index: 'scan',
+                    scanner: this.selectedScanner,
+                    fields: fields
+                });
+
+                this.doRefresh = true;
+                while (this.$refs.headerPathfinder && this.doRefresh) {
+                    await sleep(10000);
+                    this.checkScanStatus();
+                }
+            } catch(error) {
+                this.logOutput(`ERROR: scan issue, please check server logs for more details`);
+                console.error(error);
+            }
+        },
+
+        async checkScanStatus() {
+            try {
+                const response = await apiV2('POST', '/plugin/pathfinder/api', { index: 'status' });
+                console.log(response)
+                if (response.pending.length === 0 && Object.keys(response.finished).length === 0 && Object.keys(response.errors).length === 0) {
+                    this.doRefresh = false;
+                    this.logOutput("Scan finished.");
+                }
+                Object.keys(response.finished || {}).forEach((key) => {
+                    this.logOutput(`Scan ID: ${key} finished. New source created: ${response.finished[key].source}`);
+                    this.latestSource = response.finished[key].source_id;
+                });
+                Object.keys(response.errors || {}).forEach((key) => {
+                    this.logOutput(`Scan ID: ${key} failed. Error output: ${response.errors[key].message}`);
+                });
+                this.reloadReports();
+            } catch(error) {
+                console.error("Error checking scan status", error);
+            }
+        },
+
+        async reloadReports() {
+            try {
+                const response = await apiV2('POST', '/plugin/pathfinder/api', { index: 'reports' });
+                this.reports = response.reports;
+            } catch(error) {
+                console.error("Error reloading Pathfinder reports", error);
+            }
+        },
+
+        async uploadFile(event) {
+            if (!event.currentTarget) return;
+            let filename = event.currentTarget.files[0].name;
+            if (!filename) return;
+            
+            let fd = new FormData();
+            fd.append('file', event.currentTarget.files[0]);
+            try {
+                await apiV2('POST', '/plugin/pathfinder/upload', fd, false);
+                this.processImportScan(filename);
+            } catch(error) {
+                console.error("Error uploading file", error);
+            }
+        },
+
+        async processImportScan(filename) {
+            try {
+                const response = await apiV2('POST', '/plugin/pathfinder/api', {
+                    index: 'import_scan',
+                    format: this.selectedParser,
+                    filename: filename
+                });
+                this.logOutput('Report imported, new source created. You can view it in the "View" tab.');
+                this.logOutput(response.output);
+                this.latestSource = response.source;
+                this.reloadReports();
+            } catch(error) {
+                this.logOutput('Report import failed, please check server logs for issue and ensure the input file matches the selected parser.');
+                console.error("Error importing report", error);
+            }
+        },
+        
+        async graphReport() {
+            try {
+                const response = await apiV2('GET', `/plugin/pathfinder/graph?report=${this.selectedReportId}`);
+                this.graphHtml = response // Parse HTML here, make sure to keepScripts=true
+            } catch(error) {
+                console.error("Error loading graph", error);
+            }
+        },
+
+        async renameReport() {
+            try {
+                apiV2('PATCH', '/plugin/pathfinder/api', {
+                    index: 'report',
+                    id: this.selectedReportId,
+                    rename: newName // TODO
+                });
+                this.reloadReports();
+            } catch(error) {
+                console.error("Error renaming report", error);
+            }
+        },
+
+        async downloadReport() {
+            let downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute('href', `/plugin/pathfinder/download?report_id=${this.selectedReportId}`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        },
+
+        async deleteReport() {
+            try {
+                apiV2('DELETE', '/plugin/pathfinder/api', {
+                    index: 'report',
+                    id: this.selectedReportId
+                });
+                this.selectedReportId = "";
+                this.graphHtml = "";
+                this.reloadReports();
+            } catch(error) {
+                console.error("Error deleting report", error);
+            }
+        },
+
+        async createAdversary() {
+
+        }
+
     };
 }
 
