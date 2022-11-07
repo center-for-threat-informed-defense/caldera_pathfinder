@@ -1,233 +1,205 @@
-var data;
-function setData(d){
-    data = d;
-    draw(data);
+// Global Variables
+const group_colors = { 'scanners': 'grey', 'hosts': 'deepskyblue', 'cves':'orangered', 'ports':'blue' };
+const node_radii = { 'scanners': 15, 'hosts': 15, 'cves': 5, 'ports': 10 };
+const link_lengths = { 'network': 2, 'port': 1, 'cve': 1, 'path': 4 };
+const link_colors = { 'network': '#999', 'port': '#999', 'cve': '#999', 'path': '#ff0' };
+const contextMenu = [
+    {
+        label: 'Set source node',
+        action: (d, index) => {
+            if (d.group == 'hosts') {
+                sourceNode === d.id ? sourceNode = null : sourceNode = d.id;
+                updateElements();
+            }
+        }
+    },
+    {
+        label: 'Set target node',
+        action: (d, index) => {
+            if (d.group == 'hosts') {
+                targetNode === d.id ? targetNode = null : targetNode = d.id;
+                updateElements();
+            }
+        }
+    },
+    {
+        label: 'Info',
+        items: [
+            {
+                label: (d, index) => d.id,
+                action: (d, index) => {}
+            }
+        ]
+    }
+];
+
+let graphData;
+let svg;
+let nodes;
+let simulation;
+let width;
+let height;
+let config = { linkDistance: 50, propertyScaleFactor: 0.2 };
+let sourceNode, targetNode;
+
+function initGraph(data, linkDistance) {
+    graphData = JSON.parse(JSON.stringify(data));
+    d3.selectAll('g').html(null);
+    
+    // Set dimensions
+    width = document.getElementById('graphContainer').offsetWidth;
+    height = window.innerHeight * 0.8;
+    config.linkDistance = linkDistance;
+
+    // Setup simulation
+    simulation = d3.forceSimulation()
+        .force('link', d3.forceLink())
+        .force('charge', d3.forceManyBody())
+        .force('center', d3.forceCenter(width / 2, height / 2))
+        .force('collision', d3.forceCollide().radius((d) => node_radii[d.group]));
+    simulation.force('link')
+        .id((d) => d.id)
+        .distance((d) => config.linkDistance * link_lengths[d.type]);
+
+    svg = d3.select('#networkGraph')
+        .call(dynamicallyCenter)
+        .append('g');
+    
+    draw();
 }
-var created_adversary
 
-var sourceNode, targetNode;
-var width = $('#graphContainer').width();
-var height = $(window).height() * 0.8; //$('#graphContainer').height(); the dynamic loading of the modals catches this in a transition state
-var config = {
-        linkDistance: 50,
-        propertyScaleFactor: .2   //scale factor relative to node size
-    };
+function dynamicallyCenter(svg) {
+    const container = d3.select(svg.node().parentNode);
+    d3.select(window).on(`resize.${container.attr('id')}`, () => {
+        const targetWidth = parseInt(container.style('width'));
+        const targetHeight = parseInt(container.style('height'));
+        simulation.force('center', d3.forceCenter(targetWidth / 2, targetHeight / 2));
+    });
+}
 
-var group_colors = {'scanners': 'grey', 'hosts': 'deepskyblue', 'cves':'orangered', 'ports':'blue'};
-var node_radii = {'scanners': 15, 'hosts': 15, 'cves': 5, 'ports': 10};
-var link_lengths = {'network': 2, 'port': 1, 'cve': 1, 'path': 4};
-var link_colors = {'network': '#999', 'port': '#999', 'cve': '#999', 'path': '#ff0'};
-
-var svg = d3.select('#networkGraph')
-    .call(dynamicallyCenter)
-    .append('g');
-
-var simulation = d3.forceSimulation()
-    .force('link', d3.forceLink())
-    .force('charge', d3.forceManyBody())
-    .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collision', d3.forceCollide().radius(function(d) {return node_radii[d.group]}));
-
-var nodes;
-
-var draw = function(graph) {
-
+function draw() {
     svg.selectAll('g.links').remove();
     var link = svg.append('g')
         .attr('class', 'links')
         .selectAll('line')
-        .data(graph.links)
+        .data(graphData.links)
         .enter().append('line')
             .attr('stroke-width', 3)
-            .attr('stroke', function(d) {return link_colors[d.type]});
+            .attr('stroke', (d) => link_colors[d.type]);
 
     svg.selectAll('g.nodes').remove();
     nodes = svg.append('g')
         .attr('class', 'nodes')
         .selectAll('g')
-        .data(graph.nodes)
+        .data(graphData.nodes)
         .enter().append('g')
             .attr('class', 'node')
             .call(d3.drag()
-                .on('start', function dragstarted(d) {
+                .on('start', (d) => {
                     if (!d3.event.active) simulation.alphaTarget(0.3).restart();
                     d.fx = d.x;
                     d.fy = d.y;
                 })
-                .on('drag', function dragged(d) {
+                .on('drag', (d) => {
                     d.fx = d3.event.x;
                     d.fy = d3.event.y;
                 })
-                .on('end', function dragended(d) {
+                .on('end', (d) => {
                     if (!d3.event.active) simulation.alphaTarget(0);
                 }));
 
-    nodes.append('circle')
-        .attr('r', function(d) { return node_radii[d.group] })
-        .attr('fill', function(d) { return group_colors[d.group];})
-        .on('contextmenu', d3.contextmenu(menu))
-        .on('dblclick', freeNode);
+    nodes
+        .append('circle')
+        .attr('r', (d) => node_radii[d.group])
+        .attr('fill', (d) => group_colors[d.group])
+        .on('contextmenu', d3.contextmenu(contextMenu))
+        .on('dblclick', (d) => {
+            d.fx = null;
+            d.fy = null;
+        });
 
-    nodes.append('title')
-        .text(function(d) { return d.label; });
+    nodes
+        .append('title')
+        .text((d) => d.label);
 
-    nodes.append('text')
-        .attr('dx', function(d) {return node_radii[d.group]/2 + 8})
+    nodes
+        .append('text')
+        .attr('dx', (d) => node_radii[d.group] / 2 + 8)
         .attr('dy', ".35em")
-        .attr("stroke", function(d) { if(d.dim) return "grey"; else return "white"; })
-        .attr("fill", function(d) { if(d.dim) return "grey"; else return "white"; })
-        .text(function(d) {return d.label})
+        .attr("stroke", (d)  => (d.dim) ? "grey" : "white")
+        .attr("fill", (d) => (d.dim) ? "grey" : "white")
+        .text((d) => d.label)
 
     simulation
-        .nodes(graph.nodes)
-        .on('tick', function ticked() {
+        .nodes(graphData.nodes)
+        .on('tick', () => {
             link
-                .attr('x1', function(d) { return d.source.x; })
-                .attr('y1', function(d) { return d.source.y; })
-                .attr('x2', function(d) { return d.target.x; })
-                .attr('y2', function(d) { return d.target.y; });
-            nodes.attr('transform', function(d) {return 'translate(' + d.x + ',' + d.y + ')';});
+                .attr('x1', (d) => d.source.x)
+                .attr('y1', (d) => d.source.y)
+                .attr('x2', (d) => d.target.x)
+                .attr('y2', (d) => d.target.y);
+            nodes.attr('transform', (d) => `translate(${d.x}, ${d.y})`);
         })
         .force('link')
-        .links(graph.links);
+        .links(graphData.links);
 };
 
-function addVisualizationLinks() {
-}
-
-function updateLinkDistance(linkDistance) {
-    d3.select('#link-distance-value').text(linkDistance);
-    d3.select('#link-distance').property('value', linkDistance);
-}
-
-simulation.force('link')
-    .id(function(d) {return d.id;})
-    .distance(function(d) {return config.linkDistance*link_lengths[d.type];});
-
-d3.select('#link-distance').on('input', function() {
-    config.linkDistance = +this.value;
-    updateLinkDistance(config.linkDistance);
-    simulation.force('link').distance(function(d) {return config.linkDistance*link_lengths[d.type];});
+function updateLinkDistance(linkDistance = 50) {
+    config.linkDistance = linkDistance;
+    simulation.force('link').distance((d) => config.linkDistance * link_lengths[d.type]);
     simulation.alpha(1).restart();
-});
-
-updateLinkDistance(config.linkDistance);
-
-function freeNode(d) {
-    d.fx = null;
-    d.fy = null;
 }
 
-function dynamicallyCenter(svg) {
-    const container = d3.select(svg.node().parentNode);
-    d3.select(window).on('resize.' + container.attr('id'), resize);
-
-    function resize() {
-        const targetWidth = parseInt(container.style('width'));
-        const targetHeight = parseInt(container.style('height'));
-        simulation.force('center', d3.forceCenter(targetWidth / 2, targetHeight / 2));
+function updateElements() {
+    let createAdversaryBtn = document.getElementById('pathfinderCreateAdversary');
+    if (sourceNode && targetNode) {
+        createAdversaryBtn.removeAttribute('disabled');
+    } else {
+        createAdversaryBtn.setAttribute('disabled', true);
     }
-}
 
-function updateElements(){
-    nodes.selectAll('g circle')
-        .attr('fill', function(d){
-            if(d.id == sourceNode){
-                return '#0f0';
-            }
-            else if(d.id == targetNode){
-                return '#f00';
-            }
-            else {
-                return group_colors[d.group];
-            }
+    nodes
+        .selectAll('g circle')
+        .attr('fill', (d) => {
+            if (d.id === sourceNode) return '#0f0';
+            if (d.id === targetNode) return '#f00';
+            return group_colors[d.group];
         });
-    if(sourceNode && targetNode){
-        validateFormState(true, '#createAdversary');
-    }
 }
 
-function clearSelections(){
+function clearSelections() {
     sourceNode = null;
     targetNode = null;
 }
 
-// Context Menu
-var menu = [
-    {
-        label: 'set source node',
-        action: function(d, index) {
-            if(d.group == 'hosts'){
-                sourceNode = d.id;
-                updateElements();
-            }
-        }
-    },
-    {
-        label: 'set target node',
-        action: function(d, index) {
-            if(d.group == 'hosts'){
-                targetNode = d.id;
-                updateElements();
-            }
-        }
-    },
-    {
-        label: 'info',
-        items:[
-        {
-            label: function(d, index) { return d.id; },
-            action: function(d, index) {}
-        }
-        ]
-    }
-];
-
-function createAdversary(){
-    report = $('#vulnerabilityReport').val();
-    tags = $('#adversaryTags').val();
-    let data = {
-        'index': 'create_adversary',
-        'id': report,
-        'start': sourceNode,
-        'target': targetNode,
-        'adversary_tags': tags
-    }
-    apiV2('POST', '/plugin/pathfinder/api', data).then((response) => {
+async function createAdversary() {
+    if (!sourceNode || !targetNode) return;
+    try {
+        const response = await apiV2('POST', '/plugin/pathfinder/api', {
+            index: 'create_adversary',
+            id: document.getElementById('reportId').value,
+            start: sourceNode,
+            target: targetNode,
+            adversary_tags: document.getElementById('adversaryTags').value
+        });
         removeOldPaths();
         addNewLinks(response.new_links);
-        created_adversary = response.adversary_id;
-        validateFormState(true, '#viewAdversaries');
-        validateFormState(true, '#setupOperation');
         toast('Custom Pathfinder adversary created.', true);
-    }).catch((error) => {
-        toast('Error creating adversary, please ensure target node has a tagged CVE.', false);
-        console.error(error);
-    });
-}
-
-function openAdversary(adversary_id){
-    viewSection('profiles', '/campaign/profiles');
-    setTimeout(function(s){ $('#profile-existing-name').val(s).change(); }, 1000, adversary_id);
-}
-
-function addNewLinks(links){
-    for (var link in links) {
-        data.links.push(links[link]);
+    } catch(error) {
+        console.error("Error creating adversary", error);
     }
-    draw(data);
-    updateElements();
-    simulation.alpha(1).restart();
+}
+
+function addNewLinks(links) {
+   links.forEach((link) => graphData.links.push(link));
+   draw();
+   updateElements();
+   simulation.alpha(1).restart(); 
 }
 
 function removeOldPaths() {
-    for(var link in data.links) {
-        if(data.links[link].type == 'path') {
-            data.links.pop(link);
-        }
-    }
-    draw(data);
+    graphData.links = graphData.links.filter((link) => link.type !== 'path');
+    draw();
     updateElements();
     simulation.alpha(1).restart();
 }
-

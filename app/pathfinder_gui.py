@@ -53,11 +53,9 @@ class PathfinderGUI(BaseWorld):
         )
 
     @check_authorization
-    @template('graph.html')
     async def graph(self, request):
         requested_report = request.query.get('report')
-        data = await self.build_visualization_dataset(requested_report)
-        return dict(report_data=data)
+        return web.json_response(await self.build_visualization_dataset(requested_report))
 
     async def build_visualization_dataset(self, report):
         visualization_data = dict(nodes=[], links=[])
