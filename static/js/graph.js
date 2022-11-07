@@ -201,5 +201,5 @@ function removeOldPaths() {
     graphData.links = graphData.links.filter((link) => link.type !== 'path');
     draw();
     updateElements();
-    simulation.alpha(1).restart(); 
+    simulation.alpha(1).restart();
 }
