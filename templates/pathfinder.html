@@ -96,9 +96,9 @@
                             </button>
                         </div>
                         <div class="control">
-                            <button class="button is-small has-tooltip-top" @click="downloadReport()" :disabled="!selectedReportId" data-tooltip="Download">
+                            <a class="button is-small has-tooltip-top" x-bind:href="'/plugin/pathfinder/download?report_id=' + selectedReportId" :disabled="!selectedReportId" data-tooltip="Download">
                                 <span class="icon"><em class="fas fa-download"></em></span>
-                            </button>
+                            </a>
                         </div>
                         <div class="control">
                             <button class="button is-small has-tooltip-top" @click="openRenameModal()" :disabled="!selectedReportId" data-tooltip="Rename Report">
@@ -141,13 +141,13 @@
             <div class="box" x-show="activeTab === 'reports'">
                 <div class="is-flex is-justify-content-center is-align-items-center mb-3">
                     <label class="mr-3">Legend:</label>
-                    <span class="legend-dot mr-2" style="background-color:gray"></span> 
+                    <span class="legend-dot mr-2" style="background-color:gray"></span>
                     <span>Scanner&nbsp;&nbsp;&nbsp;</span>
-                    <span class="legend-dot mr-2" style="background-color:deepskyblue"></span> 
+                    <span class="legend-dot mr-2" style="background-color:deepskyblue"></span>
                     <span>Network Host&nbsp;&nbsp;&nbsp;</span>
-                    <span class="legend-dot mr-2" style="background-color:orangered"></span> 
+                    <span class="legend-dot mr-2" style="background-color:orangered"></span>
                     <span>CVE&nbsp;&nbsp;&nbsp;</span>
-                    <span class="legend-dot mr-2" style="background-color:blue"></span> 
+                    <span class="legend-dot mr-2" style="background-color:blue"></span>
                     <span>Open Port&nbsp;&nbsp;&nbsp;</span>
                 </div>
                 <div id="graphContainer">
@@ -366,7 +366,7 @@ function alpinePathfinder() {
             if (!event.currentTarget) return;
             let filename = event.currentTarget.files[0].name;
             if (!filename) return;
-            
+
             let fd = new FormData();
             fd.append('file', event.currentTarget.files[0]);
             try {
@@ -395,7 +395,7 @@ function alpinePathfinder() {
                 console.error("Error importing report", error);
             }
         },
-        
+
         async graphReport() {
             try {
                 this.graphData = await apiV2('GET', `/plugin/pathfinder/graph?report=${this.selectedReportId}`);
@@ -406,7 +406,7 @@ function alpinePathfinder() {
         },
 
         openRenameModal() {
-            this.reportNameEdited = this.reports.find((report) => report.   id === this.selectedReportId).name; 
+            this.reportNameEdited = this.reports.find((report) => report.   id === this.selectedReportId).name;
             this.showRenameModal = true;
         },
 
@@ -422,14 +422,6 @@ function alpinePathfinder() {
             } catch(error) {
                 console.error("Error renaming report", error);
             }
-        },
-
-        async downloadReport() {
-            let downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute('href', `/plugin/pathfinder/download?report_id=${this.selectedReportId}`);
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
         },
 
         async deleteReport() {
