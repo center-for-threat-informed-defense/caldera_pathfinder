@@ -33,6 +33,8 @@ Install CALDERA (if you don't have it already) and clone down the pathfinder rep
 
 `git clone https://github.com/center-for-threat-informed-defense/caldera_pathfinder.git pathfinder --recursive`
 
+Go into `plugins/pathfinder` and run `pip install -r requirements.txt` to install dependencies, and note that you should have nmap installed already.
+
 After that add `pathfinder` to enabled plugins list in the caldera conf file for your environment and you are set to start scanning and path finding!
 
 ## Questions and Feedback
