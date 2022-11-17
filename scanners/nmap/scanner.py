@@ -56,7 +56,7 @@ class Scanner(ScannerInterface):
             script_args = (
                 "--script-args %s" % self.script_args if self.script_args else ""
             )
-            no_ping = "-Pn" if int(self.pingless) else ""
+            no_ping = "-Pn" if self.pingless else ""
             ports = "-p %s" % self.ports if self.ports else ""
             command = "nmap --script %s %s -sV %s -oX %s %s %s" % (
                 self.format_script(self.script),

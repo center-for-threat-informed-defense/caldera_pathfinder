@@ -302,7 +302,7 @@ function alpinePathfinder() {
                 response.fields.forEach((field) => {
                     this.scannerFields.push({
                         ...field,
-                        value: field.default || ''
+                        value: field.default === null ? '' : field.default
                     })
                 });
             } catch(error) {

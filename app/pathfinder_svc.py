@@ -174,7 +174,7 @@ class PathfinderService:
                 cves = self.host_enrich(host.os)
                 if cves:
                     host.cves.append(cves)
-        report.hosts[key] = host
+            report.hosts[key] = host
         return report
 
     def software_enrich(self, software):
