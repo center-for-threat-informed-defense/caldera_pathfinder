@@ -1,4 +1,4 @@
-# CALDERA&trade; Pathfinder
+# MITRE Caldera&trade; Plugin: Pathfinder
 
 ## Overview
 Pathfinder is a [CALDERA](https://github.com/mitre/caldera) plugin developed by the Center for Threat-Informed Defense. Pathfinder extends CALDERA's functionality to support automated ingestion of network scanning tool output. By intelligently integrating scan data with an automated adversary emulation platform, Pathfinder will demonstrate how an adversary might use vulnerabilities in an environment to achieve their goals, highlighting a path through a network, and showing the real impact of a vulnerability for CALDERA to analyze and execute against. 
