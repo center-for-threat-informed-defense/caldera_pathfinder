@@ -1,13 +1,13 @@
-# CALDERA&trade; Pathfinder
+# MITRE Caldera&trade; Plugin: Pathfinder
 
 ## Overview
-Pathfinder is a [CALDERA](https://github.com/mitre/caldera) plugin developed by the Center for Threat-Informed Defense. Pathfinder extends CALDERA's functionality to support automated ingestion of network scanning tool output. By intelligently integrating scan data with an automated adversary emulation platform, Pathfinder will demonstrate how an adversary might use vulnerabilities in an environment to achieve their goals, highlighting a path through a network, and showing the real impact of a vulnerability for CALDERA to analyze and execute against. 
+Pathfinder is a [Caldera](https://github.com/mitre/caldera) plugin developed by the Center for Threat-Informed Defense. Pathfinder extends Caldera's functionality to support automated ingestion of network scanning tool output. By intelligently integrating scan data with an automated adversary emulation platform, Pathfinder will demonstrate how an adversary might use vulnerabilities in an environment to achieve their goals, highlighting a path through a network, and showing the real impact of a vulnerability for Caldera to analyze and execute against. 
 
-Pathfinder extends CALDERA to do the following:
+Pathfinder extends Caldera to do the following:
 1. Run a scan of a target network or system
-2. Upload the scan results to a running instance of CALDERA
-3. Use the ingested results to draw out potential attack paths CALDERA could notionally take
-4. Create workflows so that CALDERA can follow the actual attack paths and execute a real attack
+2. Upload the scan results to a running instance of Caldera
+3. Use the ingested results to draw out potential attack paths Caldera could notionally take
+4. Create workflows so that Caldera can follow the actual attack paths and execute a real attack
 
 More information is provided under [docs](https://github.com/center-for-threat-informed-defense/caldera_pathfinder/tree/master/docs)
 
@@ -29,7 +29,7 @@ More information is provided under [docs](https://github.com/center-for-threat-i
 
 If you want to run scans with nmap directly with the pathfinder plugin make sure to install nmap on your system
 
-Install CALDERA (if you don't have it already) and clone down the pathfinder repo into the `caldera/plugins` folder with this command:
+Install Caldera (if you don't have it already) and clone down the pathfinder repo into the `caldera/plugins` folder with this command:
 
 `git clone https://github.com/center-for-threat-informed-defense/caldera_pathfinder.git pathfinder --recursive`
 
