@@ -1,3 +1,5 @@
+> 🚨**ATTENTION**🚨 The CALDERA Pathfinder plugin is discontinued. This plugin is not compatible with CALDERA >=5.0. This repository is made available as a public archive for historical purposes.
+> 
 # MITRE Caldera&trade; Plugin: Pathfinder
 
 ## Overview
